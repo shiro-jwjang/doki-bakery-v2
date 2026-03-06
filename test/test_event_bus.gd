@@ -266,19 +266,19 @@ func test_multiple_listeners() -> void:
 
 ## Test all state change signals are defined
 func test_all_state_change_signals_defined() -> void:
-	assert_signal_emitted(EventBus, "gold_changed")
-	assert_signal_emitted(EventBus, "xp_changed")
-	assert_signal_emitted(EventBus, "level_up")
-	assert_signal_emitted(EventBus, "production_started")
-	assert_signal_emitted(EventBus, "production_completed")
-	assert_signal_emitted(EventBus, "customer_arrived")
-	assert_signal_emitted(EventBus, "customer_purchased")
-	assert_signal_emitted(EventBus, "recipe_unlocked")
-	assert_signal_emitted(EventBus, "shop_upgraded")
+	assert_true(EventBus.has_signal("gold_changed"), "gold_changed must be defined")
+	assert_true(EventBus.has_signal("xp_changed"), "xp_changed must be defined")
+	assert_true(EventBus.has_signal("level_up"), "level_up must be defined")
+	assert_true(EventBus.has_signal("production_started"), "production_started must be defined")
+	assert_true(EventBus.has_signal("production_completed"), "production_completed must be defined")
+	assert_true(EventBus.has_signal("customer_arrived"), "customer_arrived must be defined")
+	assert_true(EventBus.has_signal("customer_purchased"), "customer_purchased must be defined")
+	assert_true(EventBus.has_signal("recipe_unlocked"), "recipe_unlocked must be defined")
+	assert_true(EventBus.has_signal("shop_upgraded"), "shop_upgraded must be defined")
 
 
 ## Test all action request signals are defined
 func test_all_action_request_signals_defined() -> void:
-	assert_signal_emitted(EventBus, "request_sell")
-	assert_signal_emitted(EventBus, "request_produce")
-	assert_signal_emitted(EventBus, "request_upgrade")
+	assert_true(EventBus.has_signal("request_sell"), "request_sell must be defined")
+	assert_true(EventBus.has_signal("request_produce"), "request_produce must be defined")
+	assert_true(EventBus.has_signal("request_upgrade"), "request_upgrade must be defined")

@@ -3,6 +3,11 @@ extends Node
 ## DataManager Autoload
 ## 정적 데이터(.tres) 로딩/캐싱/조회
 
+# 리소스 타입 preload
+const RecipeData = preload("res://resources/data/recipe_data.gd")
+const LevelData = preload("res://resources/config/level_data.gd")
+const ShopData = preload("res://resources/config/shop_data.gd")
+
 # 리소스 경로
 const RECIPES_PATH := "res://resources/data/recipes/"
 const LEVELS_PATH := "res://resources/config/levels/"
@@ -33,8 +38,8 @@ func _load_recipes() -> void:
 	var file_name := dir.get_next()
 	while file_name != "":
 		if file_name.ends_with(".tres"):
-			var resource := load(RECIPES_PATH + file_name)
-			if resource and resource.has_method("get"):
+			var resource := load(RECIPES_PATH + file_name) as RecipeData
+			if resource:
 				_recipes[resource.id] = resource
 		file_name = dir.get_next()
 	dir.list_dir_end()
@@ -50,8 +55,8 @@ func _load_levels() -> void:
 	var file_name := dir.get_next()
 	while file_name != "":
 		if file_name.ends_with(".tres"):
-			var resource := load(LEVELS_PATH + file_name)
-			if resource and resource.has_method("get"):
+			var resource := load(LEVELS_PATH + file_name) as LevelData
+			if resource:
 				_levels[resource.level] = resource
 		file_name = dir.get_next()
 	dir.list_dir_end()
@@ -67,25 +72,25 @@ func _load_shops() -> void:
 	var file_name := dir.get_next()
 	while file_name != "":
 		if file_name.ends_with(".tres"):
-			var resource := load(SHOPS_PATH + file_name)
-			if resource and resource.has_method("get"):
+			var resource := load(SHOPS_PATH + file_name) as ShopData
+			if resource:
 				_shop_stages[resource.shop_level] = resource
 		file_name = dir.get_next()
 	dir.list_dir_end()
 
 
 ## 레시피 조회
-func get_recipe(id: String) -> Resource:
+func get_recipe(id: String) -> RecipeData:
 	return _recipes.get(id)
 
 
 ## 레벨 데이터 조회
-func get_level(level: int) -> Resource:
+func get_level(level: int) -> LevelData:
 	return _levels.get(level)
 
 
 ## 매장 단계 조회
-func get_shop_stage(stage: int) -> Resource:
+func get_shop_stage(stage: int) -> ShopData:
 	return _shop_stages.get(stage)
 
 
