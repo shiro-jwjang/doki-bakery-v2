@@ -28,7 +28,11 @@ window/stretch/aspect="keep"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/godotsteam/plugin.cfg")
+
+[autoload]
+
+SteamManager="*res://scripts/autoload/steam_manager.gd"
 
 [rendering]
 

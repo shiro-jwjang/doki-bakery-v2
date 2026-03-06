@@ -1,6 +1,7 @@
 extends GutTest
 ## Sample test for GUT setup verification
 
+
 func before_all() -> void:
 	gut.p("=== Test Suite Started ===")
 
