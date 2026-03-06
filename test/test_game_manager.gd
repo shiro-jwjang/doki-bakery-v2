@@ -6,6 +6,8 @@ extends GutTest
 
 var _gold_changed_received := false
 var _gold_changed_value := 0
+var _premium_changed_received := false
+var _premium_changed_value := 0
 var _level_up_received := false
 var _level_up_value := 0
 var _xp_gained_received := false
@@ -26,6 +28,8 @@ func before_each() -> void:
 	# Reset signal tracking
 	_gold_changed_received = false
 	_gold_changed_value = 0
+	_premium_changed_received = false
+	_premium_changed_value = 0
 	_level_up_received = false
 	_level_up_value = 0
 	_xp_gained_received = false
@@ -38,6 +42,8 @@ func after_each() -> void:
 	# Disconnect all signals
 	if EventBus.gold_changed.is_connected(_on_gold_changed):
 		EventBus.gold_changed.disconnect(_on_gold_changed)
+	if EventBus.premium_changed.is_connected(_on_premium_changed):
+		EventBus.premium_changed.disconnect(_on_premium_changed)
 	if EventBus.level_up.is_connected(_on_level_up):
 		EventBus.level_up.disconnect(_on_level_up)
 	if EventBus.experience_gained.is_connected(_on_experience_gained):
@@ -146,7 +152,7 @@ func test_multiple_level_ups() -> void:
 	GameManager.add_experience(200)
 
 	assert_eq(GameManager.level, 3, "Should level up to 3")
-	assert_eq(GameManager.experience, 0, "XP should reset after leveling")
+	assert_eq(GameManager.experience, 100, "XP should carry over after leveling")
 
 
 ## Test level up with excess XP
@@ -227,10 +233,69 @@ func test_legendary_bread() -> void:
 	assert_eq(GameManager.legendary_bread, 5, "Legendary bread should be 5")
 
 
+## Test add_premium increases legendary bread and emits signal
+func test_add_premium() -> void:
+	EventBus.premium_changed.connect(_on_premium_changed)
+	GameManager.add_premium(5)
+
+	assert_eq(GameManager.get_premium(), 5, "Premium should be 5")
+	assert_true(_premium_changed_received, "premium_changed signal should be emitted")
+	assert_eq(_premium_changed_value, 5, "Signal should carry correct premium amount")
+
+
+## Test add_premium accumulates
+func test_add_premium_accumulates() -> void:
+	EventBus.premium_changed.connect(_on_premium_changed)
+	GameManager.add_premium(3)
+	GameManager.add_premium(2)
+
+	assert_eq(GameManager.get_premium(), 5, "Premium should be 5")
+
+
+## Test spend_premium with sufficient funds
+func test_spend_premium_success() -> void:
+	GameManager.add_premium(10)
+	var result := GameManager.spend_premium(6)
+
+	assert_true(result, "spend_premium should return true")
+	assert_eq(GameManager.get_premium(), 4, "Premium should be 4")
+
+
+## Test spend_premium with insufficient funds
+func test_spend_premium_insufficient() -> void:
+	GameManager.add_premium(5)
+	var result := GameManager.spend_premium(10)
+
+	assert_false(result, "spend_premium should return false")
+	assert_eq(GameManager.get_premium(), 5, "Premium should remain 5")
+
+
+## Test spend_premium emits premium_changed signal
+func test_spend_premium_emits_signal() -> void:
+	GameManager.add_premium(10)
+	EventBus.premium_changed.connect(_on_premium_changed)
+	GameManager.spend_premium(3)
+
+	assert_true(_premium_changed_received, "premium_changed signal should be emitted")
+	assert_eq(_premium_changed_value, 7, "Signal should carry correct remaining premium")
+
+
+## Test get_premium returns current amount
+func test_get_premium() -> void:
+	GameManager.add_premium(15)
+
+	assert_eq(GameManager.get_premium(), 15, "get_premium should return 15")
+
+
 ## Signal handlers
-func _on_gold_changed(new_amount: int) -> void:
+func _on_gold_changed(old: int, new: int) -> void:
 	_gold_changed_received = true
-	_gold_changed_value = new_amount
+	_gold_changed_value = new
+
+
+func _on_premium_changed(old: int, new: int) -> void:
+	_premium_changed_received = true
+	_premium_changed_value = new
 
 
 func _on_level_up(new_level: int) -> void:
