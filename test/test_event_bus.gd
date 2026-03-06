@@ -2,6 +2,7 @@ extends GutTest
 
 ## Test Suite for EventBus
 ## Tests signal emission and reception for all global game events
+## SNA-66: EventBus 시그널 정의 (상태변경 + 액션요청)
 
 var _signal_received := false
 var _signal_data := {}
@@ -17,62 +18,48 @@ func test_event_bus_singleton_exists() -> void:
 	assert_not_null(EventBus, "EventBus singleton should exist")
 
 
-## Test gold_changed signal emission
+## ==================== STATE CHANGE SIGNALS ====================
+
+
+## Test gold_changed signal emission (old: int, new: int)
 func test_gold_changed_signal() -> void:
-	var expected_gold := 500
+	var old_gold := 100
+	var new_gold := 500
 
 	EventBus.gold_changed.connect(_on_gold_changed)
-	EventBus.gold_changed.emit(expected_gold)
+	EventBus.gold_changed.emit(old_gold, new_gold)
 
 	await wait_for_signal(EventBus.gold_changed, 0.1)
 	assert_true(_signal_received, "gold_changed signal should be received")
-	assert_eq(_signal_data.get("new_amount"), expected_gold, "Gold amount should match")
+	assert_eq(_signal_data.get("old"), old_gold, "Old gold should match")
+	assert_eq(_signal_data.get("new"), new_gold, "New gold should match")
 
 
-func _on_gold_changed(new_amount: int) -> void:
+func _on_gold_changed(old: int, new: int) -> void:
 	_signal_received = true
-	_signal_data = {"new_amount": new_amount}
+	_signal_data = {"old": old, "new": new}
 
 
-## Test bread_produced signal emission
-func test_bread_produced_signal() -> void:
-	var expected_type := "croissant"
-	var expected_amount := 10
+## Test xp_changed signal emission (old: int, new: int)
+func test_xp_changed_signal() -> void:
+	var old_xp := 1000
+	var new_xp := 1250
 
-	EventBus.bread_produced.connect(_on_bread_produced)
-	EventBus.bread_produced.emit(expected_type, expected_amount)
+	EventBus.xp_changed.connect(_on_xp_changed)
+	EventBus.xp_changed.emit(old_xp, new_xp)
 
-	await wait_for_signal(EventBus.bread_produced, 0.1)
-	assert_true(_signal_received, "bread_produced signal should be received")
-	assert_eq(_signal_data.get("bread_type"), expected_type, "Bread type should match")
-	assert_eq(_signal_data.get("amount"), expected_amount, "Amount should match")
+	await wait_for_signal(EventBus.xp_changed, 0.1)
+	assert_true(_signal_received, "xp_changed signal should be received")
+	assert_eq(_signal_data.get("old"), old_xp, "Old XP should match")
+	assert_eq(_signal_data.get("new"), new_xp, "New XP should match")
 
 
-func _on_bread_produced(bread_type: String, amount: int) -> void:
+func _on_xp_changed(old: int, new: int) -> void:
 	_signal_received = true
-	_signal_data = {"bread_type": bread_type, "amount": amount}
+	_signal_data = {"old": old, "new": new}
 
 
-## Test customer_served signal emission
-func test_customer_served_signal() -> void:
-	var expected_customer := 123
-	var expected_bread := "baguette"
-
-	EventBus.customer_served.connect(_on_customer_served)
-	EventBus.customer_served.emit(expected_customer, expected_bread)
-
-	await wait_for_signal(EventBus.customer_served, 0.1)
-	assert_true(_signal_received, "customer_served signal should be received")
-	assert_eq(_signal_data.get("customer_id"), expected_customer, "Customer ID should match")
-	assert_eq(_signal_data.get("bread_type"), expected_bread, "Bread type should match")
-
-
-func _on_customer_served(customer_id: int, bread_type: String) -> void:
-	_signal_received = true
-	_signal_data = {"customer_id": customer_id, "bread_type": bread_type}
-
-
-## Test level_up signal emission
+## Test level_up signal emission (new_level: int)
 func test_level_up_signal() -> void:
 	var expected_level := 5
 
@@ -89,68 +76,175 @@ func _on_level_up(new_level: int) -> void:
 	_signal_data = {"new_level": new_level}
 
 
-## Test experience_gained signal emission
-func test_experience_gained_signal() -> void:
-	var expected_xp := 250
+## Test production_started signal emission (slot_index: int, recipe_id: String)
+func test_production_started_signal() -> void:
+	var slot_index := 2
+	var recipe_id := "croissant"
 
-	EventBus.experience_gained.connect(_on_experience_gained)
-	EventBus.experience_gained.emit(expected_xp)
+	EventBus.production_started.connect(_on_production_started)
+	EventBus.production_started.emit(slot_index, recipe_id)
 
-	await wait_for_signal(EventBus.experience_gained, 0.1)
-	assert_true(_signal_received, "experience_gained signal should be received")
-	assert_eq(_signal_data.get("amount"), expected_xp, "XP amount should match")
+	await wait_for_signal(EventBus.production_started, 0.1)
+	assert_true(_signal_received, "production_started signal should be received")
+	assert_eq(_signal_data.get("slot_index"), slot_index, "Slot index should match")
+	assert_eq(_signal_data.get("recipe_id"), recipe_id, "Recipe ID should match")
 
 
-func _on_experience_gained(amount: int) -> void:
+func _on_production_started(slot_index: int, recipe_id: String) -> void:
 	_signal_received = true
-	_signal_data = {"amount": amount}
+	_signal_data = {"slot_index": slot_index, "recipe_id": recipe_id}
 
 
-## Test game_state_changed signal emission
-func test_game_state_changed_signal() -> void:
-	var expected_state := "playing"
+## Test production_completed signal emission (slot_index: int, recipe_id: String)
+func test_production_completed_signal() -> void:
+	var slot_index := 1
+	var recipe_id := "baguette"
 
-	EventBus.game_state_changed.connect(_on_game_state_changed)
-	EventBus.game_state_changed.emit(expected_state)
+	EventBus.production_completed.connect(_on_production_completed)
+	EventBus.production_completed.emit(slot_index, recipe_id)
 
-	await wait_for_signal(EventBus.game_state_changed, 0.1)
-	assert_true(_signal_received, "game_state_changed signal should be received")
-	assert_eq(_signal_data.get("new_state"), expected_state, "State should match")
+	await wait_for_signal(EventBus.production_completed, 0.1)
+	assert_true(_signal_received, "production_completed signal should be received")
+	assert_eq(_signal_data.get("slot_index"), slot_index, "Slot index should match")
+	assert_eq(_signal_data.get("recipe_id"), recipe_id, "Recipe ID should match")
 
 
-func _on_game_state_changed(new_state: String) -> void:
+func _on_production_completed(slot_index: int, recipe_id: String) -> void:
 	_signal_received = true
-	_signal_data = {"new_state": new_state}
+	_signal_data = {"slot_index": slot_index, "recipe_id": recipe_id}
 
 
-## Test save_completed signal emission
-func test_save_completed_signal() -> void:
-	EventBus.save_completed.connect(_on_save_completed)
-	EventBus.save_completed.emit()
+## Test customer_arrived signal emission (customer_id: String)
+func test_customer_arrived_signal() -> void:
+	var customer_id := "customer_001"
 
-	await wait_for_signal(EventBus.save_completed, 0.1)
-	assert_true(_signal_received, "save_completed signal should be received")
+	EventBus.customer_arrived.connect(_on_customer_arrived)
+	EventBus.customer_arrived.emit(customer_id)
+
+	await wait_for_signal(EventBus.customer_arrived, 0.1)
+	assert_true(_signal_received, "customer_arrived signal should be received")
+	assert_eq(_signal_data.get("customer_id"), customer_id, "Customer ID should match")
 
 
-func _on_save_completed() -> void:
+func _on_customer_arrived(customer_id: String) -> void:
 	_signal_received = true
+	_signal_data = {"customer_id": customer_id}
 
 
-## Test save_loaded signal emission
-func test_save_loaded_signal() -> void:
-	var expected_data := {"gold": 1000, "level": 3}
+## Test customer_purchased signal emission (customer_id: String, recipe_id: String, price: int)
+func test_customer_purchased_signal() -> void:
+	var customer_id := "customer_002"
+	var recipe_id := "croissant"
+	var price := 50
 
-	EventBus.save_loaded.connect(_on_save_loaded)
-	EventBus.save_loaded.emit(expected_data)
+	EventBus.customer_purchased.connect(_on_customer_purchased)
+	EventBus.customer_purchased.emit(customer_id, recipe_id, price)
 
-	await wait_for_signal(EventBus.save_loaded, 0.1)
-	assert_true(_signal_received, "save_loaded signal should be received")
-	assert_eq(_signal_data.get("data"), expected_data, "Save data should match")
+	await wait_for_signal(EventBus.customer_purchased, 0.1)
+	assert_true(_signal_received, "customer_purchased signal should be received")
+	assert_eq(_signal_data.get("customer_id"), customer_id, "Customer ID should match")
+	assert_eq(_signal_data.get("recipe_id"), recipe_id, "Recipe ID should match")
+	assert_eq(_signal_data.get("price"), price, "Price should match")
 
 
-func _on_save_loaded(data: Dictionary) -> void:
+func _on_customer_purchased(customer_id: String, recipe_id: String, price: int) -> void:
 	_signal_received = true
-	_signal_data = {"data": data}
+	_signal_data = {"customer_id": customer_id, "recipe_id": recipe_id, "price": price}
+
+
+## Test recipe_unlocked signal emission (recipe_id: String)
+func test_recipe_unlocked_signal() -> void:
+	var recipe_id := "baguette"
+
+	EventBus.recipe_unlocked.connect(_on_recipe_unlocked)
+	EventBus.recipe_unlocked.emit(recipe_id)
+
+	await wait_for_signal(EventBus.recipe_unlocked, 0.1)
+	assert_true(_signal_received, "recipe_unlocked signal should be received")
+	assert_eq(_signal_data.get("recipe_id"), recipe_id, "Recipe ID should match")
+
+
+func _on_recipe_unlocked(recipe_id: String) -> void:
+	_signal_received = true
+	_signal_data = {"recipe_id": recipe_id}
+
+
+## Test shop_upgraded signal emission (shop_level: int)
+func test_shop_upgraded_signal() -> void:
+	var shop_level := 3
+
+	EventBus.shop_upgraded.connect(_on_shop_upgraded)
+	EventBus.shop_upgraded.emit(shop_level)
+
+	await wait_for_signal(EventBus.shop_upgraded, 0.1)
+	assert_true(_signal_received, "shop_upgraded signal should be received")
+	assert_eq(_signal_data.get("shop_level"), shop_level, "Shop level should match")
+
+
+func _on_shop_upgraded(shop_level: int) -> void:
+	_signal_received = true
+	_signal_data = {"shop_level": shop_level}
+
+
+## ==================== ACTION REQUEST SIGNALS ====================
+
+
+## Test request_sell signal emission (customer_id: String, recipe_id: String)
+func test_request_sell_signal() -> void:
+	var customer_id := "customer_003"
+	var recipe_id := "croissant"
+
+	EventBus.request_sell.connect(_on_request_sell)
+	EventBus.request_sell.emit(customer_id, recipe_id)
+
+	await wait_for_signal(EventBus.request_sell, 0.1)
+	assert_true(_signal_received, "request_sell signal should be received")
+	assert_eq(_signal_data.get("customer_id"), customer_id, "Customer ID should match")
+	assert_eq(_signal_data.get("recipe_id"), recipe_id, "Recipe ID should match")
+
+
+func _on_request_sell(customer_id: String, recipe_id: String) -> void:
+	_signal_received = true
+	_signal_data = {"customer_id": customer_id, "recipe_id": recipe_id}
+
+
+## Test request_produce signal emission (slot_index: int, recipe_id: String)
+func test_request_produce_signal() -> void:
+	var slot_index := 0
+	var recipe_id := "baguette"
+
+	EventBus.request_produce.connect(_on_request_produce)
+	EventBus.request_produce.emit(slot_index, recipe_id)
+
+	await wait_for_signal(EventBus.request_produce, 0.1)
+	assert_true(_signal_received, "request_produce signal should be received")
+	assert_eq(_signal_data.get("slot_index"), slot_index, "Slot index should match")
+	assert_eq(_signal_data.get("recipe_id"), recipe_id, "Recipe ID should match")
+
+
+func _on_request_produce(slot_index: int, recipe_id: String) -> void:
+	_signal_received = true
+	_signal_data = {"slot_index": slot_index, "recipe_id": recipe_id}
+
+
+## Test request_upgrade signal emission (upgrade_type: String)
+func test_request_upgrade_signal() -> void:
+	var upgrade_type := "oven"
+
+	EventBus.request_upgrade.connect(_on_request_upgrade)
+	EventBus.request_upgrade.emit(upgrade_type)
+
+	await wait_for_signal(EventBus.request_upgrade, 0.1)
+	assert_true(_signal_received, "request_upgrade signal should be received")
+	assert_eq(_signal_data.get("upgrade_type"), upgrade_type, "Upgrade type should match")
+
+
+func _on_request_upgrade(upgrade_type: String) -> void:
+	_signal_received = true
+	_signal_data = {"upgrade_type": upgrade_type}
+
+
+## ==================== INTEGRATION TESTS ====================
 
 
 ## Test multiple listeners can receive the same signal
@@ -158,14 +252,33 @@ func test_multiple_listeners() -> void:
 	var listener1_count := 0
 	var listener2_count := 0
 
-	var listener1 = func(_amount: int) -> void: listener1_count += 1
-
-	var listener2 = func(_amount: int) -> void: listener2_count += 1
+	var listener1 = func(_old: int, _new: int) -> void: listener1_count += 1
+	var listener2 = func(_old: int, _new: int) -> void: listener2_count += 1
 
 	EventBus.gold_changed.connect(listener1)
 	EventBus.gold_changed.connect(listener2)
-	EventBus.gold_changed.emit(100)
+	EventBus.gold_changed.emit(100, 200)
 
 	await wait_for_signal(EventBus.gold_changed, 0.1)
 	assert_eq(listener1_count, 1, "Listener 1 should receive signal once")
 	assert_eq(listener2_count, 1, "Listener 2 should receive signal once")
+
+
+## Test all state change signals are defined
+func test_all_state_change_signals_defined() -> void:
+	assert_signal_emitted(EventBus, "gold_changed")
+	assert_signal_emitted(EventBus, "xp_changed")
+	assert_signal_emitted(EventBus, "level_up")
+	assert_signal_emitted(EventBus, "production_started")
+	assert_signal_emitted(EventBus, "production_completed")
+	assert_signal_emitted(EventBus, "customer_arrived")
+	assert_signal_emitted(EventBus, "customer_purchased")
+	assert_signal_emitted(EventBus, "recipe_unlocked")
+	assert_signal_emitted(EventBus, "shop_upgraded")
+
+
+## Test all action request signals are defined
+func test_all_action_request_signals_defined() -> void:
+	assert_signal_emitted(EventBus, "request_sell")
+	assert_signal_emitted(EventBus, "request_produce")
+	assert_signal_emitted(EventBus, "request_upgrade")

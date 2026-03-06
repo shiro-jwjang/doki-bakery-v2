@@ -33,8 +33,8 @@ func _load_recipes() -> void:
 	var file_name := dir.get_next()
 	while file_name != "":
 		if file_name.ends_with(".tres"):
-			var resource := load(RECIPES_PATH + file_name) as RecipeData
-			if resource:
+			var resource := load(RECIPES_PATH + file_name)
+			if resource and resource.has_method("get"):
 				_recipes[resource.id] = resource
 		file_name = dir.get_next()
 	dir.list_dir_end()
@@ -50,8 +50,8 @@ func _load_levels() -> void:
 	var file_name := dir.get_next()
 	while file_name != "":
 		if file_name.ends_with(".tres"):
-			var resource := load(LEVELS_PATH + file_name) as LevelData
-			if resource:
+			var resource := load(LEVELS_PATH + file_name)
+			if resource and resource.has_method("get"):
 				_levels[resource.level] = resource
 		file_name = dir.get_next()
 	dir.list_dir_end()
@@ -67,25 +67,25 @@ func _load_shops() -> void:
 	var file_name := dir.get_next()
 	while file_name != "":
 		if file_name.ends_with(".tres"):
-			var resource := load(SHOPS_PATH + file_name) as ShopData
-			if resource:
+			var resource := load(SHOPS_PATH + file_name)
+			if resource and resource.has_method("get"):
 				_shop_stages[resource.shop_level] = resource
 		file_name = dir.get_next()
 	dir.list_dir_end()
 
 
 ## 레시피 조회
-func get_recipe(id: String) -> RecipeData:
+func get_recipe(id: String) -> Resource:
 	return _recipes.get(id)
 
 
 ## 레벨 데이터 조회
-func get_level(level: int) -> LevelData:
+func get_level(level: int) -> Resource:
 	return _levels.get(level)
 
 
 ## 매장 단계 조회
-func get_shop_stage(stage: int) -> ShopData:
+func get_shop_stage(stage: int) -> Resource:
 	return _shop_stages.get(stage)
 
 
