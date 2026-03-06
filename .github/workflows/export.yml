@@ -1,0 +1,118 @@
+name: Godot Export
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., 0.1.0)'
+        required: true
+        default: '0.1.0'
+
+env:
+  GODOT_VERSION: "4.6"
+  GODOT_RELEASE: "4.6-stable"
+  GODOT_TEMPLATE_DIR: "4.6.stable"
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [windows]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot ${{ env.GODOT_VERSION }}
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/${{ env.GODOT_RELEASE }}/Godot_v${{ env.GODOT_RELEASE }}_linux.x86_64.zip
+          unzip -q Godot_v${{ env.GODOT_RELEASE }}_linux.x86_64.zip
+          sudo mv Godot_v${{ env.GODOT_RELEASE }}_linux.x86_64 /usr/local/bin/godot
+          sudo chmod +x /usr/local/bin/godot
+          godot --version
+
+      - name: Install Export Templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates/${{ env.GODOT_TEMPLATE_DIR }}
+          wget -q https://github.com/godotengine/godot/releases/download/${{ env.GODOT_RELEASE }}/Godot_v${{ env.GODOT_RELEASE }}_export_templates.tpz
+          unzip -q Godot_v${{ env.GODOT_RELEASE }}_export_templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/${{ env.GODOT_TEMPLATE_DIR }}/
+
+      - name: Import assets
+        run: timeout 300 godot --headless --import 2>&1 || true
+
+      - name: Export (Windows)
+        if: matrix.target == 'windows'
+        run: |
+          mkdir -p builds/windows
+          godot --headless --export-release "Windows Desktop" builds/windows/doki-bakery.exe
+
+      - name: Export (Linux)
+        if: matrix.target == 'linux'
+        run: |
+          mkdir -p builds/linux
+          godot --headless --export-release "Linux/X11" builds/linux/doki-bakery
+
+      - name: Export (macOS)
+        if: matrix.target == 'mac'
+        run: |
+          mkdir -p builds/mac
+          godot --headless --export-release "macOS" builds/mac/doki-bakery.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: doki-bakery-${{ matrix.target }}
+          path: builds/${{ matrix.target }}
+          retention-days: 30
+
+  export-web:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot ${{ env.GODOT_VERSION }}
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/${{ env.GODOT_RELEASE }}/Godot_v${{ env.GODOT_RELEASE }}_linux.x86_64.zip
+          unzip -q Godot_v${{ env.GODOT_RELEASE }}_linux.x86_64.zip
+          sudo mv Godot_v${{ env.GODOT_RELEASE }}_linux.x86_64 /usr/local/bin/godot
+          sudo chmod +x /usr/local/bin/godot
+
+      - name: Install Export Templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates/${{ env.GODOT_TEMPLATE_DIR }}
+          wget -q https://github.com/godotengine/godot/releases/download/${{ env.GODOT_RELEASE }}/Godot_v${{ env.GODOT_RELEASE }}_export_templates.tpz
+          unzip -q Godot_v${{ env.GODOT_RELEASE }}_export_templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/${{ env.GODOT_TEMPLATE_DIR }}/
+
+      - name: Import assets
+        run: timeout 300 godot --headless --import 2>&1 || true
+
+      - name: Export (Web)
+        run: |
+          mkdir -p builds/web
+          godot --headless --export-release "Web" builds/web/index.html
+
+      - name: Upload web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: doki-bakery-web
+          path: builds/web
+          retention-days: 30
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: builds/web
+          publish_branch: gh-pages
