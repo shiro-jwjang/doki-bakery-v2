@@ -1,0 +1,248 @@
+extends GutTest
+
+# gdlint: disable = max-public-methods
+## Test Suite for GameManager
+## Tests game state, currency, level/experience management
+
+var _gold_changed_received := false
+var _gold_changed_value := 0
+var _level_up_received := false
+var _level_up_value := 0
+var _xp_gained_received := false
+var _xp_gained_value := 0
+var _state_changed_received := false
+var _state_changed_value := ""
+
+
+func before_each() -> void:
+	# Reset GameManager state for each test
+	GameManager.gold = 0
+	GameManager.legendary_bread = 0
+	GameManager.level = 1
+	GameManager.experience = 0
+	GameManager.play_time = 0.0
+	GameManager.set_game_state("menu")
+
+	# Reset signal tracking
+	_gold_changed_received = false
+	_gold_changed_value = 0
+	_level_up_received = false
+	_level_up_value = 0
+	_xp_gained_received = false
+	_xp_gained_value = 0
+	_state_changed_received = false
+	_state_changed_value = ""
+
+
+func after_each() -> void:
+	# Disconnect all signals
+	if EventBus.gold_changed.is_connected(_on_gold_changed):
+		EventBus.gold_changed.disconnect(_on_gold_changed)
+	if EventBus.level_up.is_connected(_on_level_up):
+		EventBus.level_up.disconnect(_on_level_up)
+	if EventBus.experience_gained.is_connected(_on_experience_gained):
+		EventBus.experience_gained.disconnect(_on_experience_gained)
+	if EventBus.game_state_changed.is_connected(_on_game_state_changed):
+		EventBus.game_state_changed.disconnect(_on_game_state_changed)
+
+
+## Test that GameManager singleton exists
+func test_game_manager_singleton_exists() -> void:
+	assert_not_null(GameManager, "GameManager singleton should exist")
+
+
+## Test initial values
+func test_initial_values() -> void:
+	assert_eq(GameManager.gold, 0, "Initial gold should be 0")
+	assert_eq(GameManager.legendary_bread, 0, "Initial legendary bread should be 0")
+	assert_eq(GameManager.level, 1, "Initial level should be 1")
+	assert_eq(GameManager.experience, 0, "Initial experience should be 0")
+	assert_eq(GameManager.play_time, 0.0, "Initial play time should be 0")
+	assert_eq(GameManager.game_state, "menu", "Initial state should be 'menu'")
+
+
+## Test add_gold increases gold and emits signal
+func test_add_gold() -> void:
+	EventBus.gold_changed.connect(_on_gold_changed)
+	GameManager.add_gold(100)
+
+	assert_eq(GameManager.gold, 100, "Gold should be 100")
+	assert_true(_gold_changed_received, "gold_changed signal should be emitted")
+	assert_eq(_gold_changed_value, 100, "Signal should carry correct gold amount")
+
+
+## Test add_gold accumulates
+func test_add_gold_accumulates() -> void:
+	EventBus.gold_changed.connect(_on_gold_changed)
+	GameManager.add_gold(50)
+	GameManager.add_gold(30)
+
+	assert_eq(GameManager.gold, 80, "Gold should be 80")
+
+
+## Test spend_gold with sufficient funds
+func test_spend_gold_success() -> void:
+	GameManager.add_gold(100)
+	var result := GameManager.spend_gold(60)
+
+	assert_true(result, "spend_gold should return true")
+	assert_eq(GameManager.gold, 40, "Gold should be 40")
+
+
+## Test spend_gold with insufficient funds
+func test_spend_gold_insufficient() -> void:
+	GameManager.add_gold(50)
+	var result := GameManager.spend_gold(100)
+
+	assert_false(result, "spend_gold should return false")
+	assert_eq(GameManager.gold, 50, "Gold should remain 50")
+
+
+## Test spend_gold emits gold_changed signal
+func test_spend_gold_emits_signal() -> void:
+	GameManager.add_gold(100)
+	EventBus.gold_changed.connect(_on_gold_changed)
+	GameManager.spend_gold(30)
+
+	assert_true(_gold_changed_received, "gold_changed signal should be emitted")
+	assert_eq(_gold_changed_value, 70, "Signal should carry correct remaining gold")
+
+
+## Test add_experience increases XP and emits signal
+func test_add_experience() -> void:
+	EventBus.experience_gained.connect(_on_experience_gained)
+	GameManager.add_experience(50)
+
+	assert_eq(GameManager.experience, 50, "Experience should be 50")
+	assert_true(_xp_gained_received, "experience_gained signal should be emitted")
+	assert_eq(_xp_gained_value, 50, "Signal should carry correct XP amount")
+
+
+## Test add_experience accumulates
+func test_add_experience_accumulates() -> void:
+	GameManager.add_experience(30)
+	GameManager.add_experience(20)
+
+	assert_eq(GameManager.experience, 50, "Experience should be 50")
+
+
+## Test level up calculation (level * 100 XP required)
+func test_level_up_threshold() -> void:
+	EventBus.level_up.connect(_on_level_up)
+
+	# Level 1 -> 2 requires 100 XP
+	GameManager.add_experience(100)
+
+	assert_eq(GameManager.level, 2, "Should level up to 2")
+	assert_true(_level_up_received, "level_up signal should be emitted")
+	assert_eq(_level_up_value, 2, "Signal should carry correct level")
+
+
+## Test multiple level ups
+func test_multiple_level_ups() -> void:
+	EventBus.level_up.connect(_on_level_up)
+
+	# Level 1 -> 2 (100 XP) -> 3 (200 XP total)
+	GameManager.add_experience(200)
+
+	assert_eq(GameManager.level, 3, "Should level up to 3")
+	assert_eq(GameManager.experience, 0, "XP should reset after leveling")
+
+
+## Test level up with excess XP
+func test_level_up_with_excess_xp() -> void:
+	# Add 150 XP: should reach level 2 with 50 XP remaining
+	GameManager.add_experience(150)
+
+	assert_eq(GameManager.level, 2, "Should be level 2")
+	assert_eq(GameManager.experience, 50, "Should have 50 XP remaining")
+
+
+## Test max level cap
+func test_max_level_cap() -> void:
+	EventBus.level_up.connect(_on_level_up)
+
+	# Add enough XP to reach level 10 (100 + 200 + 300 + ... + 900 = 4500 total)
+	# And try to go beyond
+	GameManager.add_experience(5000)
+
+	assert_eq(GameManager.level, 10, "Should cap at level 10")
+
+
+## Test set_game_state changes state and emits signal
+func test_set_game_state() -> void:
+	EventBus.game_state_changed.connect(_on_game_state_changed)
+	GameManager.set_game_state("playing")
+
+	assert_eq(GameManager.game_state, "playing", "State should be 'playing'")
+	assert_true(_state_changed_received, "game_state_changed signal should be emitted")
+	assert_eq(_state_changed_value, "playing", "Signal should carry correct state")
+
+
+## Test game state transitions
+func test_game_state_transitions() -> void:
+	GameManager.set_game_state("playing")
+	assert_eq(GameManager.game_state, "playing")
+
+	GameManager.set_game_state("paused")
+	assert_eq(GameManager.game_state, "paused")
+
+	GameManager.set_game_state("playing")
+	assert_eq(GameManager.game_state, "playing")
+
+
+## Test play_time accumulation in playing state
+func test_play_time_accumulation() -> void:
+	GameManager.set_game_state("playing")
+
+	# Simulate 1 second of game time
+	GameManager._process(1.0)
+
+	assert_eq(GameManager.play_time, 1.0, "Play time should increase by 1 second")
+
+
+## Test play_time does not accumulate when paused
+func test_play_time_paused() -> void:
+	GameManager.set_game_state("playing")
+	GameManager._process(1.0)
+
+	GameManager.set_game_state("paused")
+	GameManager._process(1.0)
+
+	assert_eq(GameManager.play_time, 1.0, "Play time should not increase when paused")
+
+
+## Test play_time does not accumulate in menu
+func test_play_time_menu() -> void:
+	GameManager.set_game_state("menu")
+	GameManager._process(1.0)
+
+	assert_eq(GameManager.play_time, 0.0, "Play time should not increase in menu")
+
+
+## Test legendary_bread can be added
+func test_legendary_bread() -> void:
+	GameManager.legendary_bread = 5
+
+	assert_eq(GameManager.legendary_bread, 5, "Legendary bread should be 5")
+
+
+## Signal handlers
+func _on_gold_changed(new_amount: int) -> void:
+	_gold_changed_received = true
+	_gold_changed_value = new_amount
+
+
+func _on_level_up(new_level: int) -> void:
+	_level_up_received = true
+	_level_up_value = new_level
+
+
+func _on_experience_gained(amount: int) -> void:
+	_xp_gained_received = true
+	_xp_gained_value = amount
+
+
+func _on_game_state_changed(new_state: String) -> void:
+	_state_changed_received = true
+	_state_changed_value = new_state

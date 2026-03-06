@@ -33,6 +33,9 @@ enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/godotstea
 [autoload]
 
 SteamManager="*res://scripts/autoload/steam_manager.gd"
+EventBus="*res://scripts/autoload/event_bus.gd"
+GameManager="*res://scripts/autoload/game_manager.gd"
+SaveManager="*res://scripts/autoload/save_manager.gd"
 
 [rendering]
 
