@@ -12,11 +12,16 @@ const MAX_LEVEL: int = 10
 ## Player's gold (standard currency)
 var gold: int = 0:
 	set(value):
+		var old: int = gold
 		gold = value
-		EventBus.gold_changed.emit(gold)
+		EventBus.gold_changed.emit(old, gold)
 
 ## Premium currency (legendary golden bread)
-var legendary_bread: int = 0
+var legendary_bread: int = 0:
+	set(value):
+		var old: int = legendary_bread
+		legendary_bread = value
+		EventBus.premium_changed.emit(old, legendary_bread)
 
 ## Current player level (1-10)
 var level: int = 1
@@ -46,6 +51,25 @@ func spend_gold(amount: int) -> bool:
 		gold -= amount
 		return true
 	return false
+
+
+## Add premium currency (legendary bread)
+func add_premium(amount: int) -> void:
+	legendary_bread += amount
+
+
+## Spend premium currency if sufficient funds are available
+## Returns true if successful, false otherwise
+func spend_premium(amount: int) -> bool:
+	if legendary_bread >= amount:
+		legendary_bread -= amount
+		return true
+	return false
+
+
+## Get current premium currency amount
+func get_premium() -> int:
+	return legendary_bread
 
 
 ## Add experience and check for level up

@@ -12,8 +12,17 @@ extends Node
 ## Emitted when the player's gold amount changes
 signal gold_changed(old: int, new: int)
 
+## Emitted when the player's premium currency (legendary bread) changes
+signal premium_changed(old: int, new: int)
+
 ## Emitted when the player's experience points change
 signal xp_changed(old: int, new: int)
+
+## Emitted when the player gains experience
+signal experience_gained(amount: int)
+
+## Emitted when the game state changes
+signal game_state_changed(new_state: String)
 
 ## Emitted when the player levels up
 signal level_up(new_level: int)
