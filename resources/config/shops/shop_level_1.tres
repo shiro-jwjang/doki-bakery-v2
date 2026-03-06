@@ -1,10 +1,9 @@
-[gd_resource type="Resource" script_class="ShopData" load_steps=2 format=3 uid="uid://shop_1"]
+[gd_resource type="Resource" script_class="ShopData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://resources/config/shop_data.gd" id="1_shop"]
+[ext_resource type="Script" path="res://resources/config/shop_data.gd" id="1"]
 
 [resource]
-script = ExtResource("1_shop")
+script = ExtResource("1")
 shop_level = 1
-max_production_slots = 1
-upgrade_cost = 100
-unlock_condition = {"required_level": 1}
+max_production_slots = 3
+upgrade_cost = 500
