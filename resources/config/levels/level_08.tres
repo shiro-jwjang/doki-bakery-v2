@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LevelData" load_steps=2 format=3 uid="uid://level_08"]
+
+[ext_resource type="Script" path="res://resources/config/level_data.gd" id="1_level"]
+
+[resource]
+script = ExtResource("1_level")
+level = 8
+required_xp = 8000
+gold_reward = 500
+unlock_recipes = Array[String](["bread_008"])

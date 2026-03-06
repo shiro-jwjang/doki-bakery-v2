@@ -55,7 +55,7 @@ func load_game() -> Dictionary:
 		push_error("Failed to parse save file: " + json.get_error_message())
 		return {}
 
-	var data := json.data
+	var data: Dictionary = json.data
 	EventBus.save_loaded.emit(data)
 	return data
 
