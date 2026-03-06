@@ -3,6 +3,11 @@ extends Node
 ## DataManager Autoload
 ## 정적 데이터(.tres) 로딩/캐싱/조회
 
+# 리소스 타입 preload
+const RecipeData = preload("res://resources/data/recipe_data.gd")
+const LevelData = preload("res://resources/config/level_data.gd")
+const ShopData = preload("res://resources/config/shop_data.gd")
+
 # 리소스 경로
 const RECIPES_PATH := "res://resources/data/recipes/"
 const LEVELS_PATH := "res://resources/config/levels/"
