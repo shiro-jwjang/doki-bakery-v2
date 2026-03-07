@@ -129,3 +129,27 @@ func set_game_state(state: String) -> void:
 func _process(delta: float) -> void:
 	if game_state == "playing":
 		play_time += delta
+
+
+## Save the current game state to a JSON file
+## Returns true if successful, false otherwise
+func save_game(path: String = "user://save.json") -> bool:
+	var save_data := {
+		"gold": gold,
+		"premium": legendary_bread,
+		"level": level,
+		"xp": experience,
+		"unlocked_recipes": [],
+		"shop_stage": 1,
+		"production_slots": []
+	}
+
+	var json_string := JSON.stringify(save_data)
+
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return false
+
+	file.store_string(json_string)
+	file.close()
+	return true
