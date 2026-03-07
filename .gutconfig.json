@@ -1,0 +1,7 @@
+{
+  "dirs": ["res://test/"],
+  "log_level": 3,
+  "should_exit": true,
+  "include_subdirs": true,
+  "double_strategy": "SCRIPT_ONLY"
+}

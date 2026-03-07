@@ -150,11 +150,12 @@ func test_level_up_threshold() -> void:
 func test_multiple_level_ups() -> void:
 	EventBus.level_up.connect(_on_level_up)
 
-	# Level 1 -> 2 (100 XP) -> 3 (200 XP total)
-	GameManager.add_experience(200)
+	# Level 1 -> 2 (100 XP) -> 3 (350 XP total)
+	# Using LevelData: Level 2 requires 100 XP, Level 3 requires 250 XP
+	GameManager.add_experience(350)
 
 	assert_eq(GameManager.level, 3, "Should level up to 3")
-	assert_eq(GameManager.experience, 100, "XP should carry over after leveling")
+	assert_eq(GameManager.experience, 0, "XP should carry over after leveling")
 
 
 ## Test level up with excess XP
@@ -170,9 +171,9 @@ func test_level_up_with_excess_xp() -> void:
 func test_max_level_cap() -> void:
 	EventBus.level_up.connect(_on_level_up)
 
-	# Add enough XP to reach level 10 (100 + 200 + 300 + ... + 900 = 4500 total)
-	# And try to go beyond
-	GameManager.add_experience(5000)
+	# Add enough XP to reach level 10 using LevelData
+	# Total XP needed: 100 + 250 + 500 + 1000 + 2000 + 4000 + 8000 + 16000 + 32000 = 63850
+	GameManager.add_experience(70000)
 
 	assert_eq(GameManager.level, 10, "Should cap at level 10")
 
