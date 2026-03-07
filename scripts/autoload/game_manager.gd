@@ -72,24 +72,52 @@ func get_premium() -> int:
 	return legendary_bread
 
 
-## Add experience and check for level up
-func add_experience(amount: int) -> void:
+## Get current level
+func get_level() -> int:
+	return level
+
+
+## Get current experience
+func get_xp() -> int:
+	return experience
+
+
+## Add XP and check for level up
+func add_xp(amount: int) -> void:
+	if amount < 0:
+		return  # Prevent negative XP
+
+	var old_xp: int = experience
 	experience += amount
+	EventBus.xp_changed.emit(old_xp, experience)
+	_check_level_up()
+
+
+## DEPRECATED: Use add_xp() instead
+## Kept for backward compatibility, emits experience_gained signal
+func add_experience(amount: int) -> void:
 	EventBus.experience_gained.emit(amount)
-	check_level_up()
+	add_xp(amount)
 
 
-## Check if player has enough XP to level up
-func check_level_up() -> void:
+## Check if player has enough XP to level up (internal)
+func _check_level_up() -> void:
 	if level >= MAX_LEVEL:
 		return
 
-	var required_xp: int = level * 100
-	while experience >= required_xp and level < MAX_LEVEL:
-		experience -= required_xp
+	var level_data = DataManager.get_level(level + 1)
+	if level_data == null:
+		return
+
+	while experience >= level_data.required_xp and level < MAX_LEVEL:
+		experience -= level_data.required_xp
 		level += 1
 		EventBus.level_up.emit(level)
-		required_xp = level * 100
+
+		# Get next level data for continued leveling
+		level_data = DataManager.get_level(level + 1)
+		if level_data == null:
+			break
 
 
 ## Set the game state
