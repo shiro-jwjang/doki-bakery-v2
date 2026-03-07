@@ -1,9 +1,7 @@
 {
-  "include_subdirs": false,
-  "dirs": [],
-  "tests": [
-    "res://test/test_production_manager.gd"
-  ],
+  "dirs": ["res://test/"],
+  "log_level": 3,
   "should_exit": true,
-  "should_exit_on_success": true
+  "include_subdirs": true,
+  "double_strategy": "SCRIPT_ONLY"
 }

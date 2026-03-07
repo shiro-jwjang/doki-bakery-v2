@@ -4,6 +4,8 @@ extends GutTest
 ## Test Suite for GameManager
 ## Tests game state, currency, level/experience management
 
+const SaveDataClass = preload("res://scripts/save_data.gd")
+
 var _gold_changed_received := false
 var _gold_changed_value := 0
 var _premium_changed_received := false
@@ -148,11 +150,12 @@ func test_level_up_threshold() -> void:
 func test_multiple_level_ups() -> void:
 	EventBus.level_up.connect(_on_level_up)
 
-	# Level 1 -> 2 (100 XP) -> 3 (200 XP total)
-	GameManager.add_experience(200)
+	# Level 1 -> 2 (100 XP) -> 3 (350 XP total)
+	# Using LevelData: Level 2 requires 100 XP, Level 3 requires 250 XP
+	GameManager.add_experience(350)
 
 	assert_eq(GameManager.level, 3, "Should level up to 3")
-	assert_eq(GameManager.experience, 100, "XP should carry over after leveling")
+	assert_eq(GameManager.experience, 0, "XP should carry over after leveling")
 
 
 ## Test level up with excess XP
@@ -168,9 +171,9 @@ func test_level_up_with_excess_xp() -> void:
 func test_max_level_cap() -> void:
 	EventBus.level_up.connect(_on_level_up)
 
-	# Add enough XP to reach level 10 (100 + 200 + 300 + ... + 900 = 4500 total)
-	# And try to go beyond
-	GameManager.add_experience(5000)
+	# Add enough XP to reach level 10 using LevelData
+	# Total XP needed: 100 + 250 + 500 + 1000 + 2000 + 4000 + 8000 + 16000 + 32000 = 63850
+	GameManager.add_experience(70000)
 
 	assert_eq(GameManager.level, 10, "Should cap at level 10")
 
@@ -287,13 +290,138 @@ func test_get_premium() -> void:
 	assert_eq(GameManager.get_premium(), 15, "get_premium should return 15")
 
 
+## Test load_game with valid save file
+func test_load_game_valid_file() -> void:
+	# Create a test save file
+	var test_save: SaveDataClass = SaveDataClass.new()
+	test_save.gold = 500
+	test_save.legendary_bread = 10
+	test_save.level = 5
+	test_save.experience = 250
+	test_save.play_time = 1234.5
+	test_save.game_state = "playing"
+
+	var file := FileAccess.open("user://save.json", FileAccess.WRITE)
+	file.store_string(test_save.to_json())
+	file.close()
+
+	# Load the game
+	var result := GameManager.load_game()
+
+	assert_true(result, "load_game should return true on success")
+	assert_eq(GameManager.gold, 500, "Gold should be loaded from save")
+	assert_eq(GameManager.legendary_bread, 10, "Legendary bread should be loaded from save")
+	assert_eq(GameManager.level, 5, "Level should be loaded from save")
+	assert_eq(GameManager.experience, 250, "Experience should be loaded from save")
+	assert_eq(GameManager.play_time, 1234.5, "Play time should be loaded from save")
+	assert_eq(GameManager.game_state, "playing", "Game state should be loaded from save")
+
+	# Clean up
+	DirAccess.remove_absolute("user://save.json")
+
+
+## Test load_game with missing file returns defaults
+func test_load_game_missing_file() -> void:
+	# Ensure no save file exists
+	DirAccess.remove_absolute("user://save.json")
+
+	# Set some values first to verify they get reset
+	GameManager.gold = 1000
+	GameManager.level = 10
+
+	# Load the game
+	var result := GameManager.load_game()
+
+	assert_true(result, "load_game should return true even with missing file (uses defaults)")
+	assert_eq(GameManager.gold, 0, "Gold should be default (0)")
+	assert_eq(GameManager.legendary_bread, 0, "Legendary bread should be default (0)")
+	assert_eq(GameManager.level, 1, "Level should be default (1)")
+	assert_eq(GameManager.experience, 0, "Experience should be default (0)")
+	assert_eq(GameManager.play_time, 0.0, "Play time should be default (0.0)")
+	assert_eq(GameManager.game_state, "menu", "Game state should be default ('menu')")
+
+
+## Test load_game with corrupted JSON returns defaults
+func test_load_game_corrupted_json() -> void:
+	# Create a corrupted save file
+	var file := FileAccess.open("user://save.json", FileAccess.WRITE)
+	file.store_string("this is not valid json {")
+	file.close()
+
+	# Set some values first
+	GameManager.gold = 1000
+	GameManager.level = 10
+
+	# Load the game
+	var result := GameManager.load_game()
+
+	assert_true(result, "load_game should return true even with corrupted JSON (uses defaults)")
+	assert_eq(GameManager.gold, 0, "Gold should be default (0)")
+	assert_eq(GameManager.level, 1, "Level should be default (1)")
+
+	# Clean up
+	DirAccess.remove_absolute("user://save.json")
+
+
+## Test load_game with old version data
+func test_load_game_old_version() -> void:
+	# Create a save file with old version (missing fields)
+	var old_save_data := {
+		"version": "0.9",
+		"gold": 300,
+		"level": 3,
+		# Missing: legendary_bread, experience, play_time, game_state
+	}
+
+	var file := FileAccess.open("user://save.json", FileAccess.WRITE)
+	file.store_string(JSON.stringify(old_save_data))
+	file.close()
+
+	# Load the game
+	var result := GameManager.load_game()
+
+	assert_true(result, "load_game should handle old version data")
+	assert_eq(GameManager.gold, 300, "Gold should be loaded")
+	assert_eq(GameManager.level, 3, "Level should be loaded")
+	assert_eq(GameManager.legendary_bread, 0, "Missing legendary_bread should default to 0")
+	assert_eq(GameManager.experience, 0, "Missing experience should default to 0")
+	assert_eq(GameManager.play_time, 0.0, "Missing play_time should default to 0.0")
+	assert_eq(GameManager.game_state, "menu", "Missing game_state should default to 'menu'")
+
+	# Clean up
+	DirAccess.remove_absolute("user://save.json")
+
+
+## Test load_game with invalid level (out of range)
+func test_load_game_invalid_level() -> void:
+	# Create a save file with invalid level
+	var invalid_save := {
+		"version": "1.0",
+		"gold": 100,
+		"level": 15,  # Above max level (10)
+	}
+
+	var file := FileAccess.open("user://save.json", FileAccess.WRITE)
+	file.store_string(JSON.stringify(invalid_save))
+	file.close()
+
+	# Load the game
+	var result := GameManager.load_game()
+
+	assert_true(result, "load_game should handle invalid level")
+	assert_eq(GameManager.level, 10, "Invalid level should be clamped to max (10)")
+
+	# Clean up
+	DirAccess.remove_absolute("user://save.json")
+
+
 ## Signal handlers
-func _on_gold_changed(old: int, new: int) -> void:
+func _on_gold_changed(_old: int, new: int) -> void:
 	_gold_changed_received = true
 	_gold_changed_value = new
 
 
-func _on_premium_changed(old: int, new: int) -> void:
+func _on_premium_changed(_old: int, new: int) -> void:
 	_premium_changed_received = true
 	_premium_changed_value = new
 
