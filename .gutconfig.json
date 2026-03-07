@@ -1,0 +1,9 @@
+{
+  "include_subdirs": false,
+  "dirs": [],
+  "tests": [
+    "res://test/test_production_manager.gd"
+  ],
+  "should_exit": true,
+  "should_exit_on_success": true
+}
