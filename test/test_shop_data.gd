@@ -41,3 +41,13 @@ func test_shop_default_values() -> void:
 func test_shop_unlock_condition_can_be_empty() -> void:
 	shop.unlock_condition = {}
 	assert_eq(shop.unlock_condition.size(), 0)
+
+
+func test_shop_has_spawn_interval() -> void:
+	shop.spawn_interval = 15.0
+	assert_eq(shop.spawn_interval, 15.0, "Spawn interval should be 15.0")
+
+
+func test_shop_default_spawn_interval() -> void:
+	var default_shop = ShopDataClass.new()
+	assert_eq(default_shop.spawn_interval, 10.0, "Default spawn interval should be 10.0 seconds")
