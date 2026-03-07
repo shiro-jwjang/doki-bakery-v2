@@ -5,6 +5,7 @@ extends Node
 ## Handles economic transactions including bread sales,
 ## gold earning, and experience point calculation.
 
+const RecipeData = preload("res://resources/data/recipe_data.gd")
 
 ## Sell bread and grant rewards
 ## - Adds gold based on recipe base_price
