@@ -250,3 +250,117 @@ func test_get_slots_reflects_current_state() -> void:
 		assert_true(after_size >= before_size, "Slots array should grow or stay same size")
 	else:
 		fail_test("Required methods not implemented yet")
+
+
+## ==================== PRODUCTION COMPLETION TESTS ====================
+## SNA-76: ProductionManager 생산 완료 → EventBus 시그널
+
+
+## Signal handler for production_completed
+func _on_production_completed(slot_index: int, recipe_id: String) -> void:
+	_signal_received = true
+	_received_slot_index = slot_index
+	_received_recipe_id = recipe_id
+
+
+## Test that production_completed signal is emitted when timer reaches zero
+func test_production_completed_signal_emitted() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("_process"):
+		# Start production with a recipe that has 0.1 second production time
+		_mock_recipe.production_time = 0.1
+		_manager.start_production(0, "bread_001")
+
+		# Reset signal tracking
+		_signal_received = false
+		_received_slot_index = -1
+		_received_recipe_id = ""
+
+		_manager.production_completed.connect(_on_production_completed)
+
+		# Simulate time passing (more than production time)
+		_manager._process(0.05)  # 50ms
+		await wait_frames(1)
+		_manager._process(0.06)  # 60ms (total 110ms, exceeding 100ms production time)
+		await wait_frames(1)
+
+		assert_true(
+			_signal_received,
+			"production_completed signal should be emitted when timer reaches zero"
+		)
+		assert_eq(_received_slot_index, 0, "Slot index should match")
+		assert_eq(_received_recipe_id, "bread_001", "Recipe ID should match")
+
+		_manager.production_completed.disconnect(_on_production_completed)
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that slot is released after production completes
+func test_slot_released_after_completion() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("_process"):
+		_mock_recipe.production_time = 0.1
+		_manager.start_production(0, "bread_001")
+
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
+
+		# Simulate time passing
+		_manager._process(0.05)
+		await wait_frames(1)
+		_manager._process(0.06)
+		await wait_frames(1)
+
+		assert_eq(_manager.get_active_count(), 0, "Active count should be 0 after completion")
+
+		# Should be able to start production in the same slot again
+		var result = _manager.start_production(0, "croissant")
+		assert_true(result, "Should be able to start production in released slot")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that completed bread is marked as completed
+func test_completed_bread_marked_completed() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("_process"):
+		_mock_recipe.production_time = 0.1
+		_manager.start_production(0, "bread_001")
+
+		var slots = _manager.get_slots()
+		var slot = slots[0]
+
+		assert_false(slot.is_completed, "Slot should not be completed initially")
+
+		# Simulate time passing
+		_manager._process(0.05)
+		await wait_frames(1)
+		_manager._process(0.06)
+		await wait_frames(1)
+
+		slots = _manager.get_slots()
+		slot = slots[0]
+
+		assert_true(slot.is_completed, "Slot should be marked as completed")
+		assert_eq(slot.progress, 1.0, "Progress should be 1.0 (100%)")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that production timer decreases over time
+func test_production_timer_decreases() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("_process")
+		and _manager.has_method("get_remaining_time")
+	):
+		_mock_recipe.production_time = 1.0
+		_manager.start_production(0, "bread_001")
+
+		var time_before = _manager.get_remaining_time(0)
+		assert_true(time_before > 0, "Should have remaining time")
+
+		# Process some time
+		_manager._process(0.1)
+
+		var time_after = _manager.get_remaining_time(0)
+		assert_true(time_after < time_before, "Remaining time should decrease")
+	else:
+		fail_test("Required methods not implemented yet")

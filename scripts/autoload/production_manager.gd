@@ -30,6 +30,10 @@ var _active_count: int = 0
 var _mock_recipe: Resource = null
 
 
+func _ready() -> void:
+	set_process(true)
+
+
 ## Get all production slots
 func get_slots() -> Array:
 	return _slots
@@ -64,6 +68,8 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 	# Use mock recipe if available (for testing), otherwise try DataManager
 	if _mock_recipe:
 		slot.recipe = _mock_recipe
+		# Initialize remaining time based on recipe production time
+		slot.remaining_time = _mock_recipe.production_time
 
 	_slots.append(slot)
 	_active_count += 1
@@ -91,4 +97,34 @@ func complete_production(slot_index: int) -> void:
 
 			if slot.recipe:
 				production_completed.emit(slot_index, slot.recipe.id)
+				# Also emit EventBus signal
+				EventBus.production_completed.emit(slot_index, slot.recipe.id)
+				# Make bread sellable by selling it through EconomyEngine
+				EconomyEngine.sell_bread(slot.recipe)
 			break
+
+
+## Process function to handle production timers
+func _process(delta: float) -> void:
+	# Process each active slot
+	for slot in _slots:
+		if slot is ProductionSlotClass and slot.is_active and slot.recipe:
+			# Decrease remaining time
+			slot.remaining_time -= delta
+
+			# Update progress
+			if slot.recipe.production_time > 0:
+				slot.progress = 1.0 - (slot.remaining_time / slot.recipe.production_time)
+
+			# Check if production is complete
+			if slot.remaining_time <= 0:
+				slot.remaining_time = 0
+				complete_production(slot.slot_index)
+
+
+## Get remaining time for a slot
+func get_remaining_time(slot_index: int) -> float:
+	for slot in _slots:
+		if slot is ProductionSlotClass and slot.slot_index == slot_index and slot.is_active:
+			return slot.remaining_time
+	return 0.0
