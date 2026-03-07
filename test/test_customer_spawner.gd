@@ -12,15 +12,13 @@ var _test_shop: Resource
 func before_each() -> void:
 	_signal_received = false
 	_signal_data = {}
-	# Create a test ShopData with spawn_interval
 	const ShopDataClass = preload("res://resources/config/shop_data.gd")
 	_test_shop = ShopDataClass.new()
 	if _test_shop.has_method("set_spawn_interval"):
-		_test_shop.set_spawn_interval(5.0)  # 5 seconds for testing
+		_test_shop.set_spawn_interval(5.0)
 
 
 func after_each() -> void:
-	# Disconnect all signals to prevent cross-test contamination
 	if EventBus.customer_arrived.is_connected(_on_customer_arrived):
 		EventBus.customer_arrived.disconnect(_on_customer_arrived)
 
@@ -28,7 +26,6 @@ func after_each() -> void:
 ## ==================== BASIC FUNCTIONALITY ====================
 
 
-## Test that CustomerSpawner singleton exists
 func test_customer_spawner_singleton_exists() -> void:
 	assert_not_null(CustomerSpawner, "CustomerSpawner singleton should exist")
 
@@ -36,7 +33,6 @@ func test_customer_spawner_singleton_exists() -> void:
 ## ==================== SPAWN INTERVAL CONFIGURATION ====================
 
 
-## Test that CustomerSpawner has a spawn_interval property
 func test_customer_spawner_has_spawn_interval() -> void:
 	if CustomerSpawner.has_method("get_spawn_interval"):
 		var interval = CustomerSpawner.get_spawn_interval()
@@ -45,7 +41,6 @@ func test_customer_spawner_has_spawn_interval() -> void:
 		fail_pending("Need to implement get_spawn_interval method")
 
 
-## Test that spawn_interval can be set
 func test_customer_spawner_set_spawn_interval() -> void:
 	if CustomerSpawner.has_method("set_spawn_interval"):
 		CustomerSpawner.set_spawn_interval(10.0)
@@ -58,17 +53,15 @@ func test_customer_spawner_set_spawn_interval() -> void:
 ## ==================== TIMER FUNCTIONALITY ====================
 
 
-## Test that CustomerSpawner has a timer
 func test_customer_spawner_has_timer() -> void:
 	if CustomerSpawner.has_method("get_timer"):
 		var timer = CustomerSpawner.get_timer()
 		assert_not_null(timer, "Timer should exist")
 		assert_true(timer is Timer, "Should be a Timer node")
 	else:
-		fail_pending("Need to implement get_timer method or expose timer")
+		fail_pending("Need to implement get_timer method")
 
 
-## Test that timer is running when spawner is active
 func test_customer_spawner_timer_running() -> void:
 	if CustomerSpawner.has_method("is_spawning_active"):
 		if CustomerSpawner.is_spawning_active():
@@ -81,7 +74,6 @@ func test_customer_spawner_timer_running() -> void:
 		fail_pending("Need to implement is_spawning_active method")
 
 
-## Test that timer wait_time matches spawn_interval
 func test_customer_spawner_timer_wait_time() -> void:
 	if CustomerSpawner.has_method("get_timer"):
 		var timer = CustomerSpawner.get_timer()
@@ -97,10 +89,7 @@ func test_customer_spawner_timer_wait_time() -> void:
 ## ==================== CUSTOMER ARRIVED SIGNAL ====================
 
 
-## Test that customer_arrived signal is emitted
 func test_customer_arrived_signal_emitted() -> void:
-	# This test requires the spawner to be active and timer to trigger
-	# For unit testing, we'll trigger the timeout manually if possible
 	if CustomerSpawner.has_method("_on_timer_timeout"):
 		EventBus.customer_arrived.connect(_on_customer_arrived)
 		CustomerSpawner._on_timer_timeout()
@@ -111,7 +100,6 @@ func test_customer_arrived_signal_emitted() -> void:
 		fail_pending("Need to implement _on_timer_timeout method")
 
 
-## Test that customer_id is unique for each customer
 func test_customer_arrived_unique_customer_id() -> void:
 	if CustomerSpawner.has_method("_on_timer_timeout"):
 		EventBus.customer_arrived.connect(_on_customer_arrived)
@@ -124,7 +112,6 @@ func test_customer_arrived_unique_customer_id() -> void:
 			if _signal_received:
 				customer_ids.append(_signal_data["customer_id"])
 
-		# Check that all customer IDs are unique
 		assert_eq(customer_ids.size(), 3, "Should have 3 customer IDs")
 		assert_neq(customer_ids[0], customer_ids[1], "Customer IDs should be unique")
 		assert_neq(customer_ids[1], customer_ids[2], "Customer IDs should be unique")
@@ -136,14 +123,12 @@ func test_customer_arrived_unique_customer_id() -> void:
 ## ==================== INTEGRATION TESTS ====================
 
 
-## Test that customer_arrived signal is properly defined in EventBus
 func test_customer_arrived_signal_defined() -> void:
 	assert_true(
 		EventBus.has_signal("customer_arrived"), "customer_arrived must be defined in EventBus"
 	)
 
 
-## Test CustomerSpawner can be started and stopped
 func test_customer_spawner_can_be_started_and_stopped() -> void:
 	if CustomerSpawner.has_method("start_spawning"):
 		CustomerSpawner.start_spawning()
@@ -161,9 +146,115 @@ func test_customer_spawner_can_be_started_and_stopped() -> void:
 		fail_pending("Need to implement start_spawning and stop_spawning methods")
 
 
+## ==================== PURCHASE DECISION TESTS (SNA-78) ====================
+
+
+func test_decide_purchase_no_breads() -> void:
+	if CustomerSpawner.has_method("decide_purchase"):
+		CustomerSpawner.set_displayed_breads([])
+		var result = CustomerSpawner.decide_purchase("customer_1")
+		assert_false(result, "Should return false when no breads available")
+	else:
+		fail_pending("Need to implement decide_purchase method")
+
+
+func test_decide_purchase_empty_customer_id() -> void:
+	if CustomerSpawner.has_method("decide_purchase"):
+		var result = CustomerSpawner.decide_purchase("")
+		assert_false(result, "Should return false for empty customer_id")
+	else:
+		fail_pending("Need to implement decide_purchase method")
+
+
+func test_decide_purchase_with_bread_guaranteed() -> void:
+	if CustomerSpawner.has_method("decide_purchase"):
+		var mock_bread = _create_mock_bread()
+		CustomerSpawner.set_displayed_breads([mock_bread])
+		CustomerSpawner.set_purchase_probability(1.0)
+
+		var signal_received = false
+		var signal_data = {}
+		CustomerSpawner.customer_purchased.connect(
+			func(cid, rid, price): signal_received = true; signal_data = {
+				"customer_id": cid, "recipe_id": rid, "price": price
+			}
+		)
+
+		var result = CustomerSpawner.decide_purchase("customer_1")
+		assert_true(result, "Should return true for successful purchase")
+		assert_true(signal_received, "customer_purchased signal should be emitted")
+		assert_eq(signal_data["customer_id"], "customer_1", "Signal should include customer_id")
+		assert_eq(signal_data["recipe_id"], "test_bread", "Signal should include recipe_id")
+		assert_eq(signal_data["price"], 100, "Signal should include price")
+	else:
+		fail_pending("Need to implement decide_purchase method")
+
+
+func test_decide_purchase_removes_bread() -> void:
+	if CustomerSpawner.has_method("decide_purchase"):
+		var mock_bread = _create_mock_bread()
+		CustomerSpawner.set_displayed_breads([mock_bread])
+		CustomerSpawner.set_purchase_probability(1.0)
+
+		CustomerSpawner.decide_purchase("customer_1")
+
+		var remaining = CustomerSpawner.get_displayed_breads()
+		assert_eq(remaining.size(), 0, "Bread should be removed after purchase")
+	else:
+		fail_pending("Need to implement decide_purchase method")
+
+
+func test_decide_purchase_zero_probability() -> void:
+	if CustomerSpawner.has_method("decide_purchase"):
+		var mock_bread = _create_mock_bread()
+		CustomerSpawner.set_displayed_breads([mock_bread])
+		CustomerSpawner.set_purchase_probability(0.0)
+
+		var result = CustomerSpawner.decide_purchase("customer_1")
+		assert_false(result, "Should return false with 0% purchase probability")
+
+		var remaining = CustomerSpawner.get_displayed_breads()
+		assert_eq(remaining.size(), 1, "Bread should remain when purchase fails")
+	else:
+		fail_pending("Need to implement decide_purchase method")
+
+
+func test_purchase_probability_getter_setter() -> void:
+	if CustomerSpawner.has_method("set_purchase_probability"):
+		CustomerSpawner.set_purchase_probability(0.5)
+		if CustomerSpawner.has_method("get_purchase_probability"):
+			assert_eq(
+				CustomerSpawner.get_purchase_probability(),
+				0.5,
+				"Purchase probability should be 0.5"
+			)
+	else:
+		fail_pending("Need to implement purchase probability methods")
+
+
+func test_displayed_breads_getter_setter() -> void:
+	if CustomerSpawner.has_method("set_displayed_breads"):
+		var breads = [_create_mock_bread(), _create_mock_bread()]
+		CustomerSpawner.set_displayed_breads(breads)
+		if CustomerSpawner.has_method("get_displayed_breads"):
+			var result = CustomerSpawner.get_displayed_breads()
+			assert_eq(result.size(), 2, "Should have 2 breads")
+	else:
+		fail_pending("Need to implement displayed breads methods")
+
+
 ## ==================== HELPER METHODS ====================
 
 
 func _on_customer_arrived(customer_id: String) -> void:
 	_signal_received = true
 	_signal_data = {"customer_id": customer_id}
+
+
+func _create_mock_bread() -> Resource:
+	var bread = Resource.new()
+	bread.set_script(load("res://resources/data/recipe_data.gd"))
+	bread.id = "test_bread"
+	bread.base_price = 100
+	bread.xp_reward = 10
+	return bread
