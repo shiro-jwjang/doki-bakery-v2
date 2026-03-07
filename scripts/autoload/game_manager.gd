@@ -6,6 +6,8 @@ extends Node
 ## and overall game flow. This singleton persists throughout the
 ## game session and emits events via EventBus when state changes.
 
+const SaveData = preload("res://scripts/save_data.gd")
+
 ## Maximum level cap
 const MAX_LEVEL: int = 10
 
@@ -101,3 +103,49 @@ func set_game_state(state: String) -> void:
 func _process(delta: float) -> void:
 	if game_state == "playing":
 		play_time += delta
+
+
+## Load game state from save file
+## Returns true if successful (or defaults applied), false on critical error
+func load_game() -> bool:
+	var file_path := "user://save.json"
+
+	# Check if file exists
+	if not FileAccess.file_exists(file_path):
+		_reset_to_defaults()
+		return true
+
+	# Try to read and parse the save file
+	var file := FileAccess.open(file_path, FileAccess.READ)
+	if file == null:
+		_reset_to_defaults()
+		return true
+
+	var json_string := file.get_as_text()
+	file.close()
+
+	# Parse JSON
+	var save_data: RefCounted = SaveData.from_json(json_string)
+	if save_data == null:
+		_reset_to_defaults()
+		return true
+
+	# Apply loaded data
+	gold = save_data.gold
+	legendary_bread = save_data.legendary_bread
+	level = save_data.level
+	experience = save_data.experience
+	play_time = save_data.play_time
+	game_state = save_data.game_state
+
+	return true
+
+
+## Reset all game state to default values
+func _reset_to_defaults() -> void:
+	gold = 0
+	legendary_bread = 0
+	level = 1
+	experience = 0
+	play_time = 0.0
+	game_state = "menu"
