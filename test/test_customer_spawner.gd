@@ -161,9 +161,125 @@ func test_customer_spawner_can_be_started_and_stopped() -> void:
 		fail_pending("Need to implement start_spawning and stop_spawning methods")
 
 
+## ==================== PURCHASE DECISION TESTS (SNA-78) ====================
+
+
+## Test decide_purchase returns false when no breads available
+func test_decide_purchase_no_breads() -> void:
+	if CustomerSpawner.has_method("decide_purchase"):
+		CustomerSpawner.set_displayed_breads([])
+		var result = CustomerSpawner.decide_purchase("customer_1")
+		assert_false(result, "Should return false when no breads available")
+	else:
+		fail_pending("Need to implement decide_purchase method")
+
+
+## Test decide_purchase returns false for empty customer_id
+func test_decide_purchase_empty_customer_id() -> void:
+	if CustomerSpawner.has_method("decide_purchase"):
+		var result = CustomerSpawner.decide_purchase("")
+		assert_false(result, "Should return false for empty customer_id")
+	else:
+		fail_pending("Need to implement decide_purchase method")
+
+
+## Test decide_purchase with bread available and guaranteed purchase
+func test_decide_purchase_with_bread_guaranteed() -> void:
+	if CustomerSpawner.has_method("decide_purchase"):
+		var mock_bread = _create_mock_bread()
+		CustomerSpawner.set_displayed_breads([mock_bread])
+		CustomerSpawner.set_purchase_probability(1.0)  # 100% purchase rate
+
+		# Connect to signal
+		var signal_received = false
+		var signal_data = {}
+		CustomerSpawner.customer_purchased.connect(
+			func(cid, rid, price): signal_received = true; signal_data = {
+				"customer_id": cid, "recipe_id": rid, "price": price
+			}
+		)
+
+		var result = CustomerSpawner.decide_purchase("customer_1")
+		assert_true(result, "Should return true for successful purchase")
+		assert_true(signal_received, "customer_purchased signal should be emitted")
+		assert_eq(signal_data["customer_id"], "customer_1", "Signal should include customer_id")
+		assert_eq(signal_data["recipe_id"], "test_bread", "Signal should include recipe_id")
+		assert_eq(signal_data["price"], 100, "Signal should include price")
+	else:
+		fail_pending("Need to implement decide_purchase method")
+
+
+## Test decide_purchase removes bread from displayed breads after purchase
+func test_decide_purchase_removes_bread() -> void:
+	if CustomerSpawner.has_method("decide_purchase"):
+		var mock_bread = _create_mock_bread()
+		CustomerSpawner.set_displayed_breads([mock_bread])
+		CustomerSpawner.set_purchase_probability(1.0)
+
+		CustomerSpawner.decide_purchase("customer_1")
+
+		var remaining = CustomerSpawner.get_displayed_breads()
+		assert_eq(remaining.size(), 0, "Bread should be removed after purchase")
+	else:
+		fail_pending("Need to implement decide_purchase method")
+
+
+## Test decide_purchase with 0% purchase probability
+func test_decide_purchase_zero_probability() -> void:
+	if CustomerSpawner.has_method("decide_purchase"):
+		var mock_bread = _create_mock_bread()
+		CustomerSpawner.set_displayed_breads([mock_bread])
+		CustomerSpawner.set_purchase_probability(0.0)  # 0% purchase rate
+
+		var result = CustomerSpawner.decide_purchase("customer_1")
+		assert_false(result, "Should return false with 0% purchase probability")
+
+		# Bread should still be available
+		var remaining = CustomerSpawner.get_displayed_breads()
+		assert_eq(remaining.size(), 1, "Bread should remain when purchase fails")
+	else:
+		fail_pending("Need to implement decide_purchase method")
+
+
+## Test set_purchase_probability and get_purchase_probability
+func test_purchase_probability_getter_setter() -> void:
+	if CustomerSpawner.has_method("set_purchase_probability"):
+		CustomerSpawner.set_purchase_probability(0.5)
+		if CustomerSpawner.has_method("get_purchase_probability"):
+			assert_eq(
+				CustomerSpawner.get_purchase_probability(),
+				0.5,
+				"Purchase probability should be 0.5"
+			)
+	else:
+		fail_pending("Need to implement purchase probability methods")
+
+
+## Test set_displayed_breads and get_displayed_breads
+func test_displayed_breads_getter_setter() -> void:
+	if CustomerSpawner.has_method("set_displayed_breads"):
+		var breads = [_create_mock_bread(), _create_mock_bread()]
+		CustomerSpawner.set_displayed_breads(breads)
+		if CustomerSpawner.has_method("get_displayed_breads"):
+			var result = CustomerSpawner.get_displayed_breads()
+			assert_eq(result.size(), 2, "Should have 2 breads")
+	else:
+		fail_pending("Need to implement displayed breads methods")
+
+
 ## ==================== HELPER METHODS ====================
 
 
 func _on_customer_arrived(customer_id: String) -> void:
 	_signal_received = true
 	_signal_data = {"customer_id": customer_id}
+
+
+func _create_mock_bread() -> Resource:
+	"""Create a mock bread resource for testing."""
+	var bread = Resource.new()
+	bread.set_script(load("res://resources/data/recipe_data.gd"))
+	bread.id = "test_bread"
+	bread.base_price = 100
+	bread.xp_reward = 10
+	return bread
