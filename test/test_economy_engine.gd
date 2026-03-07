@@ -4,12 +4,14 @@ extends GutTest
 ## Test Suite for EconomyEngine
 ## Tests gold earning from bread sales and XP calculation
 
-var _xp_gained_received := false
-var _xp_gained_value := 0
+var _xp_changed_received := false
+var _xp_changed_old := 0
+var _xp_changed_new := 0
 var _level_up_received := false
 var _level_up_value := 0
 var _gold_changed_received := false
-var _gold_changed_value := 0
+var _gold_changed_old := 0
+var _gold_changed_new := 0
 
 
 func before_each() -> void:
@@ -19,18 +21,20 @@ func before_each() -> void:
 	GameManager.experience = 0
 
 	# Reset signal tracking
-	_xp_gained_received = false
-	_xp_gained_value = 0
+	_xp_changed_received = false
+	_xp_changed_old = 0
+	_xp_changed_new = 0
 	_level_up_received = false
 	_level_up_value = 0
 	_gold_changed_received = false
-	_gold_changed_value = 0
+	_gold_changed_old = 0
+	_gold_changed_new = 0
 
 
 func after_each() -> void:
 	# Disconnect all signals
-	if EventBus.experience_gained.is_connected(_on_experience_gained):
-		EventBus.experience_gained.disconnect(_on_experience_gained)
+	if EventBus.xp_changed.is_connected(_on_xp_changed):
+		EventBus.xp_changed.disconnect(_on_xp_changed)
 	if EventBus.level_up.is_connected(_on_level_up):
 		EventBus.level_up.disconnect(_on_level_up)
 	if EventBus.gold_changed.is_connected(_on_gold_changed):
@@ -44,7 +48,7 @@ func test_economy_engine_singleton_exists() -> void:
 
 ## Test sell_bread grants correct XP from recipe xp_reward
 func test_sell_bread_grants_xp() -> void:
-	EventBus.experience_gained.connect(_on_experience_gained)
+	EventBus.xp_changed.connect(_on_xp_changed)
 
 	var recipe := RecipeData.new()
 	recipe.id = "test_bread"
@@ -55,8 +59,8 @@ func test_sell_bread_grants_xp() -> void:
 	EconomyEngine.sell_bread(recipe)
 
 	assert_eq(GameManager.experience, 25, "Experience should be 25")
-	assert_true(_xp_gained_received, "experience_gained signal should be emitted")
-	assert_eq(_xp_gained_value, 25, "Signal should carry correct XP amount")
+	assert_true(_xp_changed_received, "xp_changed signal should be emitted")
+	assert_eq(_xp_changed_new, 25, "Signal should carry correct XP amount")
 
 
 ## Test sell_bread adds gold from recipe base_price
@@ -73,7 +77,7 @@ func test_sell_bread_adds_gold() -> void:
 
 	assert_eq(GameManager.gold, 50, "Gold should be 50")
 	assert_true(_gold_changed_received, "gold_changed signal should be emitted")
-	assert_eq(_gold_changed_value, 50, "Signal should carry correct gold amount")
+	assert_eq(_gold_changed_new, 50, "Signal should carry correct gold amount")
 
 
 ## Test sell_bread accumulates XP from multiple sales
@@ -136,9 +140,8 @@ func test_sell_bread_multiple_level_ups() -> void:
 	recipe.xp_reward = 300
 
 	# Sell enough for multiple level ups: 300 * 5 = 1500 XP
-	# Level 1->2: 100 XP (100 left)
-	# Level 2->3: 200 XP (need 100 more)
-	# So 5 sales = 1500 XP should reach level 5 or 6
+	# Level 1->2: 100 XP, Level 2->3: 250 XP (total 350)
+	# So 5 sales = 1500 XP should reach multiple levels
 	for i in range(5):
 		EconomyEngine.sell_bread(recipe)
 
@@ -146,9 +149,10 @@ func test_sell_bread_multiple_level_ups() -> void:
 
 
 ## Signal handlers
-func _on_experience_gained(amount: int) -> void:
-	_xp_gained_received = true
-	_xp_gained_value = amount
+func _on_xp_changed(old: int, new: int) -> void:
+	_xp_changed_received = true
+	_xp_changed_old = old
+	_xp_changed_new = new
 
 
 func _on_level_up(new_level: int) -> void:
@@ -156,6 +160,7 @@ func _on_level_up(new_level: int) -> void:
 	_level_up_value = new_level
 
 
-func _on_gold_changed(_old: int, new: int) -> void:
+func _on_gold_changed(old: int, new: int) -> void:
 	_gold_changed_received = true
-	_gold_changed_value = new
+	_gold_changed_old = old
+	_gold_changed_new = new
