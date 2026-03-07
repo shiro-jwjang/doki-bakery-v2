@@ -6,6 +6,17 @@ extends Node
 ## tracking active slots, and enforcing slot limits based on ShopData.
 ## SNA-74: ProductionManager 슬롯 관리
 
+## Signal emitted when production starts
+signal production_started(slot_index: int, recipe_id: String)
+
+## Signal emitted when production completes
+signal production_completed(slot_index: int, recipe_id: String)
+
+## Signal emitted when production fails
+signal production_failed(slot_index: int, reason: String)
+
+const ProductionSlotClass = preload("res://resources/data/production_slot.gd")
+
 ## Maximum number of production slots
 var _max_slots: int = 3
 
@@ -17,17 +28,6 @@ var _active_count: int = 0
 
 ## Mock recipe for testing (used in tests)
 var _mock_recipe: Resource = null
-
-## Signal emitted when production starts
-signal production_started(slot_index: int, recipe_id: String)
-
-## Signal emitted when production completes
-signal production_completed(slot_index: int, recipe_id: String)
-
-## Signal emitted when production fails
-signal production_failed(slot_index: int, reason: String)
-
-const ProductionSlotClass = preload("res://resources/data/production_slot.gd")
 
 
 ## Get all production slots
