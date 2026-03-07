@@ -7,3 +7,4 @@ extends Resource
 @export var progress: float = 0.0
 @export var is_active: bool = false
 @export var is_completed: bool = false
+@export var remaining_time: float = 0.0
