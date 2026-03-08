@@ -36,6 +36,12 @@ signal production_progressed(slot_index: int, progress: float)
 ## Emitted when production completes in a slot
 signal production_completed(slot_index: int, recipe_id: String)
 
+## Emitted when baking finishes and bread is ready for display
+signal baking_finished(recipe_id: String)
+
+## Emitted when bread is sold from display
+signal bread_sold(recipe_id: String, price: int)
+
 ## Emitted when a customer arrives at the bakery
 signal customer_arrived(customer_id: String)
 
