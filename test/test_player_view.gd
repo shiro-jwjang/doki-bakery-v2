@@ -167,10 +167,14 @@ func test_player_initial_position() -> void:
 	# Using (0, 0) as default or stall front position
 	var position = _player_view.position
 
-	# Position should be a valid Vector2
+	# Position should be within reasonable world bounds (0, 0) is valid starting position
 	assert_true(
-		position.x != 0 or position.y != 0 or true,  # Allow (0, 0) as valid starting position
-		"PlayerView should have a valid initial position: %s" % str(position)
+		position.x >= -1000 and position.x <= 2000,
+		"PlayerView X position should be within bounds, got: %d" % position.x
+	)
+	assert_true(
+		position.y >= -1000 and position.y <= 2000,
+		"PlayerView Y position should be within bounds, got: %d" % position.y
 	)
 
 	# Position should be within reasonable world bounds

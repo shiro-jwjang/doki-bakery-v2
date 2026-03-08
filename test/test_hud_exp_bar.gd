@@ -42,7 +42,9 @@ func test_hud_scene_instantiation() -> void:
 ## Test initial state
 func test_initial_state() -> void:
 	assert_eq(exp_bar.value, 0.0, "Initial XP should be 0")
-	assert_eq(exp_bar.max_value, 0.0, "Initial max XP should be 0 (level 1 requirement)")
+	var level_data = DataManager.get_level(1)
+	var expected_max = float(level_data.required_xp) if level_data else 100.0
+	assert_eq(exp_bar.max_value, expected_max, "Initial max XP should match level 1 requirement")
 
 
 ## Test that XP bar updates when GameManager.add_xp is called
