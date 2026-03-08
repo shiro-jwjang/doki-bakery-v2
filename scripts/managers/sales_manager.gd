@@ -18,7 +18,9 @@ var _inventory_items: Dictionary = {}
 
 func _ready() -> void:
 	# Subscribe to production_completed via EventBus (autoload direct reference)
-	EventBus.production_completed.connect(_on_production_completed)
+	# Guard against duplicate connections (e.g., re-added to scene tree)
+	if not EventBus.production_completed.is_connected(_on_production_completed):
+		EventBus.production_completed.connect(_on_production_completed)
 
 
 ## Handle production completed event from BakeryManager via EventBus
@@ -40,10 +42,8 @@ func add_to_inventory(recipe_id: String, price: int) -> void:
 
 	_inventory[recipe_id] += 1
 
-	# Track item with price and timestamp
-	_inventory_items[recipe_id].append(
-		{"price": price, "timestamp": Time.get_unix_time_from_system()}
-	)
+	# Track item with price
+	_inventory_items[recipe_id].append({"price": price})
 
 	inventory_updated.emit(recipe_id, _inventory[recipe_id])
 
