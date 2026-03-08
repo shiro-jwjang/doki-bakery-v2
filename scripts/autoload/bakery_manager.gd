@@ -158,3 +158,14 @@ func get_remaining_time(slot_index: int) -> float:
 ## to ensure consistent timing
 func reset_mock_time() -> void:
 	_mock_time = 0.0
+
+
+## Set mock recipe for testing
+## This allows tests to use a consistent recipe without DataManager
+func set_mock_recipe(recipe: Resource) -> void:
+	_mock_recipe = recipe
+
+
+## Clear mock recipe (for testing)
+func clear_mock_recipe() -> void:
+	_mock_recipe = null

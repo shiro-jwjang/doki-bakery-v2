@@ -13,14 +13,16 @@ var bread_menu: Control
 
 
 func before_each() -> void:
-	# Reset BakeryManager state
-	BakeryManager.reset_mock_time()
-	# Clear any active slots
+	# Reset BakeryManager state using public API
+	# Complete all active productions to clear slots
 	var slots = BakeryManager.get_slots().duplicate()
 	for slot in slots:
-		slot.is_active = false
-	BakeryManager._slots.clear()
-	BakeryManager._active_count = 0
+		if slot.is_active:
+			BakeryManager.complete_production(slot.slot_index)
+
+	# Reset mock time and mock recipe for consistent testing
+	BakeryManager.reset_mock_time()
+	BakeryManager.set_mock_recipe(_create_mock_recipe())
 
 	# Create ProductionPanel
 	panel = ProductionPanelClass.new()
@@ -61,9 +63,6 @@ func test_slot_click_opens_bread_menu() -> void:
 
 ## Test that selecting a bread starts baking
 func test_bread_selection_starts_baking() -> void:
-	# Setup mock recipe
-	BakeryManager._mock_recipe = _create_mock_recipe()
-
 	# Setup: Open BreadMenu for slot 1
 	panel.slot_clicked.emit(1)
 	await wait_frames(2)
@@ -87,7 +86,6 @@ func test_bread_selection_starts_baking() -> void:
 ## Test that clicking a busy slot is ignored
 func test_busy_slot_click_ignored() -> void:
 	# Setup: Start production in slot 0
-	BakeryManager._mock_recipe = _create_mock_recipe()
 	BakeryManager.start_production(0, "test_bread")
 	await wait_frames(2)
 

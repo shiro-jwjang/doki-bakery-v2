@@ -15,6 +15,9 @@ var _target_slot: int = -1
 ## Available recipes (populated from DataManager)
 var _recipes: Array = []
 
+## Container for bread buttons
+@onready var _button_container: VBoxContainer = $VBoxContainer
+
 
 func _ready() -> void:
 	# Start hidden
@@ -26,6 +29,9 @@ func _ready() -> void:
 
 	# Load recipes from DataManager
 	_load_recipes()
+
+	# Build UI buttons
+	_build_buttons()
 
 
 ## Get the target slot index
@@ -77,4 +83,36 @@ func _on_request_produce(slot_index: int, recipe_id: String) -> void:
 
 ## Load available recipes from DataManager
 func _load_recipes() -> void:
-	_recipes = DataManager.get_all_recipes()
+	var all_recipes = DataManager.get_all_recipes()
+	if all_recipes != null:
+		_recipes = all_recipes
+	else:
+		_recipes = []
+		push_warning("BreadMenu: Failed to load recipes from DataManager")
+
+
+## Build buttons for each recipe
+func _build_buttons() -> void:
+	# Create container if not exists
+	if _button_container == null:
+		_button_container = VBoxContainer.new()
+		add_child(_button_container)
+
+	# Clear existing buttons
+	for child in _button_container.get_children():
+		child.queue_free()
+
+	# Create a button for each recipe
+	for recipe in _recipes:
+		if recipe == null:
+			continue
+		var button := Button.new()
+		button.name = "Btn_%s" % recipe.id
+		button.text = recipe.display_name if recipe.display_name else recipe.id
+		button.pressed.connect(_on_bread_button_pressed.bind(recipe.id))
+		_button_container.add_child(button)
+
+
+## Handle bread button press
+func _on_bread_button_pressed(recipe_id: String) -> void:
+	select_bread(recipe_id)
