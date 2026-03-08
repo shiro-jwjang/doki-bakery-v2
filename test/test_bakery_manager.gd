@@ -1,11 +1,11 @@
 extends GutTest
 
-## Test Suite for ProductionManager
+## Test Suite for BakeryManager
 ## Tests slot management functionality including starting production,
 ## retrieving slot information, and managing active slot limits.
-## SNA-74: ProductionManager 슬롯 관리
+## SNA-74: BakeryManager 슬롯 관리
 
-const ProductionManagerClass = preload("res://scripts/autoload/production_manager.gd")
+const BakeryManagerClass = preload("res://scripts/autoload/bakery_manager.gd")
 const ProductionSlotClass = preload("res://resources/data/production_slot.gd")
 const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
 
@@ -19,8 +19,8 @@ var _received_recipe_id := ""
 
 
 func before_each() -> void:
-	# Create ProductionManager instance for testing
-	_manager = ProductionManagerClass.new()
+	# Create BakeryManager instance for testing
+	_manager = BakeryManagerClass.new()
 
 	# Create mock recipe for testing
 	_mock_recipe = RecipeDataClass.new()
@@ -57,9 +57,9 @@ func _on_production_started(slot_index: int, recipe_id: String) -> void:
 ## ==================== BASIC SETUP TESTS ====================
 
 
-## Test that ProductionManager can be instantiated
+## Test that BakeryManager can be instantiated
 func test_manager_creation() -> void:
-	assert_not_null(_manager, "ProductionManager should be created")
+	assert_not_null(_manager, "BakeryManager should be created")
 
 
 ## ==================== SLOT INITIALIZATION TESTS ====================
@@ -259,7 +259,7 @@ func test_get_slots_reflects_current_state() -> void:
 
 
 ## ==================== PRODUCTION COMPLETION TESTS ====================
-## SNA-76: ProductionManager 생산 완료 → EventBus 시그널
+## SNA-76: BakeryManager 생산 완료 → EventBus 시그널
 
 
 ## Signal handler for production_completed
@@ -375,7 +375,7 @@ func test_production_timer_decreases() -> void:
 
 
 ## ==================== WALL CLOCK TIMER TESTS ====================
-## SNA-75: ProductionManager 실시간 타이머 (생산 카운트다운)
+## SNA-75: BakeryManager 실시간 타이머 (생산 카운트다운)
 ## Tests that remaining_time is calculated based on wall clock time
 ## rather than just delta accumulation for better accuracy
 

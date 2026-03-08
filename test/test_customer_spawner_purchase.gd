@@ -114,8 +114,8 @@ func test_decide_purchase_with_bread_available() -> void:
 		fail_test("decide_purchase method not implemented yet")
 
 
-## Test decide_purchase calls EconomyEngine.sell_bread() on success
-func test_decide_purchase_calls_economy_engine() -> void:
+## Test decide_purchase calls EconomyManager.sell_bread() on success
+func test_decide_purchase_calls_economy_manager() -> void:
 	if _spawner.has_method("decide_purchase"):
 		# Set up displayed breads with guaranteed purchase
 		_spawner.set_displayed_breads([_mock_bread_1])
@@ -289,7 +289,7 @@ func test_customer_purchased_signal_defined() -> void:
 	)
 
 
-## Test EconomyEngine.sell_bread grants XP on purchase
+## Test EconomyManager.sell_bread grants XP on purchase
 func test_decide_purchase_grants_xp() -> void:
 	if _spawner.has_method("decide_purchase"):
 		_spawner.set_displayed_breads([_mock_bread_1])

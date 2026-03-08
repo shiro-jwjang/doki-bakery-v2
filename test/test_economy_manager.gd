@@ -1,7 +1,7 @@
 extends GutTest
 
 # gdlint: disable = max-public-methods
-## Test Suite for EconomyEngine
+## Test Suite for EconomyManager
 ## Tests gold earning from bread sales and XP calculation
 
 var _xp_changed_received := false
@@ -41,9 +41,9 @@ func after_each() -> void:
 		EventBus.gold_changed.disconnect(_on_gold_changed)
 
 
-## Test that EconomyEngine singleton exists
+## Test that EconomyManager singleton exists
 func test_economy_engine_singleton_exists() -> void:
-	assert_not_null(EconomyEngine, "EconomyEngine singleton should exist")
+	assert_not_null(EconomyManager, "EconomyManager singleton should exist")
 
 
 ## Test sell_bread grants correct XP from recipe xp_reward
@@ -56,7 +56,7 @@ func test_sell_bread_grants_xp() -> void:
 	recipe.base_price = 50
 	recipe.xp_reward = 25
 
-	EconomyEngine.sell_bread(recipe)
+	EconomyManager.sell_bread(recipe)
 
 	assert_eq(GameManager.experience, 25, "Experience should be 25")
 	assert_true(_xp_changed_received, "xp_changed signal should be emitted")
@@ -73,7 +73,7 @@ func test_sell_bread_adds_gold() -> void:
 	recipe.base_price = 50
 	recipe.xp_reward = 25
 
-	EconomyEngine.sell_bread(recipe)
+	EconomyManager.sell_bread(recipe)
 
 	assert_eq(GameManager.gold, 50, "Gold should be 50")
 	assert_true(_gold_changed_received, "gold_changed signal should be emitted")
@@ -88,9 +88,9 @@ func test_sell_bread_accumulates_xp() -> void:
 	recipe.base_price = 30
 	recipe.xp_reward = 15
 
-	EconomyEngine.sell_bread(recipe)
-	EconomyEngine.sell_bread(recipe)
-	EconomyEngine.sell_bread(recipe)
+	EconomyManager.sell_bread(recipe)
+	EconomyManager.sell_bread(recipe)
+	EconomyManager.sell_bread(recipe)
 
 	assert_eq(GameManager.experience, 45, "Experience should be 45 (15 * 3)")
 	assert_eq(GameManager.gold, 90, "Gold should be 90 (30 * 3)")
@@ -107,8 +107,8 @@ func test_sell_bread_triggers_level_up() -> void:
 	recipe.xp_reward = 50
 
 	# Sell 2 breads: 50 * 2 = 100 XP, which should trigger level up from 1 to 2
-	EconomyEngine.sell_bread(recipe)
-	EconomyEngine.sell_bread(recipe)
+	EconomyManager.sell_bread(recipe)
+	EconomyManager.sell_bread(recipe)
 
 	assert_eq(GameManager.level, 2, "Should level up to 2")
 	assert_true(_level_up_received, "level_up signal should be emitted")
@@ -123,7 +123,7 @@ func test_sell_bread_zero_xp() -> void:
 	recipe.base_price = 10
 	recipe.xp_reward = 0
 
-	EconomyEngine.sell_bread(recipe)
+	EconomyManager.sell_bread(recipe)
 
 	assert_eq(GameManager.experience, 0, "Experience should remain 0")
 	assert_eq(GameManager.gold, 10, "Gold should still be added")
@@ -143,7 +143,7 @@ func test_sell_bread_multiple_level_ups() -> void:
 	# Level 1->2: 100 XP, Level 2->3: 250 XP (total 350)
 	# So 5 sales = 1500 XP should reach multiple levels
 	for i in range(5):
-		EconomyEngine.sell_bread(recipe)
+		EconomyManager.sell_bread(recipe)
 
 	assert_gt(GameManager.level, 1, "Should have leveled up multiple times")
 

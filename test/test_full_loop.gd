@@ -31,7 +31,7 @@ func before_each() -> void:
 	_initial_xp = GameManager.get_xp()
 	_initial_level = GameManager.get_level()
 
-	# Reset ProductionManager state
+	# Reset BakeryManager state
 	_clear_production_slots()
 
 	# Reset CustomerSpawner
@@ -39,8 +39,8 @@ func before_each() -> void:
 	CustomerSpawner.set_displayed_breads([])
 	CustomerSpawner.set_purchase_probability(1.0)  # 100% purchase rate
 
-	# Enable mock time for ProductionManager
-	ProductionManager.reset_mock_time()
+	# Enable mock time for BakeryManager
+	BakeryManager.reset_mock_time()
 
 
 func after_each() -> void:
@@ -50,13 +50,13 @@ func after_each() -> void:
 
 
 func _clear_production_slots() -> void:
-	# Reset ProductionManager by clearing all slots
-	var slots = ProductionManager.get_slots()
+	# Reset BakeryManager by clearing all slots
+	var slots = BakeryManager.get_slots()
 	for slot in slots:
 		if slot.is_active:
-			ProductionManager.complete_production(slot.slot_index)
-	ProductionManager._slots.clear()
-	ProductionManager._active_count = 0
+			BakeryManager.complete_production(slot.slot_index)
+	BakeryManager._slots.clear()
+	BakeryManager._active_count = 0
 
 
 ## ==================== FULL LOOP TESTS ====================
@@ -65,23 +65,23 @@ func _clear_production_slots() -> void:
 ## Test basic production completion flow
 func test_production_completion_flow() -> void:
 	# Setup mock recipe BEFORE starting production
-	ProductionManager._mock_recipe = _test_recipe
+	BakeryManager._mock_recipe = _test_recipe
 
 	# Start production with recipe_id string
-	var success = ProductionManager.start_production(0, "test_bread")
+	var success = BakeryManager.start_production(0, "test_bread")
 	assert_true(success, "Production should start successfully")
 
 	# Check active count
-	assert_eq(ProductionManager.get_active_count(), 1, "Should have 1 active production")
+	assert_eq(BakeryManager.get_active_count(), 1, "Should have 1 active production")
 
 	# Simulate time passing for production to complete
-	ProductionManager._process(0.5)
+	BakeryManager._process(0.5)
 	await wait_frames(1)
-	ProductionManager._process(0.6)
+	BakeryManager._process(0.6)
 	await wait_frames(1)
 
 	# Verify production completed (slot released)
-	assert_eq(ProductionManager.get_active_count(), 0, "Slot should be released after production")
+	assert_eq(BakeryManager.get_active_count(), 0, "Slot should be released after production")
 
 
 ## Test customer purchase increases gold
@@ -154,10 +154,10 @@ func test_level_up_on_xp_threshold() -> void:
 ## Test full production-to-purchase loop
 func test_full_production_to_purchase_loop() -> void:
 	# 1. Setup mock recipe
-	ProductionManager._mock_recipe = _test_recipe
+	BakeryManager._mock_recipe = _test_recipe
 
 	# 2. Start production
-	var success = ProductionManager.start_production(0, "test_bread")
+	var success = BakeryManager.start_production(0, "test_bread")
 	assert_true(success, "Production should start")
 
 	# 3. Store values before production completes
@@ -165,12 +165,12 @@ func test_full_production_to_purchase_loop() -> void:
 	var xp_before = GameManager.get_xp()
 
 	# 4. Simulate production completion (this triggers sell_bread automatically)
-	ProductionManager._process(0.5)
+	BakeryManager._process(0.5)
 	await wait_frames(1)
-	ProductionManager._process(0.6)
+	BakeryManager._process(0.6)
 	await wait_frames(1)
 
-	# 5. Verify rewards (from EconomyEngine.sell_bread in complete_production)
+	# 5. Verify rewards (from EconomyManager.sell_bread in complete_production)
 	assert_eq(GameManager.gold, gold_before + _test_recipe.base_price, "Gold should increase")
 	assert_eq(GameManager.get_xp(), xp_before + _test_recipe.xp_reward, "XP should increase")
 

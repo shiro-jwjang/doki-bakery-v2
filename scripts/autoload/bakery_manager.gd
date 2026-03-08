@@ -1,10 +1,10 @@
 extends Node
 
-## ProductionManager Autoload
+## BakeryManager Autoload
 ##
 ## Manages production slots for the bakery. Handles starting production,
 ## tracking active slots, and enforcing slot limits based on ShopData.
-## SNA-74: ProductionManager 슬롯 관리
+## SNA-74: BakeryManager 슬롯 관리
 
 ## Signal emitted when production starts
 signal production_started(slot_index: int, recipe_id: String)
@@ -106,8 +106,8 @@ func complete_production(slot_index: int) -> void:
 				production_completed.emit(slot_index, slot.recipe.id)
 				# Also emit EventBus signal
 				EventBus.production_completed.emit(slot_index, slot.recipe.id)
-				# Make bread sellable by selling it through EconomyEngine
-				EconomyEngine.sell_bread(slot.recipe)
+				# Make bread sellable by selling it through EconomyManager
+				EconomyManager.sell_bread(slot.recipe)
 			break
 
 

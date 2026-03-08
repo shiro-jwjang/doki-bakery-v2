@@ -1,6 +1,6 @@
 extends Node
 
-## EconomyEngine Autoload
+## EconomyManager Autoload
 ##
 ## Handles economic transactions including bread sales,
 ## gold earning, and experience point calculation.
