@@ -33,6 +33,12 @@ func before_each() -> void:
 	_manager._active_count = 0
 	_manager._mock_recipe = _mock_recipe
 
+	# Enable mock time for testing (wall clock simulation)
+	if _manager.has_method("reset_mock_time"):
+		_manager.reset_mock_time()
+	else:
+		_manager._mock_time = 0.0
+
 	add_child_autofree(_manager)
 
 
@@ -352,6 +358,8 @@ func test_production_timer_decreases() -> void:
 		and _manager.has_method("get_remaining_time")
 	):
 		_mock_recipe.production_time = 1.0
+		# Ensure mock time is reset at 0.0 for consistent testing
+		_manager._mock_time = 0.0
 		_manager.start_production(0, "bread_001")
 
 		var time_before = _manager.get_remaining_time(0)
@@ -362,5 +370,96 @@ func test_production_timer_decreases() -> void:
 
 		var time_after = _manager.get_remaining_time(0)
 		assert_true(time_after < time_before, "Remaining time should decrease")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## ==================== WALL CLOCK TIMER TESTS ====================
+## SNA-75: ProductionManager 실시간 타이머 (생산 카운트다운)
+## Tests that remaining_time is calculated based on wall clock time
+## rather than just delta accumulation for better accuracy
+
+
+## Test that remaining time is based on wall clock
+func test_remaining_time_wall_clock_based() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("_process")
+		and _manager.has_method("get_remaining_time")
+	):
+		_mock_recipe.production_time = 1.0
+		# Ensure mock time is reset at 0.0 for consistent testing
+		_manager._mock_time = 0.0
+		_manager.start_production(0, "bread_001")
+
+		# Get initial remaining time
+		var initial_time = _manager.get_remaining_time(0)
+		assert_eq(initial_time, 1.0, "Initial remaining time should equal production time")
+
+		# Simulate time passing
+		_manager._process(0.1)
+
+		# Remaining time should reflect actual elapsed time from wall clock
+		var elapsed_time = 1.0 - _manager.get_remaining_time(0)
+		assert_true(elapsed_time >= 0.09, "Should have elapsed at least 0.09 seconds")
+		assert_true(elapsed_time <= 0.11, "Should have elapsed at most 0.11 seconds")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test wall clock accuracy with variable delta
+func test_wall_clock_variable_delta() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("_process")
+		and _manager.has_method("get_remaining_time")
+	):
+		_mock_recipe.production_time = 1.0
+		# Ensure mock time is reset at 0.0 for consistent testing
+		_manager._mock_time = 0.0
+		_manager.start_production(0, "bread_001")
+
+		# Process with variable delta times (simulating frame rate fluctuations)
+		_manager._process(0.05)  # 50ms
+		_manager._process(0.15)  # 150ms
+		_manager._process(0.10)  # 100ms
+		_manager._process(0.20)  # 200ms
+
+		# Total delta: 0.5 seconds
+		var remaining_time = _manager.get_remaining_time(0)
+		var expected_remaining = 1.0 - 0.5
+
+		# Wall clock calculation should be accurate
+		assert_true(
+			abs(remaining_time - expected_remaining) < 0.02,
+			"Wall clock should be accurate within 20ms tolerance"
+		)
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test progress calculation from wall clock
+func test_progress_from_wall_clock() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("_process")
+		and _manager.has_method("get_slots")
+	):
+		_mock_recipe.production_time = 1.0
+		# Ensure mock time is reset at 0.0 for consistent testing
+		_manager._mock_time = 0.0
+		_manager.start_production(0, "bread_001")
+
+		# Process half the time
+		_manager._process(0.5)
+
+		var slots = _manager.get_slots()
+		var slot = slots[0]
+
+		# Progress should be approximately 50%
+		assert_true(
+			slot.progress >= 0.48 and slot.progress <= 0.52,
+			"Progress should be approximately 50% (±2%)"
+		)
 	else:
 		fail_test("Required methods not implemented yet")

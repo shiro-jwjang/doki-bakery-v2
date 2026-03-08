@@ -29,6 +29,9 @@ var _active_count: int = 0
 ## Mock recipe for testing (used in tests)
 var _mock_recipe: Resource = null
 
+## Mock time for testing (null = use real wall clock time)
+var _mock_time: float = -1.0
+
 
 func _ready() -> void:
 	set_process(true)
@@ -63,7 +66,11 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 	var slot = ProductionSlotClass.new()
 	slot.slot_index = slot_index
 	slot.is_active = true
-	slot.start_time = Time.get_unix_time_from_system()
+	# Use mock time if available (for testing), otherwise use real wall clock
+	if _mock_time >= 0.0:
+		slot.start_time = _mock_time
+	else:
+		slot.start_time = Time.get_unix_time_from_system()
 
 	# Use mock recipe if available (for testing), otherwise try DataManager
 	if _mock_recipe:
@@ -104,21 +111,33 @@ func complete_production(slot_index: int) -> void:
 			break
 
 
-## Process function to handle production timers
+## Process function to handle production timers (wall clock based)
 func _process(delta: float) -> void:
+	# Use mock time if available (for testing), otherwise use real wall clock
+	var current_time: float
+	if _mock_time >= 0.0:
+		_mock_time += delta  # Advance mock time by delta FIRST
+		current_time = _mock_time  # Then use updated mock time
+	else:
+		current_time = Time.get_unix_time_from_system()
+
 	# Process each active slot
 	for slot in _slots:
 		if slot is ProductionSlotClass and slot.is_active and slot.recipe:
-			# Decrease remaining time
-			slot.remaining_time -= delta
+			# Calculate elapsed time using wall clock
+			var elapsed_time = current_time - slot.start_time
 
-			# Update progress
+			# Calculate remaining time based on wall clock
+			slot.remaining_time = maxf(0.0, slot.recipe.production_time - elapsed_time)
+
+			# Update progress based on wall clock elapsed time
 			if slot.recipe.production_time > 0:
-				slot.progress = 1.0 - (slot.remaining_time / slot.recipe.production_time)
+				slot.progress = minf(1.0, elapsed_time / slot.recipe.production_time)
 
 			# Check if production is complete
 			if slot.remaining_time <= 0:
 				slot.remaining_time = 0
+				slot.progress = 1.0
 				complete_production(slot.slot_index)
 
 
@@ -128,3 +147,10 @@ func get_remaining_time(slot_index: int) -> float:
 		if slot is ProductionSlotClass and slot.slot_index == slot_index and slot.is_active:
 			return slot.remaining_time
 	return 0.0
+
+
+## Reset mock time to 0.0 (for testing)
+## This should be called before starting production in tests
+## to ensure consistent timing
+func reset_mock_time() -> void:
+	_mock_time = 0.0
