@@ -93,7 +93,7 @@ func decide_purchase(customer_id: String) -> bool:
 	if roll > _purchase_probability:
 		return false
 
-	EconomyEngine.sell_bread(selected_bread)
+	EconomyManager.sell_bread(selected_bread)
 
 	customer_purchased.emit(customer_id, selected_bread.id, selected_bread.base_price)
 
