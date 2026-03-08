@@ -37,8 +37,8 @@ EventBus="*res://scripts/autoload/event_bus.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
 DataManager="*res://scripts/autoload/data_manager.gd"
-EconomyEngine="*res://scripts/autoload/economy_engine.gd"
-ProductionManager="*res://scripts/autoload/production_manager.gd"
+EconomyManager="*res://scripts/autoload/economy_manager.gd"
+BakeryManager="*res://scripts/autoload/bakery_manager.gd"
 CustomerSpawner="*res://scripts/autoload/customer_spawner.gd"
 
 [rendering]
