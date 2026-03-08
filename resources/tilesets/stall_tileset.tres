@@ -1,0 +1,29 @@
+[gd_resource type="TileSet" load_steps=3 format=3 uid="uid://bstalltileset123"]
+
+[ext_resource type="Texture2D" uid="uid://gjecie61mmr5" path="res://assets/placeholders/tile_floor.png" id="1_floor"]
+[ext_resource type="Texture2D" uid="uid://wc3ltsjbj06j" path="res://assets/placeholders/tile_stall.png" id="2_stall"]
+[ext_resource type="Texture2D" uid="uid://u05dktjfu0pu" path="res://assets/placeholders/tile_parasol.png" id="3_parasol"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_1_floor"]
+texture = ExtResource("1_floor")
+texture_region_size = Vector2i(30, 16)
+0:0/0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_2_stall"]
+texture = ExtResource("2_stall")
+texture_region_size = Vector2i(30, 16)
+0:0/0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_3_parasol"]
+texture = ExtResource("3_parasol")
+texture_region_size = Vector2i(30, 16)
+0:0/0/0 = 0
+
+[resource]
+tile_shape = 0
+tile_layout = 0
+tile_size = Vector2i(30, 16)
+
+sources/0 = SubResource("TileSetAtlasSource_1_floor")
+sources/1 = SubResource("TileSetAtlasSource_2_stall")
+sources/2 = SubResource("TileSetAtlasSource_3_parasol")

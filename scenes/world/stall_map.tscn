@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://bstallmap456"]
+
+[ext_resource type="Script" path="res://scripts/world/stall_map.gd" id="2"]
+[ext_resource type="TileSet" path="res://resources/tilesets/stall_tileset.tres" id="1"]
+
+[node name="StallMap" type="TileMapLayer"]
+tile_set = ExtResource("1")
+script = ExtResource("2")
