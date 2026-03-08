@@ -30,6 +30,9 @@ signal level_up(new_level: int)
 ## Emitted when production starts in a slot
 signal production_started(slot_index: int, recipe_id: String)
 
+## Emitted when production progresses in a slot
+signal production_progressed(slot_index: int, progress: float)
+
 ## Emitted when production completes in a slot
 signal production_completed(slot_index: int, recipe_id: String)
 
