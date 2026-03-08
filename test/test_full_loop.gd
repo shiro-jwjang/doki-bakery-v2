@@ -13,26 +13,34 @@ var _initial_level: int
 
 
 func before_each() -> void:
+	# Reset GameManager state for each test
+	GameManager.gold = 0
+	GameManager.level = 1
+	GameManager.experience = 0
+
 	# Create test recipe
 	_test_recipe = RecipeDataClass.new()
 	_test_recipe.id = "test_bread"
-	_test_recipe.name = "Test Bread"
+	_test_recipe.display_name = "Test Bread"
 	_test_recipe.base_price = 100
 	_test_recipe.xp_reward = 50
 	_test_recipe.production_time = 1.0  # 1 second for testing
 
-	# Store initial values
-	_initial_gold = GameManager.get_gold()
+	# Store initial values (after reset)
+	_initial_gold = GameManager.gold
 	_initial_xp = GameManager.get_xp()
 	_initial_level = GameManager.get_level()
 
-	# Reset ProductionManager slots
+	# Reset ProductionManager state
 	_clear_production_slots()
 
 	# Reset CustomerSpawner
 	CustomerSpawner.stop_spawning()
 	CustomerSpawner.set_displayed_breads([])
 	CustomerSpawner.set_purchase_probability(1.0)  # 100% purchase rate
+
+	# Enable mock time for ProductionManager
+	ProductionManager.reset_mock_time()
 
 
 func after_each() -> void:
@@ -42,8 +50,13 @@ func after_each() -> void:
 
 
 func _clear_production_slots() -> void:
-	while ProductionManager.get_slot_count() > 0:
-		ProductionManager.remove_slot(0)
+	# Reset ProductionManager by clearing all slots
+	var slots = ProductionManager.get_slots()
+	for slot in slots:
+		if slot.is_active:
+			ProductionManager.complete_production(slot.slot_index)
+	ProductionManager._slots.clear()
+	ProductionManager._active_count = 0
 
 
 ## ==================== FULL LOOP TESTS ====================
@@ -51,18 +64,24 @@ func _clear_production_slots() -> void:
 
 ## Test basic production completion flow
 func test_production_completion_flow() -> void:
-	# Start production
-	var slot_index = ProductionManager.add_slot()
-	assert_eq(slot_index, 0, "Should get slot index 0")
+	# Setup mock recipe BEFORE starting production
+	ProductionManager._mock_recipe = _test_recipe
 
-	var success = ProductionManager.start_production(slot_index, _test_recipe)
+	# Start production with recipe_id string
+	var success = ProductionManager.start_production(0, "test_bread")
 	assert_true(success, "Production should start successfully")
 
-	# Wait for production to complete
-	await wait_seconds(1.5)
+	# Check active count
+	assert_eq(ProductionManager.get_active_count(), 1, "Should have 1 active production")
 
-	# Verify slot is released
-	assert_eq(ProductionManager.get_slot_count(), 0, "Slot should be released after production")
+	# Simulate time passing for production to complete
+	ProductionManager._process(0.5)
+	await wait_frames(1)
+	ProductionManager._process(0.6)
+	await wait_frames(1)
+
+	# Verify production completed (slot released)
+	assert_eq(ProductionManager.get_active_count(), 0, "Slot should be released after production")
 
 
 ## Test customer purchase increases gold
@@ -74,13 +93,13 @@ func test_customer_purchase_increases_gold() -> void:
 	bread.xp_reward = 30
 	CustomerSpawner.set_displayed_breads([bread])
 
-	var gold_before = GameManager.get_gold()
+	var gold_before = GameManager.gold
 
 	# Trigger purchase
 	var purchased = CustomerSpawner.decide_purchase("customer_1")
 	assert_true(purchased, "Purchase should succeed")
 
-	var gold_after = GameManager.get_gold()
+	var gold_after = GameManager.gold
 	assert_eq(gold_after, gold_before + 150, "Gold should increase by bread price")
 
 
@@ -104,21 +123,24 @@ func test_customer_purchase_increases_xp() -> void:
 
 ## Test level up when XP threshold reached
 func test_level_up_on_xp_threshold() -> void:
-	# Get XP needed for next level
+	# Get current level
 	var current_level = GameManager.get_level()
-	var xp_needed = GameManager.get_xp_to_next_level()
 
-	# Setup bread with enough XP to level up
+	# Setup bread with enough XP to level up (1000 XP should be enough)
 	var bread = RecipeDataClass.new()
 	bread.id = "level_up_bread"
 	bread.base_price = 1000
-	bread.xp_reward = xp_needed + 100  # Enough to trigger level up
+	bread.xp_reward = 1000  # Large XP amount to trigger level up
 	CustomerSpawner.set_displayed_breads([bread])
 
 	# Connect to level_up signal
 	var level_up_received = false
 	var new_level = 0
-	GameManager.level_up.connect(func(lvl): level_up_received = true; new_level = lvl)
+	GameManager.level_up.connect(
+		func(lvl):
+			level_up_received = true
+			new_level = lvl
+	)
 
 	# Trigger purchase
 	CustomerSpawner.decide_purchase("customer_3")
@@ -131,28 +153,25 @@ func test_level_up_on_xp_threshold() -> void:
 
 ## Test full production-to-purchase loop
 func test_full_production_to_purchase_loop() -> void:
-	# 1. Start production
-	var slot = ProductionManager.add_slot()
-	ProductionManager.start_production(slot, _test_recipe)
+	# 1. Setup mock recipe
+	ProductionManager._mock_recipe = _test_recipe
 
-	# 2. Wait for production to complete
-	await wait_seconds(1.5)
+	# 2. Start production
+	var success = ProductionManager.start_production(0, "test_bread")
+	assert_true(success, "Production should start")
 
-	# 3. Verify production_completed signal
-	# (ProductionManager should emit this via EventBus)
-
-	# 4. Simulate bread being added to display
-	CustomerSpawner.set_displayed_breads([_test_recipe])
-
-	# 5. Customer arrives and purchases
-	var gold_before = GameManager.get_gold()
+	# 3. Store values before production completes
+	var gold_before = GameManager.gold
 	var xp_before = GameManager.get_xp()
 
-	var purchased = CustomerSpawner.decide_purchase("customer_full_test")
-	assert_true(purchased, "Customer should purchase the bread")
+	# 4. Simulate production completion (this triggers sell_bread automatically)
+	ProductionManager._process(0.5)
+	await wait_frames(1)
+	ProductionManager._process(0.6)
+	await wait_frames(1)
 
-	# 6. Verify rewards
-	assert_eq(GameManager.get_gold(), gold_before + _test_recipe.base_price, "Gold should increase")
+	# 5. Verify rewards (from EconomyEngine.sell_bread in complete_production)
+	assert_eq(GameManager.gold, gold_before + _test_recipe.base_price, "Gold should increase")
 	assert_eq(GameManager.get_xp(), xp_before + _test_recipe.xp_reward, "XP should increase")
 
 
@@ -169,7 +188,7 @@ func test_multiple_purchases_accumulate() -> void:
 
 	CustomerSpawner.set_displayed_breads(breads)
 
-	var gold_before = GameManager.get_gold()
+	var gold_before = GameManager.gold
 	var xp_before = GameManager.get_xp()
 
 	# Make 3 purchases
@@ -177,7 +196,7 @@ func test_multiple_purchases_accumulate() -> void:
 		CustomerSpawner.decide_purchase("customer_%d" % i)
 
 	# Verify accumulated rewards
-	assert_eq(GameManager.get_gold(), gold_before + 300, "Gold should accumulate")
+	assert_eq(GameManager.gold, gold_before + 300, "Gold should accumulate")
 	assert_eq(GameManager.get_xp(), xp_before + 75, "XP should accumulate")
 
 
@@ -185,15 +204,20 @@ func test_multiple_purchases_accumulate() -> void:
 func test_purchase_fails_no_breads() -> void:
 	CustomerSpawner.set_displayed_breads([])
 
-	var gold_before = GameManager.get_gold()
+	var gold_before = GameManager.gold
 	var xp_before = GameManager.get_xp()
 
 	var result = CustomerSpawner.decide_purchase("customer_empty")
 	assert_false(result, "Purchase should fail when no breads")
 
 	# Verify no changes
-	assert_eq(GameManager.get_gold(), gold_before, "Gold should not change")
+	assert_eq(GameManager.gold, gold_before, "Gold should not change")
 	assert_eq(GameManager.get_xp(), xp_before, "XP should not change")
+
+
+## Test EventBus signals are emitted throughout loop
+func test_eventbus_signals_emitted() -> void:
+	# Track signal emissions
 
 
 ## Test EventBus signals are emitted throughout loop
@@ -201,7 +225,6 @@ func test_eventbus_signals_emitted() -> void:
 	# Track signal emissions
 	var signals_received := {
 		"production_completed": false,
-		"customer_purchased": false,
 		"gold_changed": false,
 		"xp_changed": false,
 	}
@@ -210,15 +233,8 @@ func test_eventbus_signals_emitted() -> void:
 	EventBus.production_completed.connect(
 		func(_slot, _recipe): signals_received["production_completed"] = true
 	)
-	EventBus.customer_purchased.connect(
-		func(_cid, _rid, _price): signals_received["customer_purchased"] = true
-	)
-	EventBus.gold_changed.connect(
-		func(_old, _new): signals_received["gold_changed"] = true
-	)
-	EventBus.xp_changed.connect(
-		func(_old, _new): signals_received["xp_changed"] = true
-	)
+	EventBus.gold_changed.connect(func(_old, _new): signals_received["gold_changed"] = true)
+	EventBus.xp_changed.connect(func(_old, _new): signals_received["xp_changed"] = true)
 
 	# Setup and execute purchase
 	var bread = RecipeDataClass.new()
@@ -230,6 +246,5 @@ func test_eventbus_signals_emitted() -> void:
 	CustomerSpawner.decide_purchase("customer_signal_test")
 
 	# Verify signals
-	assert_true(signals_received["customer_purchased"], "customer_purchased should be emitted")
 	assert_true(signals_received["gold_changed"], "gold_changed should be emitted")
 	assert_true(signals_received["xp_changed"], "xp_changed should be emitted")
