@@ -44,6 +44,10 @@ func _ready() -> void:
 ## @param recipe_id: The ID of the recipe to display
 ## @param price: The selling price of the bread
 func setup(recipe_id: String, price: int) -> void:
+	# Stop any previous timer before setting up new bread
+	if _sell_timer != null and _sell_timer.time_left > 0:
+		_sell_timer.stop()
+
 	_recipe_id = recipe_id
 	_price = price
 	_has_bread = true
@@ -98,3 +102,9 @@ func force_sell() -> void:
 	if _has_bread:
 		_sell_timer.stop()
 		_sell_bread()
+
+
+## Clean up signals when node is removed from scene tree
+func _exit_tree() -> void:
+	if _sell_timer != null and _sell_timer.timeout.is_connected(_on_sell_timer_timeout):
+		_sell_timer.timeout.disconnect(_on_sell_timer_timeout)

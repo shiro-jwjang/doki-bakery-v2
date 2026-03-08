@@ -35,10 +35,9 @@ func add_to_inventory(recipe_id: String, price: int) -> void:
 	_inventory[recipe_id] += 1
 
 	# Track item with price and timestamp
-	_inventory_items[recipe_id].append({
-		"price": price,
-		"timestamp": Time.get_unix_time_from_system()
-	})
+	_inventory_items[recipe_id].append(
+		{"price": price, "timestamp": Time.get_unix_time_from_system()}
+	)
 
 	inventory_updated.emit(recipe_id, _inventory[recipe_id])
 

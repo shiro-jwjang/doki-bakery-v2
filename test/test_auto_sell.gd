@@ -99,3 +99,70 @@ func test_sell_awards_gold() -> void:
 
 	# Assert
 	assert_gt(GameManager.gold, initial_gold, "Gold should increase after bread sold")
+
+
+## Test: Multiple breads can be added to inventory
+func test_multiple_breads_in_inventory() -> void:
+	# Arrange
+	var recipe_id = "croissant"
+	var price = 75
+	watch_signals(sales_manager)
+
+	# Act - add 3 breads
+	sales_manager.add_to_inventory(recipe_id, price)
+	sales_manager.add_to_inventory(recipe_id, price)
+	sales_manager.add_to_inventory(recipe_id, price)
+
+	# Assert
+	assert_eq(sales_manager.get_inventory_count(recipe_id), 3, "Should have 3 breads in inventory")
+	assert_signal_emit_count(
+		sales_manager, "inventory_updated", 3, "Should emit inventory_updated 3 times"
+	)
+
+
+## Test: Selling increases gold by the correct amount
+func test_sell_increases_gold_by_correct_amount() -> void:
+	# Arrange
+	var recipe_id = "baguette"
+	var bread_price = 100
+	var initial_gold = GameManager.gold
+
+	display_slot.setup(recipe_id, bread_price)
+	watch_signals(display_slot)
+
+	# Act - wait for bread to sell
+	await wait_seconds(6.0)
+
+	# Assert
+	assert_eq(
+		GameManager.gold,
+		initial_gold + bread_price,
+		"Gold should increase by exactly the bread price"
+	)
+
+
+## Test: Setup clears previous timer
+func test_setup_clears_previous_timer() -> void:
+	# Arrange
+	var first_recipe = "croissant"
+	var first_price = 75
+	var second_recipe = "baguette"
+	var second_price = 100
+
+	# Act - setup first bread
+	display_slot.setup(first_recipe, first_price)
+	var first_setup_time = Time.get_unix_time_from_system()
+
+	# Wait 2 seconds
+	await wait_seconds(2.0)
+
+	# Setup second bread (should clear first timer)
+	display_slot.setup(second_recipe, second_price)
+	var second_setup_time = Time.get_unix_time_from_system()
+
+	# Wait for sell (should be 5 seconds from second setup, not 7 from first)
+	await wait_seconds(5.5)
+
+	# Assert - bread should be sold now
+	assert_false(display_slot.has_bread(), "Bread should be sold after 5 seconds from second setup")
+	assert_eq(display_slot.get_recipe_id(), second_recipe, "Should have sold the second bread")
