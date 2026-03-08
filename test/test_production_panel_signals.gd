@@ -60,6 +60,28 @@ func test_panel_updates_on_baking_finished() -> void:
 	assert_eq(slot_ui.progress_bar.value, 1.0, "Progress bar should be full")
 
 
+## Test that panel updates progress bar on production_progressed signal
+func test_panel_updates_on_baking_progressed() -> void:
+	# First start production so the slot exists
+	EventBus.production_started.emit(0, "test_bread")
+	await wait_frames(2)
+
+	# Emit progress signal at 50%
+	EventBus.production_progressed.emit(0, 0.5)
+	await wait_frames(2)
+
+	# Verify progress bar was updated
+	var slot_ui = panel.get_slot_ui(0)
+	assert_not_null(slot_ui, "Slot UI should exist")
+	assert_eq(slot_ui.progress_bar.value, 0.5, "Progress bar should show 50%")
+
+	# Emit progress signal at 80%
+	EventBus.production_progressed.emit(0, 0.8)
+	await wait_frames(2)
+
+	assert_eq(slot_ui.progress_bar.value, 0.8, "Progress bar should update to 80%")
+
+
 ## Test that ProductionPanel does not poll BakeryManager in _process
 func test_panel_no_process_polling() -> void:
 	# This test verifies that ProductionPanel uses signal-based updates
