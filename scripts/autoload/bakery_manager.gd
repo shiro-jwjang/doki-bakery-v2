@@ -82,6 +82,8 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 	_active_count += 1
 
 	production_started.emit(slot_index, recipe_id)
+	# Also emit EventBus signal so UI components can react
+	EventBus.production_started.emit(slot_index, recipe_id)
 	return true
 
 
@@ -133,6 +135,8 @@ func _process(delta: float) -> void:
 			# Update progress based on wall clock elapsed time
 			if slot.recipe.production_time > 0:
 				slot.progress = minf(1.0, elapsed_time / slot.recipe.production_time)
+				# Emit progress signal for UI updates
+				EventBus.production_progressed.emit(slot.slot_index, slot.progress)
 
 			# Check if production is complete
 			if slot.remaining_time <= 0:
