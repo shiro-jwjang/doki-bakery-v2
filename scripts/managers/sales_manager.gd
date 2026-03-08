@@ -15,13 +15,19 @@ var _inventory: Dictionary = {}
 ## Track bread items in inventory with metadata
 var _inventory_items: Dictionary = {}
 
-## Reference to EventBus
-var _event_bus: Node = null
-
 
 func _ready() -> void:
-	# Get EventBus autoload reference
-	_event_bus = get_tree().root.get_node_or_null("/root/EventBus")
+	# Subscribe to production_completed via EventBus (autoload direct reference)
+	EventBus.production_completed.connect(_on_production_completed)
+
+
+## Handle production completed event from BakeryManager via EventBus
+## Automatically adds bread to inventory when baking finishes
+func _on_production_completed(_slot_index: int, recipe_id: String) -> void:
+	var recipe = DataManager.get_recipe(recipe_id)
+	if recipe == null:
+		return
+	add_to_inventory(recipe_id, recipe.base_price)
 
 
 ## Add bread to inventory after baking finishes
@@ -41,9 +47,8 @@ func add_to_inventory(recipe_id: String, price: int) -> void:
 
 	inventory_updated.emit(recipe_id, _inventory[recipe_id])
 
-	# Notify display system
-	if _event_bus != null:
-		_event_bus.baking_finished.emit(recipe_id)
+	# Notify display system via EventBus (direct autoload reference)
+	EventBus.baking_finished.emit(recipe_id)
 
 
 ## Get the count of a specific bread in inventory

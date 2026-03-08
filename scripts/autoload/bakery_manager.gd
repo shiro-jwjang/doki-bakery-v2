@@ -106,10 +106,8 @@ func complete_production(slot_index: int) -> void:
 
 			if slot.recipe:
 				production_completed.emit(slot_index, slot.recipe.id)
-				# Also emit EventBus signal
+				# Emit EventBus signal → SalesManager subscribes and calls add_to_inventory()
 				EventBus.production_completed.emit(slot_index, slot.recipe.id)
-				# Make bread sellable by selling it through EconomyManager
-				EconomyManager.sell_bread(slot.recipe)
 			break
 
 

@@ -24,9 +24,6 @@ var _sell_timer: Timer = null
 ## Flag to track if bread is currently displayed
 var _has_bread: bool = false
 
-## Reference to GameManager
-var _game_manager: Node = null
-
 
 func _ready() -> void:
 	# Create and configure the sell timer
@@ -35,9 +32,6 @@ func _ready() -> void:
 	_sell_timer.one_shot = true
 	_sell_timer.timeout.connect(_on_sell_timer_timeout)
 	add_child(_sell_timer)
-
-	# Get GameManager autoload reference
-	_game_manager = get_tree().root.get_node_or_null("/root/GameManager")
 
 
 ## Setup the display slot with a bread item
@@ -79,16 +73,18 @@ func _on_sell_timer_timeout() -> void:
 	_sell_bread()
 
 
-## Sell the bread and award gold
+## Sell the bread and award gold via GameManager (direct autoload reference)
 func _sell_bread() -> void:
 	if not _has_bread:
 		return
 
-	# Award gold to player
-	if _game_manager != null:
-		_game_manager.add_gold(_price)
+	# Award gold to player via GameManager autoload directly
+	GameManager.add_gold(_price)
 
-	# Emit sold signal
+	# Notify via EventBus
+	EventBus.bread_sold.emit(_recipe_id, _price)
+
+	# Emit local signal
 	bread_sold.emit(_recipe_id, _price)
 
 	# Clear the slot
