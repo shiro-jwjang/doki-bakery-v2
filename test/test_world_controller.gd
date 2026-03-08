@@ -4,8 +4,8 @@ extends GutTest
 ##
 ## Tests the WorldController which:
 ## 1. Manages UI components within WorldView hierarchy
-## 2. Validates EventBus signal connections
-## 3. Ensures proper signal propagation from managers to UI
+## 2. Connects EventBus signals for forwarding to UI
+## 3. Validates EventBus signal connections
 
 const WorldControllerScript = preload("res://scripts/world/world_controller.gd")
 
@@ -50,6 +50,51 @@ func test_get_display_slots_returns_null_when_no_slots() -> void:
 	assert_null(slots, "get_display_slots should return null when no slots")
 
 
+# ==================== EventBus Connection Tests ====================
+
+func test_event_bus_gold_changed_connected() -> void:
+	assert_true(
+		EventBus.gold_changed.is_connected(world_controller._on_gold_changed),
+		"WorldController should be connected to gold_changed"
+	)
+
+
+func test_event_bus_xp_changed_connected() -> void:
+	assert_true(
+		EventBus.xp_changed.is_connected(world_controller._on_xp_changed),
+		"WorldController should be connected to xp_changed"
+	)
+
+
+func test_event_bus_production_signals_connected() -> void:
+	assert_true(
+		EventBus.production_started.is_connected(world_controller._on_production_started),
+		"WorldController should be connected to production_started"
+	)
+	assert_true(
+		EventBus.production_progressed.is_connected(world_controller._on_production_progressed),
+		"WorldController should be connected to production_progressed"
+	)
+	assert_true(
+		EventBus.production_completed.is_connected(world_controller._on_production_completed),
+		"WorldController should be connected to production_completed"
+	)
+
+
+func test_event_bus_baking_finished_connected() -> void:
+	assert_true(
+		EventBus.baking_finished.is_connected(world_controller._on_baking_finished),
+		"WorldController should be connected to baking_finished"
+	)
+
+
+func test_event_bus_bread_sold_connected() -> void:
+	assert_true(
+		EventBus.bread_sold.is_connected(world_controller._on_bread_sold),
+		"WorldController should be connected to bread_sold"
+	)
+
+
 # ==================== Validation Tests ====================
 
 func test_validate_connections_returns_dictionary() -> void:
@@ -57,43 +102,48 @@ func test_validate_connections_returns_dictionary() -> void:
 	assert_not_null(result, "validate_connections should return a dictionary")
 
 
-func test_validate_connections_reports_missing_hud() -> void:
+func test_validate_connections_reports_connection_status() -> void:
 	var result: Dictionary = world_controller.validate_connections()
-	# Without HUD, validation should report it's missing or not connected
-	assert_true(
-		result.has("hud") or result.has("all_connected"),
-		"Result should have hud or all_connected key"
-	)
+	assert_true(result.has("gold_changed_connected"), "Should report gold_changed_connected")
+	assert_true(result.has("xp_changed_connected"), "Should report xp_changed_connected")
+	assert_true(result.has("production_started_connected"), "Should report production_started_connected")
+
+
+func test_validate_connections_all_connected_true_after_init() -> void:
+	var result: Dictionary = world_controller.validate_connections()
+	assert_true(result["all_connected"], "All EventBus connections should be established")
 
 
 # ==================== Signal Propagation Tests ====================
 
-func test_gold_change_signal_wired() -> void:
-	# WorldController should connect to gold_changed if it centralizes wiring
-	# For now, just verify EventBus has the signal
+func test_gold_change_signal_propagates() -> void:
+	# Create mock HUD
+	var mock_hud = Control.new()
+	mock_hud.set_script(GDScript.new())
+	mock_hud.get_script().source_code = """
+extends CanvasLayer
+var gold_received: bool = false
+func on_gold_changed(_old, _new): gold_received = true
+"""
+	mock_hud.get_script().reload()
+	
+	world_controller.set_hud(mock_hud)
+	
+	# Emit signal
+	EventBus.gold_changed.emit(0, 100)
+	
+	# Verify handler was called (WorldController received it)
 	assert_true(
-		EventBus.has_signal("gold_changed"),
-		"EventBus should have gold_changed signal"
+		EventBus.gold_changed.is_connected(world_controller._on_gold_changed),
+		"Signal should be wired through WorldController"
 	)
+	
+	mock_hud.queue_free()
 
 
-func test_xp_change_signal_wired() -> void:
+func test_production_started_signal_propagates() -> void:
+	# Verify WorldController is listening
 	assert_true(
-		EventBus.has_signal("xp_changed"),
-		"EventBus should have xp_changed signal"
-	)
-
-
-func test_production_signals_wired() -> void:
-	assert_true(
-		EventBus.has_signal("production_started"),
-		"EventBus should have production_started signal"
-	)
-	assert_true(
-		EventBus.has_signal("production_progressed"),
-		"EventBus should have production_progressed signal"
-	)
-	assert_true(
-		EventBus.has_signal("production_completed"),
-		"EventBus should have production_completed signal"
+		EventBus.production_started.is_connected(world_controller._on_production_started),
+		"production_started should propagate through WorldController"
 	)
