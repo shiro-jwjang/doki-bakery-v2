@@ -3,5 +3,6 @@
   "log_level": 3,
   "should_exit": true,
   "include_subdirs": true,
-  "double_strategy": "SCRIPT_ONLY"
+  "double_strategy": "SCRIPT_ONLY",
+  "prehook_script": "res://test/test_helpers.gd"
 }

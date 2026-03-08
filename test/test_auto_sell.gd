@@ -165,4 +165,98 @@ func test_setup_clears_previous_timer() -> void:
 
 	# Assert - bread should be sold now
 	assert_false(display_slot.has_bread(), "Bread should be sold after 5 seconds from second setup")
-	assert_eq(display_slot.get_recipe_id(), second_recipe, "Should have sold the second bread")
+
+
+## Test: DisplaySlot auto-fills when baking_finished is emitted
+func test_display_slot_auto_fills_on_baking_finished() -> void:
+	# Arrange
+	var recipe_id = "croissant"
+	var price = 75
+	sales_manager.add_to_inventory(recipe_id, price)
+	watch_signals(display_slot)
+
+	# Act - emit baking_finished signal
+	EventBus.baking_finished.emit(recipe_id)
+	await wait_frames(2)
+
+	# Assert - empty slot should be filled
+	assert_true(display_slot.has_bread(), "Empty slot should be filled when baking_finished emits")
+	assert_eq(display_slot.get_recipe_id(), recipe_id, "Should have correct recipe ID")
+
+
+## Test: DisplaySlot won't fill if already has bread
+func test_display_slot_wont_fill_if_has_bread() -> void:
+	# Arrange
+	var first_recipe = "croissant"
+	var second_recipe = "baguette"
+	var price = 75
+
+	# Act - setup first bread manually
+	display_slot.setup(first_recipe, price)
+	watch_signals(display_slot)
+
+	# Emit baking_finished for different recipe
+	EventBus.baking_finished.emit(second_recipe)
+	await wait_frames(2)
+
+	# Assert - should still have first bread
+	assert_true(display_slot.has_bread(), "Should still have bread")
+	assert_eq(display_slot.get_recipe_id(), first_recipe, "Should keep original recipe")
+
+
+## Test: Selling removes from inventory
+func test_selling_removes_from_inventory() -> void:
+	# Arrange
+	var recipe_id = "croissant"
+	var price = 75
+	sales_manager.add_to_inventory(recipe_id, price)
+	display_slot.setup(recipe_id, price)
+	watch_signals(display_slot)
+
+	# Assert - inventory should have 1 item
+	assert_eq(sales_manager.get_inventory_count(recipe_id), 1, "Should start with 1 in inventory")
+
+	# Act - wait for auto-sell
+	await wait_seconds(6.0)
+
+	# Assert - inventory should be empty
+	assert_eq(
+		sales_manager.get_inventory_count(recipe_id), 0, "Inventory should be empty after sell"
+	)
+
+
+## Test: DisplaySlot.setup rejects invalid inputs
+func test_display_slot_setup_rejects_empty_recipe_id() -> void:
+	# Arrange & Act
+	display_slot.setup("", 100)
+
+	# Assert - should not have bread
+	assert_false(display_slot.has_bread(), "Should not setup with empty recipe_id")
+
+
+## Test: DisplaySlot.setup rejects negative or zero price
+func test_display_slot_setup_rejects_non_positive_price() -> void:
+	# Arrange & Act
+	display_slot.setup("croissant", 0)
+
+	# Assert - should not have bread
+	assert_false(display_slot.has_bread(), "Should not setup with zero price")
+
+	display_slot.setup("baguette", -50)
+	assert_false(display_slot.has_bread(), "Should not setup with negative price")
+
+
+## Test: SalesManager.remove_from_inventory rejects non-positive amount
+func test_remove_from_inventory_rejects_non_positive_amount() -> void:
+	# Arrange
+	var recipe_id = "croissant"
+	sales_manager.add_to_inventory(recipe_id, 75)
+
+	# Act - try to remove 0 items
+	var result_zero = sales_manager.remove_from_inventory(recipe_id, 0)
+	var result_negative = sales_manager.remove_from_inventory(recipe_id, -1)
+
+	# Assert
+	assert_false(result_zero, "Should return false for zero amount")
+	assert_false(result_negative, "Should return false for negative amount")
+	assert_eq(sales_manager.get_inventory_count(recipe_id), 1, "Inventory should remain unchanged")

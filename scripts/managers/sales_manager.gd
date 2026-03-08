@@ -70,6 +70,11 @@ func get_inventory_items(recipe_id: String) -> Array:
 ## @param amount: Number of items to remove (default: 1)
 ## @returns true if successful, false if insufficient stock
 func remove_from_inventory(recipe_id: String, amount: int = 1) -> bool:
+	# Validate inputs
+	if amount <= 0:
+		push_error("SalesManager.remove_from_inventory: amount must be positive, got %d" % amount)
+		return false
+
 	if not _inventory.has(recipe_id):
 		return false
 

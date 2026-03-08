@@ -33,11 +33,21 @@ func _ready() -> void:
 	_sell_timer.timeout.connect(_on_sell_timer_timeout)
 	add_child(_sell_timer)
 
+	# SNA-97: Subscribe to baking_finished for auto-fill empty slots
+	EventBus.baking_finished.connect(_on_baking_finished)
+
 
 ## Setup the display slot with a bread item
 ## @param recipe_id: The ID of the recipe to display
 ## @param price: The selling price of the bread
 func setup(recipe_id: String, price: int) -> void:
+	# Validate inputs
+	if recipe_id.is_empty() or price <= 0:
+		push_error(
+			"DisplaySlot.setup: invalid arguments (recipe_id='%s', price=%d)" % [recipe_id, price]
+		)
+		return
+
 	# Stop any previous timer before setting up new bread
 	if _sell_timer != null and _sell_timer.time_left > 0:
 		_sell_timer.stop()
@@ -78,6 +88,9 @@ func _sell_bread() -> void:
 	if not _has_bread:
 		return
 
+	# Remove from inventory via SalesManager (direct autoload reference)
+	SalesManager.remove_from_inventory(_recipe_id)
+
 	# Award gold to player via GameManager autoload directly
 	GameManager.add_gold(_price)
 
@@ -93,6 +106,19 @@ func _sell_bread() -> void:
 	_price = 0
 
 
+## Handle baking_finished event - auto-fill empty display slots
+func _on_baking_finished(recipe_id: String) -> void:
+	# Only fill if this slot is empty
+	if _has_bread:
+		return
+
+	var recipe = DataManager.get_recipe(recipe_id)
+	if recipe == null:
+		return
+
+	setup(recipe_id, recipe.base_price)
+
+
 ## Force sell the bread immediately (e.g., for manual sales)
 func force_sell() -> void:
 	if _has_bread:
@@ -104,3 +130,5 @@ func force_sell() -> void:
 func _exit_tree() -> void:
 	if _sell_timer != null and _sell_timer.timeout.is_connected(_on_sell_timer_timeout):
 		_sell_timer.timeout.disconnect(_on_sell_timer_timeout)
+	if EventBus.baking_finished.is_connected(_on_baking_finished):
+		EventBus.baking_finished.disconnect(_on_baking_finished)
