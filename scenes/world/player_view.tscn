@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://b3x5q8r7k2n5p"]
+
+[ext_resource type="Script" path="res://scripts/world/player_view.gd" id="1_0abcd"]
+[ext_resource type="SpriteFrames" uid="uid://b3x5q8r7k2n6p" path="res://resources/animations/player_animations.tres" id="2_01234"]
+
+[node name="PlayerView" type="Node2D"]
+position = Vector2(0, 0)
+script = ExtResource("1_0abcd")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("2_01234")
+autoplay = "idle"
