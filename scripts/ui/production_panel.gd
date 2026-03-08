@@ -5,8 +5,12 @@ extends Control
 ## Displays production slot status and progress.
 ## Uses signal-based updates instead of polling BakeryManager.
 ## SNA-95: ProductionPanel ↔ BakeryManager 시그널 연결
+## SNA-96: 슬롯 클릭 → BreadMenu → 생산 시작
 
-## Slot UI data: slot_index → { label: Label, progress_bar: ProgressBar, container: Control }
+## Emitted when a slot is clicked
+signal slot_clicked(slot_index: int)
+
+## Slot UI data: slot_index → { label, progress_bar, container, button }
 var _slot_data: Dictionary = {}
 
 
@@ -58,15 +62,21 @@ func _get_or_create_slot(slot_index: int) -> Dictionary:
 	if _slot_data.has(slot_index):
 		return _slot_data[slot_index]
 
-	# Create container
-	var container := VBoxContainer.new()
-	container.name = "Slot%d" % slot_index
+	# Create button as container (clickable slot)
+	var button := Button.new()
+	button.name = "Slot%d" % slot_index
+	button.toggle_mode = false
+	button.pressed.connect(_on_slot_button_pressed.bind(slot_index))
+
+	# Create inner container for label + progress
+	var inner := VBoxContainer.new()
+	button.add_child(inner)
 
 	# Label for status
 	var label := Label.new()
 	label.name = "StatusLabel"
 	label.text = "빈 슬롯"
-	container.add_child(label)
+	inner.add_child(label)
 
 	# Progress bar
 	var progress_bar := ProgressBar.new()
@@ -74,14 +84,20 @@ func _get_or_create_slot(slot_index: int) -> Dictionary:
 	progress_bar.min_value = 0.0
 	progress_bar.max_value = 1.0
 	progress_bar.value = 0.0
-	container.add_child(progress_bar)
+	inner.add_child(progress_bar)
 
-	add_child(container)
+	add_child(button)
 
 	var ui := {
 		"label": label,
 		"progress_bar": progress_bar,
-		"container": container,
+		"container": button,
+		"button": button,
 	}
 	_slot_data[slot_index] = ui
 	return ui
+
+
+## Handle slot button press
+func _on_slot_button_pressed(slot_index: int) -> void:
+	slot_clicked.emit(slot_index)
