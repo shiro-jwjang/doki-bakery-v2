@@ -1,17 +1,19 @@
-[gd_scene load_steps=6 format=3 uid="uid://b3x5q8r7k2n4p"]
+[gd_scene load_steps=7 format=3 uid="uid://b3x5q8r7k2n4p"]
 
 [ext_resource type="Script" path="res://scripts/world/world_view.gd" id="1_0abcd"]
 [ext_resource type="Script" path="res://scripts/world/world_controller.gd" id="2_wctrl"]
 [ext_resource type="PackedScene" uid="uid://c5p7k2n4v8q6k" path="res://scenes/ui/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" uid="uid://b3x5q8r7k2n5p" path="res://scenes/world/player_view.tscn" id="4_player"]
 [ext_resource type="PackedScene" uid="uid://bstallmap456" path="res://scenes/world/stall_map.tscn" id="5_stall"]
+[ext_resource type="PackedScene" path="res://scenes/ui/production_panel.tscn" id="6_panel"]
 
 [node name="WorldView" type="Node2D"]
 script = ExtResource("1_0abcd")
 
-[node name="WorldController" type="Node" parent="." node_paths=PackedStringArray("hud")]
+[node name="WorldController" type="Node" parent="." node_paths=PackedStringArray("hud", "production_panel")]
 script = ExtResource("2_wctrl")
 hud = NodePath("../UI/HUD")
+production_panel = NodePath("../UI/ProductionPanel")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(600, 500)
@@ -33,3 +35,5 @@ y_sort_enabled = true
 layer = 2
 
 [node name="HUD" parent="UI" instance=ExtResource("3_hud")]
+
+[node name="ProductionPanel" parent="UI" instance=ExtResource("6_panel")]
