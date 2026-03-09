@@ -280,3 +280,31 @@ func test_stall_map_exists_in_background() -> void:
 
 	var stall_map = background.find_child("StallMap", true, false)
 	assert_not_null(stall_map, "StallMap should be child of Background")
+
+
+## ==================== SNA-115: ProductionPanel PLACEMENT TESTS ====================
+
+
+## Test that ProductionPanel exists as child of UI layer
+func test_production_panel_exists_in_ui() -> void:
+	if _world_view == null:
+		fail_test("WorldView scene file does not exist")
+
+	var ui = _world_view.find_child("UI", true, false)
+	if ui == null:
+		fail_test("UI layer not found")
+
+	var production_panel = ui.find_child("ProductionPanel", true, false)
+	assert_not_null(production_panel, "ProductionPanel should be child of UI layer")
+
+
+## Test that WorldController references ProductionPanel
+func test_world_controller_has_production_panel_reference() -> void:
+	if _world_view == null:
+		fail_test("WorldView scene file does not exist")
+
+	var controller = _world_view.find_child("WorldController", true, false)
+	if controller == null:
+		fail_test("WorldController not found")
+
+	assert_not_null(controller.production_panel, "WorldController should have production_panel reference")
