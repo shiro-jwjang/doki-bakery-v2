@@ -219,8 +219,8 @@ func load_game() -> bool:
 	shop_stage = save_data.shop_stage
 	_is_loaded = true
 
-	# TODO: Restore production slots to BakeryManager
-	# This requires BakeryManager to have a restore_slots() method
+	# Restore production slots to BakeryManager
+	BakeryManager.restore_slots(save_data.production_slots)
 
 	return true
 
