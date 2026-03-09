@@ -133,10 +133,10 @@ func test_level_up_on_xp_threshold() -> void:
 	bread.xp_reward = 1000  # Large XP amount to trigger level up
 	CustomerSpawner.set_displayed_breads([bread])
 
-	# Connect to level_up signal
+	# Connect to level_up signal via EventBus (not GameManager)
 	var level_up_received = false
 	var new_level = 0
-	GameManager.level_up.connect(
+	EventBus.level_up.connect(
 		func(lvl):
 			level_up_received = true
 			new_level = lvl

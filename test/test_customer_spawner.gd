@@ -172,20 +172,20 @@ func test_decide_purchase_with_bread_guaranteed() -> void:
 		CustomerSpawner.set_displayed_breads([mock_bread])
 		CustomerSpawner.set_purchase_probability(1.0)
 
-		var signal_received = false
-		var signal_data = {}
-		CustomerSpawner.customer_purchased.connect(
-			func(cid, rid, price): signal_received = true; signal_data = {
-				"customer_id": cid, "recipe_id": rid, "price": price
-			}
-		)
+		# Reset signal tracking
+		_signal_received = false
+		_signal_data = {}
+		CustomerSpawner.customer_purchased.connect(_on_customer_purchased)
 
 		var result = CustomerSpawner.decide_purchase("customer_1")
 		assert_true(result, "Should return true for successful purchase")
-		assert_true(signal_received, "customer_purchased signal should be emitted")
-		assert_eq(signal_data["customer_id"], "customer_1", "Signal should include customer_id")
-		assert_eq(signal_data["recipe_id"], "test_bread", "Signal should include recipe_id")
-		assert_eq(signal_data["price"], 100, "Signal should include price")
+
+		assert_true(_signal_received, "customer_purchased signal should be emitted")
+		assert_eq(_signal_data.get("customer_id", ""), "customer_1", "Signal should include customer_id")
+		assert_eq(_signal_data.get("recipe_id", ""), "test_bread", "Signal should include recipe_id")
+		assert_eq(_signal_data.get("price", 0), 100, "Signal should include price")
+
+		CustomerSpawner.customer_purchased.disconnect(_on_customer_purchased)
 	else:
 		pending("Need to implement decide_purchase method")
 
@@ -249,6 +249,11 @@ func test_displayed_breads_getter_setter() -> void:
 func _on_customer_arrived(customer_id: String) -> void:
 	_signal_received = true
 	_signal_data = {"customer_id": customer_id}
+
+
+func _on_customer_purchased(customer_id: String, recipe_id: String, price: int) -> void:
+	_signal_received = true
+	_signal_data = {"customer_id": customer_id, "recipe_id": recipe_id, "price": price}
 
 
 func _create_mock_bread() -> Resource:

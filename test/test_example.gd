@@ -18,7 +18,7 @@ func test_sample_pass() -> void:
 func test_sample_string() -> void:
 	"""Sample string comparison test"""
 	var hello := "Hello, Bakery!"
-	assert_has(hello, "Bakery", "String should contain 'Bakery'")
+	assert_true(hello.contains("Bakery"), "String should contain 'Bakery'")
 
 
 func test_sample_array() -> void:
