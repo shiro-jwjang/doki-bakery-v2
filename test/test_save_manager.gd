@@ -125,10 +125,14 @@ func test_load_game_reads_data() -> void:
 	assert_not_null(loaded_data, "Loaded data should not be null")
 	assert_eq(int(loaded_data.get("game", {}).get("gold", 0)), 777, "Gold should be loaded")
 	assert_eq(
-		int(loaded_data.get("game", {}).get("legendary_bread", 0)), 7, "Legendary bread should be loaded"
+		int(loaded_data.get("game", {}).get("legendary_bread", 0)),
+		7,
+		"Legendary bread should be loaded"
 	)
 	assert_eq(int(loaded_data.get("game", {}).get("level", 0)), 5, "Level should be loaded")
-	assert_eq(int(loaded_data.get("game", {}).get("experience", 0)), 300, "Experience should be loaded")
+	assert_eq(
+		int(loaded_data.get("game", {}).get("experience", 0)), 300, "Experience should be loaded"
+	)
 
 
 ## Test save_completed signal is emitted

@@ -16,7 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Doki-Doki Bakery v2"
 config/description="두근두근 베이커리 - 방치형 베이커리 경영 게임"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/menus/title.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -31,6 +31,7 @@ SalesManager="*res://scripts/managers/sales_manager.gd"
 EconomyManager="*res://scripts/autoload/economy_manager.gd"
 BakeryManager="*res://scripts/autoload/bakery_manager.gd"
 CustomerSpawner="*res://scripts/autoload/customer_spawner.gd"
+UIManager="*res://scenes/autoload/ui_manager.tscn"
 
 [display]
 

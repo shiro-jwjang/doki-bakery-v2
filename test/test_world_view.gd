@@ -42,8 +42,7 @@ func test_world_view_root_is_node2d() -> void:
 	if _world_view == null:
 		fail_test("WorldView scene file does not exist")
 	assert_true(
-		_world_view is Node2D,
-		"WorldView root should be Node2D, got: %s" % _world_view.get_class()
+		_world_view is Node2D, "WorldView root should be Node2D, got: %s" % _world_view.get_class()
 	)
 
 
@@ -70,10 +69,7 @@ func test_camera2d_viewport_size() -> void:
 
 	# Check that zoom is set (should be approximately (1.0, 1.0) for base viewport)
 	var zoom = camera.zoom
-	assert_true(
-		zoom.x > 0 and zoom.y > 0,
-		"Camera2D zoom should be positive, got: %s" % str(zoom)
-	)
+	assert_true(zoom.x > 0 and zoom.y > 0, "Camera2D zoom should be positive, got: %s" % str(zoom))
 
 	# Verify camera is enabled
 	assert_true(camera.enabled, "Camera2D should be enabled")
@@ -121,10 +117,7 @@ func test_ui_layer_exists() -> void:
 	assert_not_null(ui, "WorldView should have a UI CanvasLayer")
 
 	if ui != null:
-		assert_true(
-			ui is CanvasLayer,
-			"UI should be a CanvasLayer, got: %s" % ui.get_class()
-		)
+		assert_true(ui is CanvasLayer, "UI should be a CanvasLayer, got: %s" % ui.get_class())
 
 
 ## ==================== LAYER ORDER TESTS ====================
@@ -149,7 +142,10 @@ func test_canvas_layer_order() -> void:
 
 	assert_true(
 		bg_layer < ent_layer and ent_layer < ui_layer,
-		"Layer order should be Background (%d) < Entities (%d) < UI (%d)" % [bg_layer, ent_layer, ui_layer]
+		(
+			"Layer order should be Background (%d) < Entities (%d) < UI (%d)"
+			% [bg_layer, ent_layer, ui_layer]
+		)
 	)
 
 
@@ -204,17 +200,14 @@ func test_y_sort_ordering() -> void:
 	node_back.name = "TestNodeBack"
 
 	node_front.position.y = 100  # Higher Y = rendered in front
-	node_back.position.y = 0     # Lower Y = rendered behind
+	node_back.position.y = 0  # Lower Y = rendered behind
 
 	y_sort_node.add_child(node_front)
 	y_sort_node.add_child(node_back)
 
 	# In Y-Sort, higher Y values should be rendered AFTER (on top of) lower Y values
 	# We can verify this by checking that YSort is enabled
-	assert_true(
-		y_sort_node.y_sort_enabled,
-		"YSort should be enabled for proper depth ordering"
-	)
+	assert_true(y_sort_node.y_sort_enabled, "YSort should be enabled for proper depth ordering")
 
 	# Clean up
 	node_front.queue_free()

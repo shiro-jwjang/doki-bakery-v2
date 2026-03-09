@@ -177,12 +177,12 @@ func test_full_production_to_purchase_loop() -> void:
 	# 2. Add to DisplaySlot (Simulating WorldController routing)
 	CustomerSpawner.set_displayed_breads([_test_recipe])
 	CustomerSpawner.set_purchase_probability(1.0)
-	
+
 	# 3. Customer purchase
 	var gold_before = GameManager.gold
 	var purchased = CustomerSpawner.decide_purchase("customer_full_loop")
 	assert_true(purchased, "Customer should purchase the bread")
-	
+
 	# 4. Verify system changes
 	assert_eq(GameManager.gold, gold_before + 100, "Gold should increase after full loop")
 
@@ -241,7 +241,9 @@ func test_eventbus_signals_emitted() -> void:
 		func(_slot, _recipe): signals_received["production_completed"] = true
 	)
 	EventBus.gold_changed.connect(func(_old, _new): signals_received["gold_changed"] = true)
-	EventBus.experience_changed.connect(func(_old, _new): signals_received["experience_changed"] = true)
+	EventBus.experience_changed.connect(
+		func(_old, _new): signals_received["experience_changed"] = true
+	)
 
 	# Setup and execute purchase
 	var bread = RecipeDataClass.new()

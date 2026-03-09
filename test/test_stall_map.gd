@@ -30,6 +30,7 @@ func after_each() -> void:
 
 ## ==================== BASIC SETUP TESTS ====================
 
+
 ## Test that StallMap scene can be loaded
 func test_stall_map_scene_loads() -> void:
 	if _stall_map == null:
@@ -49,13 +50,11 @@ func test_stall_map_root_is_tilemaplayer() -> void:
 
 ## ==================== TILESET TESTS ====================
 
+
 ## Test that TileSet resource exists and can be loaded
 func test_tileset_source_loaded() -> void:
 	var tileset_resource = load(TILESET_PATH)
-	assert_not_null(
-		tileset_resource,
-		"TileSet resource should exist at: %s" % TILESET_PATH
-	)
+	assert_not_null(tileset_resource, "TileSet resource should exist at: %s" % TILESET_PATH)
 
 	if tileset_resource != null:
 		assert_true(
@@ -80,6 +79,7 @@ func test_tilemaplayer_has_tileset() -> void:
 
 
 ## ==================== TILE PLACEMENT TESTS ====================
+
 
 ## Test that tiles are actually placed in the map
 func test_tilemap_has_cells() -> void:
@@ -115,15 +115,22 @@ func test_tilemap_within_world_bounds() -> void:
 		var cell_coords = cell as Vector2i
 		assert_true(
 			cell_coords.x >= min_x and cell_coords.x <= max_tile_x,
-			"Tile X coordinate %d should be within bounds [%d, %d]" % [cell_coords.x, min_x, max_tile_x]
+			(
+				"Tile X coordinate %d should be within bounds [%d, %d]"
+				% [cell_coords.x, min_x, max_tile_x]
+			)
 		)
 		assert_true(
 			cell_coords.y >= min_y and cell_coords.y <= max_tile_y,
-			"Tile Y coordinate %d should be within bounds [%d, %d]" % [cell_coords.y, min_y, max_tile_y]
+			(
+				"Tile Y coordinate %d should be within bounds [%d, %d]"
+				% [cell_coords.y, min_y, max_tile_y]
+			)
 		)
 
 
 ## ==================== TILE SOURCE TESTS ====================
+
 
 ## Test that TileSet has valid tile sources configured
 func test_tileset_has_valid_sources() -> void:
@@ -136,13 +143,11 @@ func test_tileset_has_valid_sources() -> void:
 
 	# Check that TileSet has at least one source
 	var source_count = tileset.get_source_count()
-	assert_true(
-		source_count > 0,
-		"TileSet should have at least one source, got: %d" % source_count
-	)
+	assert_true(source_count > 0, "TileSet should have at least one source, got: %d" % source_count)
 
 
 ## ==================== INTEGRATION TESTS ====================
+
 
 ## Test complete scene structure
 func test_stall_map_complete_structure() -> void:

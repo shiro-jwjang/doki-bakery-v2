@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5p7k2n4v8q6k"]
+
+[ext_resource type="Script" path="res://scripts/autoload/ui_manager.gd" id="1_uimgr"]
+
+[node name="UIManager" type="Node"]
+script = ExtResource("1_uimgr")
+scenes = {
+"title": "res://scenes/menus/title.tscn",
+"world_view": "res://scenes/world/world_view.tscn"
+}

@@ -31,6 +31,7 @@ func after_each() -> void:
 
 ## ==================== BASIC SETUP TESTS ====================
 
+
 ## Test that PlayerView scene can be loaded
 func test_player_view_scene_loads() -> void:
 	if _player_view == null:
@@ -49,6 +50,7 @@ func test_player_view_root_is_node2d() -> void:
 
 
 ## ==================== ANIMATED SPRITE TESTS ====================
+
 
 ## Test that AnimatedSprite2D exists as a child
 func test_animated_sprite2d_exists() -> void:
@@ -74,10 +76,7 @@ func test_animated_sprite_has_spriteframes() -> void:
 	if sprite == null:
 		fail_test("AnimatedSprite2D node not found")
 
-	assert_not_null(
-		sprite.sprite_frames,
-		"AnimatedSprite2D should have a SpriteFrames resource"
-	)
+	assert_not_null(sprite.sprite_frames, "AnimatedSprite2D should have a SpriteFrames resource")
 
 
 ## Test that idle animation exists in SpriteFrames
@@ -93,12 +92,12 @@ func test_idle_animation_exists() -> void:
 		fail_test("SpriteFrames resource not assigned")
 
 	assert_true(
-		sprite.sprite_frames.has_animation("idle"),
-		"SpriteFrames should have 'idle' animation"
+		sprite.sprite_frames.has_animation("idle"), "SpriteFrames should have 'idle' animation"
 	)
 
 
 ## ==================== ANIMATION PLAYBACK TESTS ====================
+
 
 ## Test that idle animation plays after _ready
 func test_player_idle_animation_plays() -> void:
@@ -110,10 +109,7 @@ func test_player_idle_animation_plays() -> void:
 		fail_test("AnimatedSprite2D node not found")
 
 	# Verify idle animation is playing
-	assert_true(
-		sprite.is_playing(),
-		"AnimatedSprite2D should be playing animation"
-	)
+	assert_true(sprite.is_playing(), "AnimatedSprite2D should be playing animation")
 
 	assert_eq(
 		sprite.animation,
@@ -123,6 +119,7 @@ func test_player_idle_animation_plays() -> void:
 
 
 ## ==================== SPRITE TEXTURE TESTS ====================
+
 
 ## Test that sprite texture is not null
 func test_player_sprite_not_null() -> void:
@@ -137,26 +134,22 @@ func test_player_sprite_not_null() -> void:
 		fail_test("SpriteFrames resource not assigned")
 
 	assert_true(
-		sprite.sprite_frames.has_animation("idle"),
-		"SpriteFrames should have 'idle' animation"
+		sprite.sprite_frames.has_animation("idle"), "SpriteFrames should have 'idle' animation"
 	)
 
 	# Check that idle animation has at least one frame
 	var frame_count = sprite.sprite_frames.get_frame_count("idle")
 	assert_true(
-		frame_count > 0,
-		"idle animation should have at least one frame, got: %d" % frame_count
+		frame_count > 0, "idle animation should have at least one frame, got: %d" % frame_count
 	)
 
 	# Check that the first frame's texture is not null
 	var texture = sprite.sprite_frames.get_frame_texture("idle", 0)
-	assert_not_null(
-		texture,
-		"idle animation first frame should have a valid texture"
-	)
+	assert_not_null(texture, "idle animation first frame should have a valid texture")
 
 
 ## ==================== POSITION TESTS ====================
+
 
 ## Test that initial position is in front of stall
 func test_player_initial_position() -> void:
@@ -190,6 +183,7 @@ func test_player_initial_position() -> void:
 
 ## ==================== INTEGRATION TESTS ====================
 
+
 ## Test complete scene structure
 func test_player_view_complete_structure() -> void:
 	if _player_view == null:
@@ -206,10 +200,7 @@ func test_player_view_complete_structure() -> void:
 	assert_not_null(sprite.sprite_frames, "Missing SpriteFrames resource")
 
 	# Verify idle animation exists
-	assert_true(
-		sprite.sprite_frames.has_animation("idle"),
-		"Missing 'idle' animation"
-	)
+	assert_true(sprite.sprite_frames.has_animation("idle"), "Missing 'idle' animation")
 
 
 ## Test scene can be added to tree without errors

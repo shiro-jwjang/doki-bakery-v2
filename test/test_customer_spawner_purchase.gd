@@ -84,7 +84,9 @@ func test_spawner_creation() -> void:
 
 ## Test decide_purchase method exists
 func test_decide_purchase_method_exists() -> void:
-	assert_true(_spawner.has_method("decide_purchase"), "decide_purchase method should be implemented")
+	assert_true(
+		_spawner.has_method("decide_purchase"), "decide_purchase method should be implemented"
+	)
 
 
 ## Test decide_purchase returns false when no bread is available
