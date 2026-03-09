@@ -10,18 +10,24 @@ var panel: Control
 
 
 func before_each() -> void:
+	# Clear BakeryManager state to prevent previous tests' active slots
+	# from emitting production_progressed signals in the background
+	BakeryManager._slots.clear()
+	BakeryManager._active_count = 0
+	BakeryManager._mock_time = -1.0
+
 	# Create ProductionPanel instance
 	panel = ProductionPanelClass.new()
 	add_child(panel)
 	# Wait for panel to be ready
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 
 func after_each() -> void:
 	if panel != null:
 		panel.queue_free()
 		# Wait for node to be freed
-		await wait_frames(2)
+		await wait_physics_frames(2)
 
 
 ## Test that panel updates on production_started signal
@@ -30,7 +36,7 @@ func test_panel_updates_on_baking_started() -> void:
 	EventBus.production_started.emit(0, "test_bread")
 
 	# Wait for UI to update
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# Verify slot UI was updated
 	var slot_ui = panel.get_slot_ui(0)
@@ -48,7 +54,7 @@ func test_panel_updates_on_baking_finished() -> void:
 	EventBus.production_completed.emit(1, "test_bread")
 
 	# Wait for UI to update
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# Verify slot UI was updated
 	var slot_ui = panel.get_slot_ui(1)
@@ -64,11 +70,11 @@ func test_panel_updates_on_baking_finished() -> void:
 func test_panel_updates_on_baking_progressed() -> void:
 	# First start production so the slot exists
 	EventBus.production_started.emit(0, "test_bread")
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# Emit progress signal at 50%
 	EventBus.production_progressed.emit(0, 0.5)
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# Verify progress bar was updated
 	var slot_ui = panel.get_slot_ui(0)
@@ -77,7 +83,7 @@ func test_panel_updates_on_baking_progressed() -> void:
 
 	# Emit progress signal at 80%
 	EventBus.production_progressed.emit(0, 0.8)
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	assert_eq(slot_ui.progress_bar.value, 0.8, "Progress bar should update to 80%")
 
@@ -92,7 +98,7 @@ func test_panel_no_process_polling() -> void:
 	EventBus.production_completed.emit(0, "bread_01")
 
 	# Wait for UI to update
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# Verify slot UI was updated via signals alone
 	var slot_ui = panel.get_slot_ui(0)

@@ -34,7 +34,7 @@ func test_hud_scene_instantiation() -> void:
 	assert_not_null(hud, "HUD scene should instantiate")
 
 	add_child(hud)
-	await wait_frames(2, 2.0)  # Wait with timeout
+	await wait_physics_frames(2)  # Wait with timeout
 
 	exp_bar = hud.get_node_or_null("Control/ExpBar")
 	assert_not_null(exp_bar, "ExpBar node must exist in HUD")
@@ -49,7 +49,7 @@ func test_initial_state() -> void:
 	var hud_scene = preload("res://scenes/ui/hud.tscn")
 	hud = hud_scene.instantiate()
 	add_child(hud)
-	await wait_frames(2, 2.0)
+	await wait_physics_frames(2)
 
 	exp_bar = hud.get_node_or_null("Control/ExpBar")
 	if exp_bar == null:
@@ -57,9 +57,9 @@ func test_initial_state() -> void:
 		return
 
 	assert_eq(exp_bar.value, 0.0, "Initial XP should be 0")
-	var level_data = DataManager.get_level(1)
-	var expected_max = float(level_data.required_xp) if level_data else 100.0
-	assert_eq(exp_bar.max_value, expected_max, "Initial max XP should match level 1 requirement")
+	var next_level_data = DataManager.get_level(2)
+	var expected_max = float(next_level_data.required_xp) if next_level_data else 100.0
+	assert_eq(exp_bar.max_value, expected_max, "Initial max XP should match level 2 requirement")
 
 
 ## Test that XP bar updates when GameManager.add_xp is called
@@ -71,7 +71,7 @@ func test_xp_bar_updates_with_game_manager() -> void:
 	var hud_scene = preload("res://scenes/ui/hud.tscn")
 	hud = hud_scene.instantiate()
 	add_child(hud)
-	await wait_frames(2, 2.0)
+	await wait_physics_frames(2)
 
 	exp_bar = hud.get_node_or_null("Control/ExpBar")
 	if exp_bar == null:
@@ -80,7 +80,7 @@ func test_xp_bar_updates_with_game_manager() -> void:
 
 	# Add XP through GameManager
 	GameManager.add_xp(30)
-	await wait_frames(3, 2.0)
+	await wait_physics_frames(3)
 
 	assert_eq(exp_bar.value, 30.0, "XP bar should show 30")
 
@@ -94,7 +94,7 @@ func test_level_up_via_game_manager() -> void:
 	var hud_scene = preload("res://scenes/ui/hud.tscn")
 	hud = hud_scene.instantiate()
 	add_child(hud)
-	await wait_frames(2, 2.0)
+	await wait_physics_frames(2)
 
 	exp_bar = hud.get_node_or_null("Control/ExpBar")
 	if exp_bar == null:
@@ -107,7 +107,7 @@ func test_level_up_via_game_manager() -> void:
 
 	# Add enough XP to level up (100 XP)
 	GameManager.add_xp(100)
-	await wait_frames(3, 2.0)
+	await wait_physics_frames(3)
 
 	# After level up:
 	# - Level should be 2
@@ -118,5 +118,5 @@ func test_level_up_via_game_manager() -> void:
 
 ## Helper: Check if scene loading is possible (requires display)
 func _can_load_scenes() -> bool:
-	# Check if we have a display available
-	return OS.get_environment("DISPLAY") != ""
+	# Check if we are not running in headless mode
+	return DisplayServer.get_name() != "headless"

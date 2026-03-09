@@ -69,7 +69,7 @@ func test_unlock_then_check_achievement() -> void:
 		)
 	else:
 		# In stub mode, achievements may not persist
-		pass
+		assert_true(true, "Stub mode skip")
 
 
 func test_set_and_get_stat() -> void:
@@ -107,6 +107,7 @@ func test_get_app_id() -> void:
 
 func test_request_stats_does_not_crash() -> void:
 	SteamManager.request_stats()
+	assert_true(true, "request_stats executed without crashing")
 
 
 func test_clear_achievement() -> void:

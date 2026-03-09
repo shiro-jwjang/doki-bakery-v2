@@ -64,6 +64,9 @@ signal save_completed
 ## Emitted when load is completed
 signal load_completed
 
+## Emitted when save data is loaded (with parsed save data)
+signal save_loaded(data: Dictionary)
+
 ## ==================== ACTION REQUEST SIGNALS (UI → Logic) ====================
 
 ## Emitted to request starting production in a slot

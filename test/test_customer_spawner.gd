@@ -64,12 +64,14 @@ func test_customer_spawner_has_timer() -> void:
 
 func test_customer_spawner_timer_running() -> void:
 	if CustomerSpawner.has_method("is_spawning_active"):
+		if CustomerSpawner.has_method("start_spawning"):
+			CustomerSpawner.start_spawning()
 		if CustomerSpawner.is_spawning_active():
 			if CustomerSpawner.has_method("get_timer"):
 				var timer = CustomerSpawner.get_timer()
 				assert_true(timer.time_left > 0, "Timer should be running")
 		else:
-			pending("Spawner is not active")
+			fail_test("Spawner should be active after calling start_spawning")
 	else:
 		pending("Need to implement is_spawning_active method")
 

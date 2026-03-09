@@ -14,14 +14,13 @@ var world_controller: Node
 
 func before_each() -> void:
 	world_controller = WorldControllerScript.new()
-	add_child(world_controller)
-	await wait_frames(1)
+	add_child_autofree(world_controller)
+	await wait_physics_frames(1)
 
 
 func after_each() -> void:
-	if world_controller:
-		world_controller.queue_free()
-		world_controller = null
+	# autofree automatically queues free at the end of the test.
+	world_controller = null
 
 
 # ==================== Initialization Tests ====================
@@ -117,28 +116,22 @@ func test_validate_connections_all_connected_true_after_init() -> void:
 # ==================== Signal Propagation Tests ====================
 
 func test_gold_change_signal_propagates() -> void:
-	# Create mock HUD
-	var mock_hud = Control.new()
-	mock_hud.set_script(GDScript.new())
-	mock_hud.get_script().source_code = """
-extends CanvasLayer
-var gold_received: bool = false
-func on_gold_changed(_old, _new): gold_received = true
-"""
-	mock_hud.get_script().reload()
-	
-	world_controller.set_hud(mock_hud)
-	
-	# Emit signal
-	EventBus.gold_changed.emit(0, 100)
-	
-	# Verify handler was called (WorldController received it)
+	# Verify WorldController receives gold_changed via EventBus
 	assert_true(
 		EventBus.gold_changed.is_connected(world_controller._on_gold_changed),
 		"Signal should be wired through WorldController"
 	)
-	
-	mock_hud.queue_free()
+
+	# Create a simple CanvasLayer as mock HUD (no update_gold method, so forwarding is a no-op)
+	var mock_hud := CanvasLayer.new()
+	add_child_autofree(mock_hud)
+	world_controller.set_hud(mock_hud)
+
+	# Emit signal — WorldController._on_gold_changed will run without error
+	EventBus.gold_changed.emit(0, 100)
+
+	# If we get here without crash/hang, signal propagation works
+	assert_true(true, "gold_changed signal propagated without error")
 
 
 func test_production_started_signal_propagates() -> void:

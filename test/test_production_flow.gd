@@ -27,12 +27,12 @@ func before_each() -> void:
 	# Create ProductionPanel
 	panel = ProductionPanelClass.new()
 	add_child(panel)
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# Create BreadMenu
 	bread_menu = BreadMenuClass.new()
 	add_child(bread_menu)
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# Connect panel slot_clicked to bread_menu show_for_slot
 	panel.slot_clicked.connect(bread_menu.show_for_slot)
@@ -41,10 +41,10 @@ func before_each() -> void:
 func after_each() -> void:
 	if panel != null:
 		panel.queue_free()
-		await wait_frames(1)
+		await wait_physics_frames(1)
 	if bread_menu != null:
 		bread_menu.queue_free()
-		await wait_frames(1)
+		await wait_physics_frames(1)
 
 
 ## Test that clicking an empty slot opens the BreadMenu
@@ -54,7 +54,7 @@ func test_slot_click_opens_bread_menu() -> void:
 
 	# Simulate slot click on empty slot (slot 0)
 	panel.slot_clicked.emit(0)
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# BreadMenu should now be visible
 	assert_true(bread_menu.visible, "BreadMenu should be visible after slot click")
@@ -65,11 +65,11 @@ func test_slot_click_opens_bread_menu() -> void:
 func test_bread_selection_starts_baking() -> void:
 	# Setup: Open BreadMenu for slot 1
 	panel.slot_clicked.emit(1)
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# Select a bread
 	bread_menu.select_bread("test_bread")
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# Verify baking started
 	assert_eq(BakeryManager.get_active_count(), 1, "Should have 1 active production")
@@ -87,14 +87,14 @@ func test_bread_selection_starts_baking() -> void:
 func test_busy_slot_click_ignored() -> void:
 	# Setup: Start production in slot 0
 	BakeryManager.start_production(0, "test_bread")
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# Verify slot is active
 	assert_eq(BakeryManager.get_active_count(), 1, "Slot 0 should be busy")
 
 	# Click on the busy slot
 	panel.slot_clicked.emit(0)
-	await wait_frames(2)
+	await wait_physics_frames(2)
 
 	# BreadMenu should NOT open (slot is busy)
 	assert_false(bread_menu.visible, "BreadMenu should not open for busy slot")

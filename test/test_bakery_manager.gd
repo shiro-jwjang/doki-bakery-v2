@@ -285,9 +285,9 @@ func test_production_completed_signal_emitted() -> void:
 
 		# Simulate time passing (more than production time)
 		_manager._process(0.05)  # 50ms
-		await wait_frames(1)
+		await wait_physics_frames(1)
 		_manager._process(0.06)  # 60ms (total 110ms, exceeding 100ms production time)
-		await wait_frames(1)
+		await wait_physics_frames(1)
 
 		assert_true(
 			_signal_received,
@@ -311,9 +311,9 @@ func test_slot_released_after_completion() -> void:
 
 		# Simulate time passing
 		_manager._process(0.05)
-		await wait_frames(1)
+		await wait_physics_frames(1)
 		_manager._process(0.06)
-		await wait_frames(1)
+		await wait_physics_frames(1)
 
 		assert_eq(_manager.get_active_count(), 0, "Active count should be 0 after completion")
 
@@ -337,9 +337,9 @@ func test_completed_bread_marked_completed() -> void:
 
 		# Simulate time passing
 		_manager._process(0.05)
-		await wait_frames(1)
+		await wait_physics_frames(1)
 		_manager._process(0.06)
-		await wait_frames(1)
+		await wait_physics_frames(1)
 
 		slots = _manager.get_slots()
 		slot = slots[0]

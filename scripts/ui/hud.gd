@@ -33,13 +33,13 @@ func _update_exp_bar() -> void:
 	if exp_bar == null:
 		return
 
-	# Set current XP value
-	exp_bar.value = float(GameManager.experience)
-
-	# Set max value to next level requirement
-	var level_data = DataManager.get_level(GameManager.level)
-	if level_data != null:
-		exp_bar.max_value = float(level_data.required_xp)
+	# Set max value to next level requirement FIRST to prevent clamping
+	var next_level_data = DataManager.get_level(GameManager.level + 1)
+	if next_level_data != null:
+		exp_bar.max_value = float(next_level_data.required_xp)
 	else:
-		# Fallback if level data not found
+		# Fallback if at max level or level data not found
 		exp_bar.max_value = 100.0
+
+	# Set current XP value AFTER setting max_value
+	exp_bar.value = float(GameManager.experience)

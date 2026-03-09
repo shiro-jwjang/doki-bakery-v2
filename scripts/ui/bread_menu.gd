@@ -16,10 +16,13 @@ var _target_slot: int = -1
 var _recipes: Array = []
 
 ## Container for bread buttons
-@onready var _button_container: VBoxContainer = $VBoxContainer
+var _button_container: VBoxContainer = null
 
 
 func _ready() -> void:
+	# Safely find VBoxContainer (may not exist when instantiated without scene)
+	_button_container = get_node_or_null("VBoxContainer")
+
 	# Start hidden
 	visible = false
 

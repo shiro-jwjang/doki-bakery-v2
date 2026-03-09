@@ -46,10 +46,10 @@ func test_save_game_default_values() -> void:
 	json.parse(json_string)
 	var data: Dictionary = json.data
 
-	assert_eq(data.get("gold"), 0, "Default gold should be 0")
-	assert_eq(data.get("premium"), 0, "Default premium should be 0")
-	assert_eq(data.get("level"), 1, "Default level should be 1")
-	assert_eq(data.get("xp"), 0, "Default xp should be 0")
+	assert_eq(int(data.get("gold", 0)), 0, "Default gold should be 0")
+	assert_eq(int(data.get("premium", 0)), 0, "Default premium should be 0")
+	assert_eq(int(data.get("level", 0)), 1, "Default level should be 1")
+	assert_eq(int(data.get("xp", 0)), 0, "Default xp should be 0")
 
 
 ## Test that save_game saves actual game state
@@ -69,10 +69,10 @@ func test_save_game_actual_state() -> void:
 	json.parse(json_string)
 	var data: Dictionary = json.data
 
-	assert_eq(data.get("gold"), 500, "Saved gold should match")
-	assert_eq(data.get("premium"), 10, "Saved premium should match")
-	assert_eq(data.get("level"), 2, "Saved level should be 2")
-	assert_eq(data.get("xp"), 50, "Saved xp should be 50")
+	assert_eq(int(data.get("gold", 0)), 500, "Saved gold should match")
+	assert_eq(int(data.get("premium", 0)), 10, "Saved premium should match")
+	assert_eq(int(data.get("level", 0)), 2, "Saved level should be 2")
+	assert_eq(int(data.get("xp", 0)), 50, "Saved xp should be 50")
 
 
 ## Test that save_game includes unlocked_recipes array

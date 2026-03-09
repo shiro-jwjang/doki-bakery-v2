@@ -7,9 +7,14 @@ var _save_completed_received := false
 var _save_loaded_received := false
 var _save_loaded_data := {}
 var _test_save_path := "user://test_save.json"
+var _original_save_path := ""
 
 
 func before_each() -> void:
+	# Override SaveManager's save_path to use test path
+	_original_save_path = SaveManager.save_path
+	SaveManager.save_path = _test_save_path
+
 	# Reset GameManager state
 	GameManager.gold = 0
 	GameManager.legendary_bread = 0
@@ -28,6 +33,9 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	# Restore original save path
+	SaveManager.save_path = _original_save_path
+
 	# Disconnect signals
 	if EventBus.save_completed.is_connected(_on_save_completed):
 		EventBus.save_completed.disconnect(_on_save_completed)
@@ -115,12 +123,12 @@ func test_load_game_reads_data() -> void:
 	var loaded_data: Dictionary = SaveManager.load_game()
 
 	assert_not_null(loaded_data, "Loaded data should not be null")
-	assert_eq(loaded_data.get("game", {}).get("gold"), 777, "Gold should be loaded")
+	assert_eq(int(loaded_data.get("game", {}).get("gold", 0)), 777, "Gold should be loaded")
 	assert_eq(
-		loaded_data.get("game", {}).get("legendary_bread"), 7, "Legendary bread should be loaded"
+		int(loaded_data.get("game", {}).get("legendary_bread", 0)), 7, "Legendary bread should be loaded"
 	)
-	assert_eq(loaded_data.get("game", {}).get("level"), 5, "Level should be loaded")
-	assert_eq(loaded_data.get("game", {}).get("experience"), 300, "Experience should be loaded")
+	assert_eq(int(loaded_data.get("game", {}).get("level", 0)), 5, "Level should be loaded")
+	assert_eq(int(loaded_data.get("game", {}).get("experience", 0)), 300, "Experience should be loaded")
 
 
 ## Test save_completed signal is emitted

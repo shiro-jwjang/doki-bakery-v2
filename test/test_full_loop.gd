@@ -84,9 +84,9 @@ func test_production_completion_flow() -> void:
 
 	# Simulate time passing for production to complete
 	BakeryManager._process(0.5)
-	await wait_frames(1)
+	await wait_physics_frames(1)
 	BakeryManager._process(0.6)
-	await wait_frames(1)
+	await wait_physics_frames(1)
 
 	# Verify production completed (slot released)
 	assert_eq(BakeryManager.get_active_count(), 0, "Slot should be released after production")
@@ -163,10 +163,28 @@ func test_level_up_on_xp_threshold() -> void:
 
 
 ## Test full production-to-purchase loop
-## NOTE: This integration test requires full system setup.
-## Marked as pending until proper integration test infrastructure is in place.
+## Tests the full flow from generating bread to selling it to a customer.
 func test_full_production_to_purchase_loop() -> void:
-	pending("Integration test - requires full system setup with BakeryManager mock time")
+	# 1. Start production
+	BakeryManager._mock_recipe = _test_recipe
+	var success = BakeryManager.start_production(0, "test_bread")
+	assert_true(success, "Production should start successfully")
+
+	# Wait for completion (test_bread takes 1.0s, we wait slightly more)
+	BakeryManager._process(1.1)
+	await wait_physics_frames(1)
+
+	# 2. Add to DisplaySlot (Simulating WorldController routing)
+	CustomerSpawner.set_displayed_breads([_test_recipe])
+	CustomerSpawner.set_purchase_probability(1.0)
+	
+	# 3. Customer purchase
+	var gold_before = GameManager.gold
+	var purchased = CustomerSpawner.decide_purchase("customer_full_loop")
+	assert_true(purchased, "Customer should purchase the bread")
+	
+	# 4. Verify system changes
+	assert_eq(GameManager.gold, gold_before + 100, "Gold should increase after full loop")
 
 
 ## Test multiple purchases accumulate gold and XP
