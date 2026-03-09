@@ -26,6 +26,7 @@ func before_each() -> void:
 	GameManager.experience = 0
 	GameManager.play_time = 0.0
 	GameManager.set_game_state("menu")
+	GameManager._is_loaded = false
 
 	# Reset signal tracking
 	_gold_changed_received = false
