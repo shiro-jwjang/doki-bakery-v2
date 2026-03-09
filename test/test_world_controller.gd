@@ -59,10 +59,10 @@ func test_event_bus_gold_changed_connected() -> void:
 	)
 
 
-func test_event_bus_xp_changed_connected() -> void:
+func test_event_bus_experience_changed_connected() -> void:
 	assert_true(
-		EventBus.xp_changed.is_connected(world_controller._on_xp_changed),
-		"WorldController should be connected to xp_changed"
+		EventBus.experience_changed.is_connected(world_controller._on_experience_changed),
+		"WorldController should be connected to experience_changed"
 	)
 
 
@@ -105,7 +105,7 @@ func test_validate_connections_returns_dictionary() -> void:
 func test_validate_connections_reports_connection_status() -> void:
 	var result: Dictionary = world_controller.validate_connections()
 	assert_true(result.has("gold_changed_connected"), "Should report gold_changed_connected")
-	assert_true(result.has("xp_changed_connected"), "Should report xp_changed_connected")
+	assert_true(result.has("experience_changed_connected"), "Should report experience_changed_connected")
 	assert_true(result.has("production_started_connected"), "Should report production_started_connected")
 
 

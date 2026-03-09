@@ -226,7 +226,7 @@ func test_eventbus_signals_emitted() -> void:
 	var signals_received := {
 		"production_completed": false,
 		"gold_changed": false,
-		"xp_changed": false,
+		"experience_changed": false,
 	}
 
 	# Connect to signals
@@ -234,7 +234,7 @@ func test_eventbus_signals_emitted() -> void:
 		func(_slot, _recipe): signals_received["production_completed"] = true
 	)
 	EventBus.gold_changed.connect(func(_old, _new): signals_received["gold_changed"] = true)
-	EventBus.xp_changed.connect(func(_old, _new): signals_received["xp_changed"] = true)
+	EventBus.experience_changed.connect(func(_old, _new): signals_received["experience_changed"] = true)
 
 	# Setup and execute purchase
 	var bread = RecipeDataClass.new()
@@ -247,4 +247,4 @@ func test_eventbus_signals_emitted() -> void:
 
 	# Verify signals
 	assert_true(signals_received["gold_changed"], "gold_changed should be emitted")
-	assert_true(signals_received["xp_changed"], "xp_changed should be emitted")
+	assert_true(signals_received["experience_changed"], "experience_changed should be emitted")
