@@ -30,7 +30,6 @@ DataManager="*res://scripts/autoload/data_manager.gd"
 SalesManager="*res://scripts/managers/sales_manager.gd"
 EconomyManager="*res://scripts/autoload/economy_manager.gd"
 BakeryManager="*res://scripts/autoload/bakery_manager.gd"
-SalesManager="*res://scripts/managers/sales_manager.gd"
 CustomerSpawner="*res://scripts/autoload/customer_spawner.gd"
 
 [display]
