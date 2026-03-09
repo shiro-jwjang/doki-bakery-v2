@@ -24,8 +24,8 @@ func _ready() -> void:
 	visible = false
 
 	# Connect to EventBus for production requests
-	if not EventBus.request_produce.is_connected(_on_request_produce):
-		EventBus.request_produce.connect(_on_request_produce)
+	if not EventBus.baking_requested.is_connected(_on_baking_requested):
+		EventBus.baking_requested.connect(_on_baking_requested)
 
 	# Load recipes from DataManager
 	_load_recipes()
@@ -75,8 +75,8 @@ func select_bread(recipe_id: String) -> void:
 	hide_menu()
 
 
-## Handle production request from EventBus
-func _on_request_produce(slot_index: int, recipe_id: String) -> void:
+## Handle baking request from EventBus
+func _on_baking_requested(slot_index: int, recipe_id: String) -> void:
 	show_for_slot(slot_index)
 	select_bread(recipe_id)
 

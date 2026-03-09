@@ -32,8 +32,8 @@ func after_each() -> void:
 	# Disconnect all signals
 	if EventBus.level_up.is_connected(_on_level_up):
 		EventBus.level_up.disconnect(_on_level_up)
-	if EventBus.xp_changed.is_connected(_on_xp_changed):
-		EventBus.xp_changed.disconnect(_on_xp_changed)
+	if EventBus.experience_changed.is_connected(_on_xp_changed):
+		EventBus.experience_changed.disconnect(_on_xp_changed)
 
 
 ## Test add_xp increases experience points
@@ -122,7 +122,7 @@ func test_cannot_level_up_beyond_max() -> void:
 
 ## Test xp_changed signal is emitted when adding XP
 func test_xp_changed_signal() -> void:
-	EventBus.xp_changed.connect(_on_xp_changed)
+	EventBus.experience_changed.connect(_on_xp_changed)
 
 	GameManager.add_xp(50)
 

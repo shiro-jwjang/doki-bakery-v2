@@ -9,8 +9,8 @@ extends CanvasLayer
 
 func _ready() -> void:
 	# Connect to EventBus signals
-	if not EventBus.xp_changed.is_connected(_on_xp_changed):
-		EventBus.xp_changed.connect(_on_xp_changed)
+	if not EventBus.experience_changed.is_connected(_on_xp_changed):
+		EventBus.experience_changed.connect(_on_xp_changed)
 	if not EventBus.level_up.is_connected(_on_level_up):
 		EventBus.level_up.connect(_on_level_up)
 
