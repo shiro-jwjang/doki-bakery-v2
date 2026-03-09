@@ -2,7 +2,7 @@
 extends RefCounted
 
 ## Save data format version for compatibility
-const VERSION: String = "1.0"
+const VERSION: String = "1.1"
 
 ## Player's gold (standard currency)
 var gold: int = 0
@@ -22,6 +22,15 @@ var play_time: float = 0.0
 ## Current game state
 var game_state: String = "menu"
 
+## Unlocked recipe IDs
+var unlocked_recipes: Array = []
+
+## Current shop stage (1-5)
+var shop_stage: int = 1
+
+## Production slots data
+var production_slots: Array = []
+
 ## Save data version
 var version: String = VERSION
 
@@ -36,7 +45,10 @@ func to_json() -> String:
 			"level": level,
 			"experience": experience,
 			"play_time": play_time,
-			"game_state": game_state
+			"game_state": game_state,
+			"unlocked_recipes": unlocked_recipes,
+			"shop_stage": shop_stage,
+			"production_slots": production_slots
 		}
 	)
 
@@ -71,5 +83,11 @@ static func from_json(json_string: String):
 		save_data.play_time = data["play_time"]
 	if data.has("game_state"):
 		save_data.game_state = data["game_state"]
+	if data.has("unlocked_recipes"):
+		save_data.unlocked_recipes = data["unlocked_recipes"]
+	if data.has("shop_stage"):
+		save_data.shop_stage = data["shop_stage"]
+	if data.has("production_slots"):
+		save_data.production_slots = data["production_slots"]
 
 	return save_data
