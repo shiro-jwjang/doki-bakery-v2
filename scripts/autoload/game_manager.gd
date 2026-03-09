@@ -34,6 +34,9 @@ var experience: int = 0
 ## Total play time in seconds
 var play_time: float = 0.0
 
+## Flag to track if save data has been loaded during this session
+var _is_loaded: bool = false
+
 ## Current game state
 var game_state: String = "menu":
 	set(value):
@@ -160,6 +163,9 @@ func save_game(path: String = "user://save.json") -> bool:
 ## Load game state from save file
 ## Returns true if successful (or defaults applied), false on critical error
 func load_game() -> bool:
+	if _is_loaded:
+		return true
+		
 	var file_path := "user://save.json"
 
 	# Check if file exists
@@ -189,6 +195,7 @@ func load_game() -> bool:
 	experience = save_data.experience
 	play_time = save_data.play_time
 	game_state = save_data.game_state
+	_is_loaded = true
 
 	return true
 
