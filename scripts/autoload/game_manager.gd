@@ -208,3 +208,4 @@ func _reset_to_defaults() -> void:
 	experience = 0
 	play_time = 0.0
 	game_state = "menu"
+	_is_loaded = false

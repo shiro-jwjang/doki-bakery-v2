@@ -26,3 +26,23 @@ grow_vertical = 2
 pivot_offset = Vector2(200, 10)
 value = 0.0
 show_percentage = false
+
+[node name="GoldenBreadBox" type="HBoxContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -100.0
+offset_bottom = 40.0
+grow_horizontal = 0
+alignment = 2
+
+[node name="Icon" type="TextureRect" parent="Control/GoldenBreadBox"]
+layout_mode = 2
+expand_mode = 2
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="Control/GoldenBreadBox"]
+layout_mode = 2
+text = "0"
+

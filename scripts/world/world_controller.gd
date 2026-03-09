@@ -45,6 +45,10 @@ func _connect_event_bus_signals() -> void:
 	if not EventBus.level_up.is_connected(_on_level_up):
 		EventBus.level_up.connect(_on_level_up)
 
+	# Premium currency changes → HUD
+	if not EventBus.premium_changed.is_connected(_on_premium_changed):
+		EventBus.premium_changed.connect(_on_premium_changed)
+
 	# Production events → ProductionPanel
 	if not EventBus.production_started.is_connected(_on_production_started):
 		EventBus.production_started.connect(_on_production_started)
@@ -61,6 +65,10 @@ func _connect_event_bus_signals() -> void:
 
 	if not EventBus.bread_sold.is_connected(_on_bread_sold):
 		EventBus.bread_sold.connect(_on_bread_sold)
+
+	# Initialize UI components with current state
+	if hud and hud.has_method("_on_premium_changed"):
+		hud._on_premium_changed(GameManager.legendary_bread)
 
 	_connections_established = true
 
@@ -94,6 +102,7 @@ func validate_connections() -> Dictionary:
 
 	# Check EventBus signal connections
 	results["gold_changed_connected"] = EventBus.gold_changed.is_connected(_on_gold_changed)
+	results["premium_changed_connected"] = EventBus.premium_changed.is_connected(_on_premium_changed)
 	results["experience_changed_connected"] = EventBus.experience_changed.is_connected(
 		_on_experience_changed
 	)
@@ -122,6 +131,12 @@ func validate_connections() -> Dictionary:
 func _on_gold_changed(old: int, new: int) -> void:
 	if hud and hud.has_method("update_gold"):
 		hud.update_gold(old, new)
+
+
+## Forward premium changes to HUD
+func _on_premium_changed(_old: int, new: int) -> void:
+	if hud and hud.has_method("_on_premium_changed"):
+		hud._on_premium_changed(new)
 
 
 ## Forward XP changes to HUD

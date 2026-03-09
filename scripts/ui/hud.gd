@@ -5,6 +5,7 @@ extends CanvasLayer
 ## SNA-92: HUD 경험치 바 실시간 반영
 
 @onready var exp_bar: ProgressBar = $Control/ExpBar
+@onready var premium_label: Label = $Control/GoldenBreadBox/Label
 
 
 func _ready() -> void:
@@ -43,3 +44,9 @@ func _update_exp_bar() -> void:
 
 	# Set current XP value AFTER setting max_value
 	exp_bar.value = float(GameManager.experience)
+
+
+## Update premium currency display
+func _on_premium_changed(amount: int) -> void:
+	if premium_label != null:
+		premium_label.text = str(amount)
