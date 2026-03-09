@@ -91,7 +91,7 @@ func add_xp(amount: int) -> void:
 
 	var old_xp: int = experience
 	experience += amount
-	EventBus.xp_changed.emit(old_xp, experience)
+	EventBus.experience_changed.emit(old_xp, experience)
 	_check_level_up()
 
 

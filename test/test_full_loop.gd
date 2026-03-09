@@ -234,7 +234,7 @@ func test_eventbus_signals_emitted() -> void:
 		func(_slot, _recipe): signals_received["production_completed"] = true
 	)
 	EventBus.gold_changed.connect(func(_old, _new): signals_received["gold_changed"] = true)
-	EventBus.xp_changed.connect(func(_old, _new): signals_received["xp_changed"] = true)
+	EventBus.experience_changed.connect(func(_old, _new): signals_received["xp_changed"] = true)
 
 	# Setup and execute purchase
 	var bread = RecipeDataClass.new()
