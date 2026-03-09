@@ -162,6 +162,7 @@ func _on_level_up(new_level: int) -> void:
 	# Show level up notification
 	_show_level_up_notification(new_level)
 
+
 ## Forward production started to ProductionPanel
 func _on_production_started(slot_index: int, recipe_id: String) -> void:
 	if production_panel and production_panel.has_method("on_production_started"):
