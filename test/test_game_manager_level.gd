@@ -6,9 +6,9 @@ extends GutTest
 
 var _level_up_received := false
 var _level_up_value := 0
-var _xp_changed_received := false
-var _xp_changed_old := 0
-var _xp_changed_new := 0
+var _experience_changed_received := false
+var _experience_changed_old := 0
+var _experience_changed_new := 0
 
 
 func before_each() -> void:
@@ -23,17 +23,17 @@ func before_each() -> void:
 	# Reset signal tracking
 	_level_up_received = false
 	_level_up_value = 0
-	_xp_changed_received = false
-	_xp_changed_old = 0
-	_xp_changed_new = 0
+	_experience_changed_received = false
+	_experience_changed_old = 0
+	_experience_changed_new = 0
 
 
 func after_each() -> void:
 	# Disconnect all signals
 	if EventBus.level_up.is_connected(_on_level_up):
 		EventBus.level_up.disconnect(_on_level_up)
-	if EventBus.experience_changed.is_connected(_on_xp_changed):
-		EventBus.experience_changed.disconnect(_on_xp_changed)
+	if EventBus.experience_changed.is_connected(_on_experience_changed):
+		EventBus.experience_changed.disconnect(_on_experience_changed)
 
 
 ## Test add_xp increases experience points
@@ -120,15 +120,15 @@ func test_cannot_level_up_beyond_max() -> void:
 	assert_false(_level_up_received, "level_up signal should not be emitted")
 
 
-## Test xp_changed signal is emitted when adding XP
-func test_xp_changed_signal() -> void:
-	EventBus.experience_changed.connect(_on_xp_changed)
+## Test experience_changed signal is emitted when adding XP
+func test_experience_changed_signal() -> void:
+	EventBus.experience_changed.connect(_on_experience_changed)
 
 	GameManager.add_xp(50)
 
-	assert_true(_xp_changed_received, "xp_changed signal should be emitted")
-	assert_eq(_xp_changed_old, 0, "Old XP should be 0")
-	assert_eq(_xp_changed_new, 50, "New XP should be 50")
+	assert_true(_experience_changed_received, "experience_changed signal should be emitted")
+	assert_eq(_experience_changed_old, 0, "Old XP should be 0")
+	assert_eq(_experience_changed_new, 50, "New XP should be 50")
 
 
 ## Test level_up signal is emitted for each level gained
@@ -171,7 +171,7 @@ func _on_level_up(new_level: int) -> void:
 	_level_up_value = new_level
 
 
-func _on_xp_changed(old: int, new: int) -> void:
-	_xp_changed_received = true
-	_xp_changed_old = old
-	_xp_changed_new = new
+func _on_experience_changed(old: int, new: int) -> void:
+	_experience_changed_received = true
+	_experience_changed_old = old
+	_experience_changed_new = new

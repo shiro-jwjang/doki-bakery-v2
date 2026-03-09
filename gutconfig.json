@@ -1,0 +1,9 @@
+{
+  "directory": "res://test",
+  "include_subdirectories": false,
+  "log_level": 2,
+  "should_maximize": false,
+  "should_exit": true,
+  "ignore_pause_before_teardown": true,
+  "autoload_mode": "ALWAYS"
+}
