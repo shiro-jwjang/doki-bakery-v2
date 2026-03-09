@@ -167,3 +167,38 @@ func set_mock_recipe(recipe: Resource) -> void:
 ## Clear mock recipe (for testing)
 func clear_mock_recipe() -> void:
 	_mock_recipe = null
+
+
+## Restore production slots from save data
+## Called by GameManager.load_game() to restore saved production state
+func restore_slots(slots_data: Array) -> void:
+	# Clear existing slots
+	_slots.clear()
+	_active_count = 0
+
+	# Restore each slot
+	for slot_data in slots_data:
+		if not slot_data is Dictionary:
+			continue
+
+		var slot = ProductionSlotClass.new()
+		slot.slot_index = slot_data.get("slot_index", 0)
+		slot.start_time = slot_data.get("start_time", 0.0)
+		slot.is_active = slot_data.get("is_active", false)
+		slot.is_completed = slot_data.get("is_completed", false)
+
+		# Get recipe from DataManager
+		var recipe_id = slot_data.get("recipe_id", "")
+		if not recipe_id.is_empty():
+			slot.recipe = DataManager.get_recipe(recipe_id)
+			if slot.recipe:
+				# Recalculate remaining time based on current time
+				var current_time = Time.get_unix_time_from_system()
+				var elapsed = current_time - slot.start_time
+				slot.remaining_time = maxf(0.0, slot.recipe.production_time - elapsed)
+				if slot.recipe.production_time > 0:
+					slot.progress = minf(1.0, elapsed / slot.recipe.production_time)
+
+		_slots.append(slot)
+		if slot.is_active:
+			_active_count += 1

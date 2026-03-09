@@ -37,6 +37,12 @@ var play_time: float = 0.0
 ## Flag to track if save data has been loaded during this session
 var _is_loaded: bool = false
 
+## Unlocked recipe IDs
+var unlocked_recipes: Array = []
+
+## Current shop stage (1-5)
+var shop_stage: int = 1
+
 ## Current game state
 var game_state: String = "menu":
 	set(value):
@@ -139,14 +145,28 @@ func _process(delta: float) -> void:
 ## Save the current game state to a JSON file
 ## Returns true if successful, false otherwise
 func save_game(path: String = "user://save.json") -> bool:
+	# Collect production slots from BakeryManager
+	var production_slots_data: Array = []
+	for slot in BakeryManager.get_slots():
+		if slot.is_active or slot.is_completed:
+			production_slots_data.append(
+				{
+					"slot_index": slot.slot_index,
+					"recipe_id": slot.recipe.id if slot.recipe else "",
+					"start_time": slot.start_time,
+					"is_active": slot.is_active,
+					"is_completed": slot.is_completed
+				}
+			)
+
 	var save_data := {
 		"gold": gold,
 		"premium": legendary_bread,
 		"level": level,
 		"xp": experience,
-		"unlocked_recipes": [],
-		"shop_stage": 1,
-		"production_slots": []
+		"unlocked_recipes": unlocked_recipes,
+		"shop_stage": shop_stage,
+		"production_slots": production_slots_data
 	}
 
 	var json_string := JSON.stringify(save_data)
@@ -165,7 +185,7 @@ func save_game(path: String = "user://save.json") -> bool:
 func load_game() -> bool:
 	if _is_loaded:
 		return true
-		
+
 	var file_path := "user://save.json"
 
 	# Check if file exists
@@ -195,7 +215,12 @@ func load_game() -> bool:
 	experience = save_data.experience
 	play_time = save_data.play_time
 	game_state = save_data.game_state
+	unlocked_recipes = save_data.unlocked_recipes
+	shop_stage = save_data.shop_stage
 	_is_loaded = true
+
+	# Restore production slots to BakeryManager
+	BakeryManager.restore_slots(save_data.production_slots)
 
 	return true
 
@@ -208,4 +233,6 @@ func _reset_to_defaults() -> void:
 	experience = 0
 	play_time = 0.0
 	game_state = "menu"
+	unlocked_recipes = []
+	shop_stage = 1
 	_is_loaded = false
