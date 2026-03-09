@@ -218,11 +218,6 @@ func test_purchase_fails_no_breads() -> void:
 ## Test EventBus signals are emitted throughout loop
 func test_eventbus_signals_emitted() -> void:
 	# Track signal emissions
-
-
-## Test EventBus signals are emitted throughout loop
-func test_eventbus_signals_emitted() -> void:
-	# Track signal emissions
 	var signals_received := {
 		"production_completed": false,
 		"gold_changed": false,

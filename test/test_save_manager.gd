@@ -52,7 +52,7 @@ func test_get_save_data_structure() -> void:
 	GameManager.experience = 50
 	GameManager.play_time = 100.0
 
-	var data := SaveManager.get_save_data()
+	var data: Dictionary = SaveManager.get_save_data()
 
 	assert_true(data.has("version"), "Save data should have version")
 	assert_eq(data.get("version"), 1, "Version should be 1")
@@ -112,7 +112,7 @@ func test_load_game_reads_data() -> void:
 	GameManager.experience = 0
 
 	# Load the saved data
-	var loaded_data := SaveManager.load_game()
+	var loaded_data: Dictionary = SaveManager.load_game()
 
 	assert_not_null(loaded_data, "Loaded data should not be null")
 	assert_eq(loaded_data.get("game", {}).get("gold"), 777, "Gold should be loaded")
@@ -164,7 +164,7 @@ func test_calculate_offline_progress() -> void:
 	GameManager.gold = 100
 
 	# Simulate 1 hour (3600 seconds) offline
-	var offline_progress := SaveManager.calculate_offline_progress(3600.0)
+	var offline_progress: Dictionary = SaveManager.calculate_offline_progress(3600.0)
 
 	assert_true(offline_progress.has("gold_earned"), "Should have gold_earned")
 	assert_true(offline_progress.has("time_elapsed"), "Should have time_elapsed")
@@ -176,13 +176,13 @@ func test_calculate_offline_progress() -> void:
 func test_offline_progress_scales_with_level() -> void:
 	# Test with level 1
 	GameManager.level = 1
-	var progress1 := SaveManager.calculate_offline_progress(3600.0)
-	var gold1 := progress1.get("gold_earned", 0)
+	var progress1: Dictionary = SaveManager.calculate_offline_progress(3600.0)
+	var gold1: int = progress1.get("gold_earned", 0)
 
 	# Test with level 5
 	GameManager.level = 5
-	var progress5 := SaveManager.calculate_offline_progress(3600.0)
-	var gold5 := progress5.get("gold_earned", 0)
+	var progress5: Dictionary = SaveManager.calculate_offline_progress(3600.0)
+	var gold5: int = progress5.get("gold_earned", 0)
 
 	assert_gt(gold5, gold1, "Higher level should earn more gold")
 
@@ -191,7 +191,7 @@ func test_offline_progress_scales_with_level() -> void:
 func test_offline_progress_zero_time() -> void:
 	GameManager.level = 3
 
-	var progress := SaveManager.calculate_offline_progress(0.0)
+	var progress: Dictionary = SaveManager.calculate_offline_progress(0.0)
 
 	assert_eq(progress.get("gold_earned", 0), 0, "Should earn no gold with zero time")
 
@@ -227,7 +227,7 @@ func test_save_load_cycle() -> void:
 	GameManager.set_game_state("menu")
 
 	# Load
-	var loaded_data := SaveManager.load_game()
+	var loaded_data: Dictionary = SaveManager.load_game()
 	SaveManager.apply_save_data(loaded_data)
 
 	# Verify all data is preserved

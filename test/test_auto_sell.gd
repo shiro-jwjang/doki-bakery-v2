@@ -7,19 +7,12 @@ extends GutTest
 ## 2. Display slots automatically sell bread after 5 seconds
 ## 3. Gold is awarded when bread is sold
 
-const SalesManagerClass = preload("res://scripts/managers/sales_manager.gd")
 const DisplaySlotClass = preload("res://scripts/ui/display_slot.gd")
 
-var sales_manager: Node
 var display_slot: Control
 
 
 func before_each() -> void:
-	# Create SalesManager
-	sales_manager = SalesManagerClass.new()
-	add_child(sales_manager)
-	await wait_frames(2)
-
 	# Create DisplaySlot
 	display_slot = DisplaySlotClass.new()
 	add_child(display_slot)
@@ -27,9 +20,6 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	if sales_manager != null:
-		sales_manager.queue_free()
-		await wait_frames(1)
 	if display_slot != null:
 		display_slot.queue_free()
 		await wait_frames(1)
@@ -42,14 +32,14 @@ func test_finished_bread_moves_to_display() -> void:
 	var bread_price = 50
 
 	# Track inventory_updated signal
-	watch_signals(sales_manager)
+	watch_signals(SalesManager)
 
 	# Act
-	sales_manager.add_to_inventory(recipe_id, bread_price)
+	SalesManager.add_to_inventory(recipe_id, bread_price)
 
 	# Assert
-	assert_signal_emitted(sales_manager, "inventory_updated", "Should emit inventory_updated")
-	assert_eq(sales_manager.get_inventory_count(recipe_id), 1, "Should have 1 bread in inventory")
+	assert_signal_emitted(SalesManager, "inventory_updated", "Should emit inventory_updated")
+	assert_eq(SalesManager.get_inventory_count(recipe_id), 1, "Should have 1 bread in inventory")
 
 
 ## Test: DisplaySlot setup and basic functionality
@@ -106,17 +96,17 @@ func test_multiple_breads_in_inventory() -> void:
 	# Arrange
 	var recipe_id = "croissant"
 	var price = 75
-	watch_signals(sales_manager)
+	watch_signals(SalesManager)
 
 	# Act - add 3 breads
-	sales_manager.add_to_inventory(recipe_id, price)
-	sales_manager.add_to_inventory(recipe_id, price)
-	sales_manager.add_to_inventory(recipe_id, price)
+	SalesManager.add_to_inventory(recipe_id, price)
+	SalesManager.add_to_inventory(recipe_id, price)
+	SalesManager.add_to_inventory(recipe_id, price)
 
 	# Assert
-	assert_eq(sales_manager.get_inventory_count(recipe_id), 3, "Should have 3 breads in inventory")
+	assert_eq(SalesManager.get_inventory_count(recipe_id), 3, "Should have 3 breads in inventory")
 	assert_signal_emit_count(
-		sales_manager, "inventory_updated", 3, "Should emit inventory_updated 3 times"
+		SalesManager, "inventory_updated", 3, "Should emit inventory_updated 3 times"
 	)
 
 
@@ -172,7 +162,7 @@ func test_display_slot_auto_fills_on_baking_finished() -> void:
 	# Arrange
 	var recipe_id = "croissant"
 	var price = 75
-	sales_manager.add_to_inventory(recipe_id, price)
+	SalesManager.add_to_inventory(recipe_id, price)
 	watch_signals(display_slot)
 
 	# Act - emit baking_finished signal
@@ -209,19 +199,19 @@ func test_selling_removes_from_inventory() -> void:
 	# Arrange
 	var recipe_id = "croissant"
 	var price = 75
-	sales_manager.add_to_inventory(recipe_id, price)
+	SalesManager.add_to_inventory(recipe_id, price)
 	display_slot.setup(recipe_id, price)
 	watch_signals(display_slot)
 
 	# Assert - inventory should have 1 item
-	assert_eq(sales_manager.get_inventory_count(recipe_id), 1, "Should start with 1 in inventory")
+	assert_eq(SalesManager.get_inventory_count(recipe_id), 1, "Should start with 1 in inventory")
 
 	# Act - wait for auto-sell
 	await wait_seconds(6.0)
 
 	# Assert - inventory should be empty
 	assert_eq(
-		sales_manager.get_inventory_count(recipe_id), 0, "Inventory should be empty after sell"
+		SalesManager.get_inventory_count(recipe_id), 0, "Inventory should be empty after sell"
 	)
 
 
@@ -250,13 +240,13 @@ func test_display_slot_setup_rejects_non_positive_price() -> void:
 func test_remove_from_inventory_rejects_non_positive_amount() -> void:
 	# Arrange
 	var recipe_id = "croissant"
-	sales_manager.add_to_inventory(recipe_id, 75)
+	SalesManager.add_to_inventory(recipe_id, 75)
 
 	# Act - try to remove 0 items
-	var result_zero = sales_manager.remove_from_inventory(recipe_id, 0)
-	var result_negative = sales_manager.remove_from_inventory(recipe_id, -1)
+	var result_zero = SalesManager.remove_from_inventory(recipe_id, 0)
+	var result_negative = SalesManager.remove_from_inventory(recipe_id, -1)
 
 	# Assert
 	assert_false(result_zero, "Should return false for zero amount")
 	assert_false(result_negative, "Should return false for negative amount")
-	assert_eq(sales_manager.get_inventory_count(recipe_id), 1, "Inventory should remain unchanged")
+	assert_eq(SalesManager.get_inventory_count(recipe_id), 1, "Inventory should remain unchanged")

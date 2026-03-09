@@ -39,17 +39,17 @@ func test_get_steam_id_returns_valid_id() -> void:
 
 func test_get_username_returns_string() -> void:
 	var username := SteamManager.get_username()
-	assert_not_empty(username, "Username should not be empty")
+	assert_ne(username, "", "Username should not be empty")
 
 
 func test_unlock_achievement_returns_bool() -> void:
 	var result := SteamManager.unlock_achievement("test_achievement")
-	assert_bool(result, "unlock_achievement should return a boolean")
+	assert_typeof(result, TYPE_BOOL, "unlock_achievement should return a boolean")
 
 
 func test_has_achievement_returns_bool() -> void:
 	var result := SteamManager.has_achievement("test_achievement")
-	assert_bool(result, "has_achievement should return a boolean")
+	assert_typeof(result, TYPE_BOOL, "has_achievement should return a boolean")
 
 
 func test_unlock_then_check_achievement() -> void:
@@ -77,7 +77,7 @@ func test_set_and_get_stat() -> void:
 	var test_value := 42.5
 
 	var set_result := SteamManager.set_stat(stat_name, test_value)
-	assert_bool(set_result, "set_stat should return a boolean")
+	assert_typeof(set_result, TYPE_BOOL, "set_stat should return a boolean")
 
 	# In stub mode, get_stat returns 0.0
 	var get_result := SteamManager.get_stat(stat_name)
@@ -90,7 +90,7 @@ func test_set_and_get_stat_int() -> void:
 	var test_value := 100
 
 	var set_result := SteamManager.set_stat_int(stat_name, test_value)
-	assert_bool(set_result, "set_stat_int should return a boolean")
+	assert_typeof(set_result, TYPE_BOOL, "set_stat_int should return a boolean")
 
 	# In stub mode, get_stat_int returns 0
 	var get_result := SteamManager.get_stat_int(stat_name)
@@ -117,13 +117,13 @@ func test_clear_achievement() -> void:
 
 	# Clear achievement
 	var clear_result := SteamManager.clear_achievement(test_achievement)
-	assert_bool(clear_result, "clear_achievement should return a boolean")
+	assert_typeof(clear_result, TYPE_BOOL, "clear_achievement should return a boolean")
 
 
 func test_is_logged_on() -> void:
 	var logged_on := SteamManager.is_logged_on()
 	# In stub mode without Steam client, this should be false
-	assert_bool(logged_on, "is_logged_on should return a boolean")
+	assert_typeof(logged_on, TYPE_BOOL, "is_logged_on should return a boolean")
 
 
 func test_steam_manager_methods_exist() -> void:
