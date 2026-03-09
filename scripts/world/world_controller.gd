@@ -13,6 +13,8 @@ extends Node
 ## - Connects EventBus signals to UI component methods
 ## - Coordinates between GameManager, BakeryManager, SalesManager and UI
 
+const LEVEL_UP_NOTIFICATION_SCENE = preload("res://scenes/ui/level_up_notification.tscn")
+
 ## Reference to HUD component
 @export var hud: CanvasLayer = null
 
@@ -22,11 +24,16 @@ extends Node
 ## Reference to DisplaySlots container
 @export var display_slots: Node = null
 
+## Reference to LevelUpNotification component
+var level_up_notification: Control = null
+
 ## Flag indicating if EventBus connections have been established
 var _connections_established: bool = false
 
 
 func _ready() -> void:
+	# Create level up notification
+	_create_level_up_notification()
 	# Find and cache UI components
 	find_ui_components()
 	# Connect EventBus signals to UI handlers
@@ -152,6 +159,8 @@ func _on_level_up(new_level: int) -> void:
 	if hud and hud.has_method("update_level"):
 		hud.update_level(new_level)
 
+	# Show level up notification
+	_show_level_up_notification(new_level)
 
 ## Forward production started to ProductionPanel
 func _on_production_started(slot_index: int, recipe_id: String) -> void:
@@ -214,3 +223,34 @@ func set_production_panel(p_panel: Control) -> void:
 ## Manually set DisplaySlots reference (useful for testing).
 func set_display_slots(p_slots: Node) -> void:
 	display_slots = p_slots
+
+
+# ==================== Level Up Notification ====================
+
+
+## Create and setup level up notification
+func _create_level_up_notification() -> void:
+	if LEVEL_UP_NOTIFICATION_SCENE:
+		level_up_notification = LEVEL_UP_NOTIFICATION_SCENE.instantiate()
+		add_child(level_up_notification)
+		if level_up_notification:
+			level_up_notification.visible = false
+
+
+## Show level up notification with unlocked items
+func _show_level_up_notification(level: int) -> void:
+	if level_up_notification and level_up_notification.has_method("show_unlocks"):
+		var unlocked_items = DataManager.get_unlocks_for_level(level)
+
+		# Convert recipe IDs to display names
+		var item_data: Array[Dictionary] = []
+		for item_id in unlocked_items:
+			var recipe = DataManager.get_recipe(item_id)
+			var item_dict = {"id": item_id}
+			if recipe:
+				item_dict["name"] = recipe.display_name
+			else:
+				item_dict["name"] = item_id
+			item_data.append(item_dict)
+
+		level_up_notification.show_unlocks(level, item_data)

@@ -107,3 +107,11 @@ func get_all_levels() -> Array:
 ## 모든 매장 단계 반환
 func get_all_shop_stages() -> Array:
 	return _shop_stages.values()
+
+
+## 레벨에서 해금되는 아이템 목록 조회
+func get_unlocks_for_level(level: int) -> Array:
+	var level_data = get_level(level)
+	if level_data:
+		return level_data.unlock_recipes
+	return []
