@@ -248,3 +248,35 @@ func test_world_view_add_to_scene_tree() -> void:
 	# The scene was already added to the tree in before_each
 	# Verify it's in the tree
 	assert_true(_world_view.is_inside_tree(), "WorldView should be inside scene tree")
+
+
+## ==================== SNA-118: PlayerView PLACEMENT TESTS ====================
+
+
+## Test that PlayerView exists as child of YSort
+func test_player_view_exists_in_ysort() -> void:
+	if _world_view == null:
+		fail_test("WorldView scene file does not exist")
+
+	var y_sort = _world_view.find_child("YSort", true, false)
+	if y_sort == null:
+		fail_test("YSort node not found")
+
+	var player_view = y_sort.find_child("PlayerView", true, false)
+	assert_not_null(player_view, "PlayerView should be child of YSort")
+
+
+## ==================== SNA-119: StallMap PLACEMENT TESTS ====================
+
+
+## Test that StallMap exists as child of Background
+func test_stall_map_exists_in_background() -> void:
+	if _world_view == null:
+		fail_test("WorldView scene file does not exist")
+
+	var background = _world_view.find_child("Background", true, false)
+	if background == null:
+		fail_test("Background node not found")
+
+	var stall_map = background.find_child("StallMap", true, false)
+	assert_not_null(stall_map, "StallMap should be child of Background")
