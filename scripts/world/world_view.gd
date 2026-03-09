@@ -28,4 +28,6 @@ func _ready() -> void:
 ## with higher Y values rendered in front of lower Y values.
 ## SNA-114
 func add_entity(entity: Node2D) -> void:
+	assert(_y_sort != null, "YSort node not found at $Entities/YSort")
+	assert(entity != null, "Cannot add null entity to YSort")
 	_y_sort.add_child(entity)
