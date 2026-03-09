@@ -39,8 +39,8 @@ func _connect_event_bus_signals() -> void:
 	if not EventBus.gold_changed.is_connected(_on_gold_changed):
 		EventBus.gold_changed.connect(_on_gold_changed)
 
-	if not EventBus.xp_changed.is_connected(_on_xp_changed):
-		EventBus.xp_changed.connect(_on_xp_changed)
+	if not EventBus.experience_changed.is_connected(_on_experience_changed):
+		EventBus.experience_changed.connect(_on_experience_changed)
 
 	if not EventBus.level_up.is_connected(_on_level_up):
 		EventBus.level_up.connect(_on_level_up)
@@ -108,7 +108,9 @@ func validate_connections() -> Dictionary:
 
 	# Check EventBus signal connections
 	results["gold_changed_connected"] = EventBus.gold_changed.is_connected(_on_gold_changed)
-	results["xp_changed_connected"] = EventBus.xp_changed.is_connected(_on_xp_changed)
+	results["experience_changed_connected"] = EventBus.experience_changed.is_connected(
+		_on_experience_changed
+	)
 	results["production_started_connected"] = EventBus.production_started.is_connected(
 		_on_production_started
 	)
@@ -137,7 +139,7 @@ func _on_gold_changed(old: int, new: int) -> void:
 
 
 ## Forward XP changes to HUD
-func _on_xp_changed(old: int, new: int) -> void:
+func _on_experience_changed(old: int, new: int) -> void:
 	if _hud and _hud.has_method("update_xp"):
 		_hud.update_xp(old, new)
 
