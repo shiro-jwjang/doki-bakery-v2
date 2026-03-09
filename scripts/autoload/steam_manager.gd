@@ -19,7 +19,7 @@ func _ready() -> void:
 	# Add steam instance to scene tree to prevent orphan warnings
 	if _steam != null and not _steam.is_inside_tree():
 		add_child(_steam)
-		
+
 	# Read steam_appid.txt if it exists
 	var app_id := 480  # Default to Spacewar test app ID
 

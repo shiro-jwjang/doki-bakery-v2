@@ -25,6 +25,7 @@ func after_each() -> void:
 
 # ==================== Initialization Tests ====================
 
+
 func test_world_controller_initializes() -> void:
 	assert_not_null(world_controller, "WorldController should initialize")
 
@@ -50,6 +51,7 @@ func test_get_display_slots_returns_null_when_no_slots() -> void:
 
 
 # ==================== EventBus Connection Tests ====================
+
 
 func test_event_bus_gold_changed_connected() -> void:
 	assert_true(
@@ -96,6 +98,7 @@ func test_event_bus_bread_sold_connected() -> void:
 
 # ==================== Validation Tests ====================
 
+
 func test_validate_connections_returns_dictionary() -> void:
 	var result: Dictionary = world_controller.validate_connections()
 	assert_not_null(result, "validate_connections should return a dictionary")
@@ -104,8 +107,12 @@ func test_validate_connections_returns_dictionary() -> void:
 func test_validate_connections_reports_connection_status() -> void:
 	var result: Dictionary = world_controller.validate_connections()
 	assert_true(result.has("gold_changed_connected"), "Should report gold_changed_connected")
-	assert_true(result.has("experience_changed_connected"), "Should report experience_changed_connected")
-	assert_true(result.has("production_started_connected"), "Should report production_started_connected")
+	assert_true(
+		result.has("experience_changed_connected"), "Should report experience_changed_connected"
+	)
+	assert_true(
+		result.has("production_started_connected"), "Should report production_started_connected"
+	)
 
 
 func test_validate_connections_all_connected_true_after_init() -> void:
@@ -114,6 +121,7 @@ func test_validate_connections_all_connected_true_after_init() -> void:
 
 
 # ==================== Signal Propagation Tests ====================
+
 
 func test_gold_change_signal_propagates() -> void:
 	# Verify WorldController receives gold_changed via EventBus

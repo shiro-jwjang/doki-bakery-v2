@@ -183,8 +183,12 @@ func test_decide_purchase_with_bread_guaranteed() -> void:
 		assert_true(result, "Should return true for successful purchase")
 
 		assert_true(_signal_received, "customer_purchased signal should be emitted")
-		assert_eq(_signal_data.get("customer_id", ""), "customer_1", "Signal should include customer_id")
-		assert_eq(_signal_data.get("recipe_id", ""), "test_bread", "Signal should include recipe_id")
+		assert_eq(
+			_signal_data.get("customer_id", ""), "customer_1", "Signal should include customer_id"
+		)
+		assert_eq(
+			_signal_data.get("recipe_id", ""), "test_bread", "Signal should include recipe_id"
+		)
 		assert_eq(_signal_data.get("price", 0), 100, "Signal should include price")
 
 		CustomerSpawner.customer_purchased.disconnect(_on_customer_purchased)
