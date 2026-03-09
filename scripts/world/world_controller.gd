@@ -102,7 +102,9 @@ func validate_connections() -> Dictionary:
 
 	# Check EventBus signal connections
 	results["gold_changed_connected"] = EventBus.gold_changed.is_connected(_on_gold_changed)
-	results["premium_changed_connected"] = EventBus.premium_changed.is_connected(_on_premium_changed)
+	results["premium_changed_connected"] = EventBus.premium_changed.is_connected(
+		_on_premium_changed
+	)
 	results["experience_changed_connected"] = EventBus.experience_changed.is_connected(
 		_on_experience_changed
 	)

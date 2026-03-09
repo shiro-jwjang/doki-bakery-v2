@@ -149,13 +149,15 @@ func save_game(path: String = "user://save.json") -> bool:
 	var production_slots_data: Array = []
 	for slot in BakeryManager.get_slots():
 		if slot.is_active or slot.is_completed:
-			production_slots_data.append({
-				"slot_index": slot.slot_index,
-				"recipe_id": slot.recipe.id if slot.recipe else "",
-				"start_time": slot.start_time,
-				"is_active": slot.is_active,
-				"is_completed": slot.is_completed
-			})
+			production_slots_data.append(
+				{
+					"slot_index": slot.slot_index,
+					"recipe_id": slot.recipe.id if slot.recipe else "",
+					"start_time": slot.start_time,
+					"is_active": slot.is_active,
+					"is_completed": slot.is_completed
+				}
+			)
 
 	var save_data := {
 		"gold": gold,
@@ -183,7 +185,7 @@ func save_game(path: String = "user://save.json") -> bool:
 func load_game() -> bool:
 	if _is_loaded:
 		return true
-		
+
 	var file_path := "user://save.json"
 
 	# Check if file exists
