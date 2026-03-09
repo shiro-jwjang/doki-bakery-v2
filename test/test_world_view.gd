@@ -308,3 +308,25 @@ func test_world_controller_has_production_panel_reference() -> void:
 		fail_test("WorldController not found")
 
 	assert_not_null(controller.production_panel, "WorldController should have production_panel reference")
+
+
+## ==================== SNA-116: BreadMenu PLACEMENT TESTS ====================
+
+
+## Test that BreadMenu scene can be loaded
+func test_bread_menu_scene_loads() -> void:
+	var scene = load("res://scenes/ui/bread_menu.tscn")
+	assert_not_null(scene, "BreadMenu scene should exist at res://scenes/ui/bread_menu.tscn")
+
+
+## Test that BreadMenu exists as child of UI layer
+func test_bread_menu_exists_in_ui() -> void:
+	if _world_view == null:
+		fail_test("WorldView scene file does not exist")
+
+	var ui = _world_view.find_child("UI", true, false)
+	if ui == null:
+		fail_test("UI layer not found")
+
+	var bread_menu = ui.find_child("BreadMenu", true, false)
+	assert_not_null(bread_menu, "BreadMenu should be child of UI layer")
