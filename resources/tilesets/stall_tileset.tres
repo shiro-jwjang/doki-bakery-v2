@@ -1,8 +1,8 @@
 [gd_resource type="TileSet" load_steps=3 format=3 uid="uid://bstalltileset123"]
 
-[ext_resource type="Texture2D" uid="uid://gjecie61mmr5" path="res://assets/placeholders/tile_floor.png" id="1_floor"]
-[ext_resource type="Texture2D" uid="uid://wc3ltsjbj06j" path="res://assets/placeholders/tile_stall.png" id="2_stall"]
-[ext_resource type="Texture2D" uid="uid://u05dktjfu0pu" path="res://assets/placeholders/tile_parasol.png" id="3_parasol"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/tile_floor.png" id="1_floor"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/tile_stall.png" id="2_stall"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/tile_parasol.png" id="3_parasol"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_1_floor"]
 texture = ExtResource("1_floor")

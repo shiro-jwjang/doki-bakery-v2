@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/world/world_view.gd" id="1_0abcd"]
 [ext_resource type="Script" path="res://scripts/world/world_controller.gd" id="2_wctrl"]
-[ext_resource type="PackedScene" uid="uid://c5p7k2n4v8q6k" path="res://scenes/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" uid="uid://b3x5q8r7k2n5p" path="res://scenes/world/player_view.tscn" id="4_player"]
 [ext_resource type="PackedScene" uid="uid://bstallmap456" path="res://scenes/world/stall_map.tscn" id="5_stall"]
 [ext_resource type="PackedScene" path="res://scenes/ui/production_panel.tscn" id="6_panel"]
