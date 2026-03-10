@@ -28,10 +28,10 @@ func _ready() -> void:
 	(
 		tween
 		. tween_property(self, "position:y", position.y - 50.0, lifetime)
-		. set_trans(Tween.TRANS_OUT)
+		. set_trans(Tween.TRANS_QUAD)
 		. set_ease(Tween.EASE_OUT)
 	)
-	tween.tween_property(self, "modulate:a", 0.0, lifetime).set_trans(Tween.TRANS_IN).set_ease(
+	tween.tween_property(self, "modulate:a", 0.0, lifetime).set_trans(Tween.TRANS_QUAD).set_ease(
 		Tween.EASE_IN
 	)
 

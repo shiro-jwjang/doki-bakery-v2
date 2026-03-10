@@ -75,7 +75,7 @@ func _connect_event_bus_signals() -> void:
 
 	# Initialize UI components with current state
 	if hud and hud.has_method("_on_premium_changed"):
-		hud._on_premium_changed(GameManager.legendary_bread)
+		hud._on_premium_changed(0, GameManager.legendary_bread)
 
 	_connections_established = true
 
@@ -145,7 +145,7 @@ func _on_gold_changed(old: int, new: int) -> void:
 ## Forward premium changes to HUD
 func _on_premium_changed(_old: int, new: int) -> void:
 	if hud and hud.has_method("_on_premium_changed"):
-		hud._on_premium_changed(new)
+		hud._on_premium_changed(_old, new)
 
 
 ## Forward XP changes to HUD

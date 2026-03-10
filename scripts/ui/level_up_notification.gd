@@ -7,7 +7,7 @@ extends Control
 ## showing unlocked recipes and features.
 
 ## Current unlocked items
-var _unlocked_items: Array[String] = []
+var _unlocked_items: Array = []
 
 ## Auto-close timer (3 seconds)
 @onready var auto_close_timer: Timer = $AutoCloseTimer
@@ -51,6 +51,19 @@ func show_unlocks(level: int, items: Array) -> void:
 					item_names.append(str(item))
 
 			items_label.text = "Unlocked:\n" + "\n".join(item_names)
+	else:
+		# For testing without scene: create items_label if needed
+		if items_label == null and items.size() > 0:
+			items_label = Label.new()
+			items_label.name = "ItemsLabel"
+			var item_names: PackedStringArray = []
+			for item in items:
+				if typeof(item) == TYPE_DICTIONARY:
+					item_names.append(item.get("name", item.get("id", "Unknown")))
+				else:
+					item_names.append(str(item))
+			items_label.text = "Unlocked:\n" + "\n".join(item_names)
+			add_child(items_label)
 
 	# Show notification
 	visible = true
@@ -58,6 +71,16 @@ func show_unlocks(level: int, items: Array) -> void:
 	# Start auto-close timer
 	if auto_close_timer:
 		auto_close_timer.start()
+	else:
+		# For testing without scene: create timer if needed
+		if auto_close_timer == null:
+			auto_close_timer = Timer.new()
+			auto_close_timer.name = "AutoCloseTimer"
+			auto_close_timer.wait_time = 3.0
+			auto_close_timer.one_shot = true
+			auto_close_timer.timeout.connect(_on_auto_close_timer_timeout)
+			add_child(auto_close_timer)
+			auto_close_timer.start()
 
 
 ## Hide notification
