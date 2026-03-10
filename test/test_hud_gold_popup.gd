@@ -65,7 +65,8 @@ func test_gold_popup_shows_positive_amount() -> void:
 	var label = popup.get_node_or_null("Label")
 	assert_not_null(label, "Popup must have a Label")
 	assert_eq(label.text, "+30G ↑", "Should show positive amount with arrow")
-	assert_eq(label.modulate, Color.GREEN, "Positive amount should be green")
+	# Check color (ignore alpha as animation might have started)
+	assert_eq(Color(label.modulate.r, label.modulate.g, label.modulate.b), Color.GREEN, "Positive amount should be green")
 
 
 ## Test that popup shows correct text for negative change
@@ -89,7 +90,8 @@ func test_gold_popup_shows_negative_amount() -> void:
 
 	var label = popup.get_node_or_null("Label")
 	assert_eq(label.text, "-10G ↓", "Should show negative amount with arrow")
-	assert_eq(label.modulate, Color.RED, "Negative amount should be red")
+	# Check color (ignore alpha as animation might have started)
+	assert_eq(Color(label.modulate.r, label.modulate.g, label.modulate.b), Color.RED, "Negative amount should be red")
 
 
 ## Test that popup disappears after a delay

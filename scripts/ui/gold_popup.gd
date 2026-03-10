@@ -1,42 +1,58 @@
 class_name GoldPopup
 extends Node2D
 
-var label: Label
+## GoldPopup - Floating text showing gold changes
+## SNA-94: HUD 골드 변동 팝업 애니메이션
+##
+## Displays "+30G ↑" (green) for gains, "-10G ↓" (red) for losses
+## Floats up and fades out over ~1.5 seconds
 
-var amount: int = 0
-var lifetime: float = 1.5
-var speed: float = 50.0
+## Label node for displaying text
+@onready var _label: Label = $Label
 
+## Duration before popup disappears (seconds)
+const LIFETIME: float = 1.5
 
-func _init() -> void:
-	name = "GoldPopup"
-	label = Label.new()
-	label.name = "Label"
-	add_child(label)
+## Animation speed
+const FLOAT_SPEED: float = -50.0  # Negative = up
 
 
 func _ready() -> void:
+	# Start floating animation
+	_start_animation()
+
+
+## Setup the popup with a gold amount
+## @param amount: Gold change amount (positive or negative)
+func setup(amount: int) -> void:
+	if _label == null:
+		await ready
+
+	var text: String
+	var color: Color
+
 	if amount >= 0:
-		label.text = "+%dG ↑" % amount
-		label.modulate = Color.GREEN
+		text = "+%dG ↑" % amount
+		color = Color.GREEN
 	else:
-		label.text = "%dG ↓" % amount
-		label.modulate = Color.RED
+		text = "%dG ↓" % amount  # amount is already negative
+		color = Color.RED
 
-	var tween = create_tween()
+	_label.text = text
+	_label.modulate = color
+
+	# Auto-destroy after lifetime
+	await get_tree().create_timer(LIFETIME).timeout
+	queue_free()
+
+
+## Start floating and fading animation
+func _start_animation() -> void:
+	var tween := create_tween()
 	tween.set_parallel(true)
-	(
-		tween
-		. tween_property(self, "position:y", position.y - 50.0, lifetime)
-		. set_trans(Tween.TRANS_OUT)
-		. set_ease(Tween.EASE_OUT)
-	)
-	tween.tween_property(self, "modulate:a", 0.0, lifetime).set_trans(Tween.TRANS_IN).set_ease(
-		Tween.EASE_IN
-	)
 
-	tween.chain().tween_callback(queue_free)
+	# Float up
+	tween.tween_property(self, "position:y", position.y + FLOAT_SPEED * LIFETIME, LIFETIME)
 
-
-func setup(change_amount: int) -> void:
-	amount = change_amount
+	# Fade out
+	tween.tween_property(_label, "modulate:a", 0.0, LIFETIME)

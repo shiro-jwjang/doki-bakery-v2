@@ -35,6 +35,15 @@ func add_gold(amount: int) -> void:
 	print("Added %d gold, new total: %d" % [amount, gold])
 
 
+func spend_gold(amount: int) -> bool:
+	if gold >= amount:
+		gold -= amount
+		print("Spent %d gold, remaining: %d" % [amount, gold])
+		return true
+	print("Not enough gold to spend %d (current: %d)" % [amount, gold])
+	return false
+
+
 func get_gold() -> int:
 	return gold
 
