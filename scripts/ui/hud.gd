@@ -5,8 +5,6 @@ extends CanvasLayer
 ## SNA-92: HUD 경험치 바 실시간 반영
 ## SNA-94: HUD 골드 변동 팝업 애니메이션
 
-const GOLD_POPUP_SCENE := preload("res://scenes/ui/gold_popup.tscn")
-
 @onready var exp_bar: ProgressBar = $Control/ExpBar
 @onready var premium_label: Label = $Control/GoldenBreadBox/Label
 
@@ -19,9 +17,12 @@ func _ready() -> void:
 		EventBus.level_up.connect(_on_level_up)
 	if not EventBus.gold_changed.is_connected(_on_gold_changed):
 		EventBus.gold_changed.connect(_on_gold_changed)
+	if not EventBus.premium_changed.is_connected(_on_premium_changed):
+		EventBus.premium_changed.connect(_on_premium_changed)
 
 	# Initialize bar with current values
 	_update_exp_bar()
+	_update_premium_label()
 
 
 ## Update experience bar when XP changes
@@ -34,21 +35,18 @@ func _on_level_up(_new_level: int) -> void:
 	_update_exp_bar()
 
 
-## Handle gold changes - spawn popup
+## Spawn gold popup when gold changes
 func _on_gold_changed(old: int, new: int) -> void:
-	var amount := new - old
-	if amount == 0:
-		return
-
-	_spawn_gold_popup(amount)
+	var change := new - old
+	_spawn_gold_popup(change)
 
 
-## Spawn a gold popup at the HUD center
-func _spawn_gold_popup(amount: int) -> void:
-	var popup := GOLD_POPUP_SCENE.instantiate()
+## Spawn a gold popup showing the change amount
+func _spawn_gold_popup(change: int) -> void:
+	var popup := GoldPopup.new()
+	popup.setup(change)
+	popup.position = Vector2(100, 100)
 	add_child(popup)
-	popup.position = get_viewport().get_visible_rect().size * 0.5
-	popup.setup(amount)
 
 
 ## Update the experience bar value and max value
@@ -69,6 +67,12 @@ func _update_exp_bar() -> void:
 
 
 ## Update premium currency display
-func _on_premium_changed(amount: int) -> void:
+func _on_premium_changed(_old: int, new: int) -> void:
 	if premium_label != null:
-		premium_label.text = str(amount)
+		premium_label.text = str(new)
+
+
+## Initialize premium label with current value
+func _update_premium_label() -> void:
+	if premium_label != null:
+		premium_label.text = str(GameManager.legendary_bread)
