@@ -18,19 +18,23 @@ var experience: int = 0:
 
 var experience_to_next_level: int = 100
 
-var bread_inventory: Dictionary = {} # SNA-46
+var bread_inventory: Dictionary = {}  # SNA-46
+
 
 func add_gold(amount: int) -> void:
 	gold += amount
 	print("Added %d gold, new total: %d" % [amount, gold])
 
+
 func get_gold() -> int:
 	return gold
+
 
 func add_experience(amount: int) -> void:
 	experience += amount
 	if experience >= experience_to_next_level:
 		level_up()
+
 
 func level_up() -> void:
 	level += 1
