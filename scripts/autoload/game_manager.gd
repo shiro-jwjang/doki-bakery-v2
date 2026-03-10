@@ -6,6 +6,12 @@ var gold: int = 0:
 		gold = value
 		EventBus.gold_changed.emit(old, gold)
 
+var legendary_bread: int = 0:
+	set(value):
+		var old: int = legendary_bread
+		legendary_bread = value
+		EventBus.premium_changed.emit(old, legendary_bread)
+
 var level: int = 1:
 	set(value):
 		level = value
@@ -13,10 +19,13 @@ var level: int = 1:
 
 var experience: int = 0:
 	set(value):
+		var old: int = experience
 		experience = value
-		EventBus.experience_changed.emit(experience)
+		EventBus.experience_changed.emit(old, experience)
 
 var experience_to_next_level: int = 100
+
+var play_time: float = 0.0
 
 var bread_inventory: Dictionary = {}  # SNA-46
 
@@ -41,3 +50,12 @@ func level_up() -> void:
 	experience -= experience_to_next_level
 	experience_to_next_level = int(experience_to_next_level * 1.5)
 	EventBus.level_up.emit(level)
+
+
+## Load game state from SaveManager
+func load_game() -> void:
+	var save_mgr = get_node_or_null("/root/SaveManager")
+	if save_mgr and save_mgr.has_method("load_game"):
+		var data: Dictionary = save_mgr.load_game()
+		if not data.is_empty() and save_mgr.has_method("apply_save_data"):
+			save_mgr.apply_save_data(data)
