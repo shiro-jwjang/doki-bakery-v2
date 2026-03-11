@@ -65,7 +65,8 @@ func test_gold_popup_shows_positive_amount() -> void:
 	var label = popup.get_node_or_null("Label")
 	assert_not_null(label, "Popup must have a Label")
 	assert_eq(label.text, "+30G ↑", "Should show positive amount with arrow")
-	assert_eq(label.modulate, Color.GREEN, "Positive amount should be green")
+	# Check color (ignore alpha as animation might have started)
+	assert_eq(Color(label.modulate.r, label.modulate.g, label.modulate.b), Color.GREEN, "Positive amount should be green")
 
 
 ## Test that popup shows correct text for negative change
@@ -89,7 +90,26 @@ func test_gold_popup_shows_negative_amount() -> void:
 
 	var label = popup.get_node_or_null("Label")
 	assert_eq(label.text, "-10G ↓", "Should show negative amount with arrow")
-	assert_eq(label.modulate, Color.RED, "Negative amount should be red")
+	# Check color (ignore alpha as animation might have started)
+	assert_eq(Color(label.modulate.r, label.modulate.g, label.modulate.b), Color.RED, "Negative amount should be red")
+
+
+## Test that popup is spawned at HUD center
+func test_gold_popup_spawns_at_center_position() -> void:
+	var hud_scene = preload("res://scenes/ui/hud.tscn")
+	hud = hud_scene.instantiate()
+	add_child(hud)
+	await wait_physics_frames(2)
+
+	GameManager.add_gold(10)
+	await wait_physics_frames(1)
+
+	var popup = _find_gold_popup(hud)
+	assert_not_null(popup, "GoldPopup should be spawned")
+
+	var expected_center: Vector2 = hud.get_viewport().get_visible_rect().size * 0.5
+	assert_almost_eq(popup.position.x, expected_center.x, 1.0, "GoldPopup X should spawn at center")
+	assert_true(popup.position.y <= expected_center.y and popup.position.y >= expected_center.y - 50.0, "GoldPopup Y should start near center (allowing immediate upward tween)")
 
 
 ## Test that popup disappears after a delay

@@ -35,14 +35,30 @@ func add_gold(amount: int) -> void:
 	print("Added %d gold, new total: %d" % [amount, gold])
 
 
+func spend_gold(amount: int) -> bool:
+	if gold >= amount:
+		gold -= amount
+		print("Spent %d gold, remaining: %d" % [amount, gold])
+		return true
+	print("Not enough gold to spend %d (current: %d)" % [amount, gold])
+	return false
+
+
 func get_gold() -> int:
 	return gold
 
 
 func add_experience(amount: int) -> void:
+	if amount <= 0:
+		return
 	experience += amount
 	if experience >= experience_to_next_level:
 		level_up()
+
+
+## Alias for add_experience (used in tests)
+func add_xp(amount: int) -> void:
+	add_experience(amount)
 
 
 func level_up() -> void:
