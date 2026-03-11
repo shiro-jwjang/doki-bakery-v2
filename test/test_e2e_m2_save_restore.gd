@@ -9,6 +9,7 @@ const SAVE_PATH := "user://test_save.json"
 var _original_gold: int = 0
 var _original_level: int = 1
 var _original_experience: int = 0
+var _original_legendary_bread: int = 0
 var _original_save_path: String = ""
 
 
@@ -17,6 +18,7 @@ func before_all() -> void:
 	_original_gold = GameManager.gold
 	_original_level = GameManager.level
 	_original_experience = GameManager.experience
+	_original_legendary_bread = GameManager.legendary_bread
 	_original_save_path = SaveManager.save_path
 
 
@@ -25,6 +27,7 @@ func before_each() -> void:
 	GameManager.gold = 100
 	GameManager.level = 2
 	GameManager.experience = 50
+	GameManager.legendary_bread = 0
 	# Use test save path
 	SaveManager.save_path = SAVE_PATH
 	# Clean up any existing test save
@@ -43,6 +46,7 @@ func after_all() -> void:
 	GameManager.gold = _original_gold
 	GameManager.level = _original_level
 	GameManager.experience = _original_experience
+	GameManager.legendary_bread = _original_legendary_bread
 	SaveManager.save_path = _original_save_path
 
 
