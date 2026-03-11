@@ -47,6 +47,7 @@ func _on_gold_changed(old: int, new: int) -> void:
 func _spawn_gold_popup(amount: int) -> void:
 	var popup := GOLD_POPUP_SCENE.instantiate()
 	add_child(popup)
+	popup.position = get_viewport().get_visible_rect().size * 0.5
 	popup.setup(amount)
 
 

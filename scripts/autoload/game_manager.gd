@@ -49,9 +49,16 @@ func get_gold() -> int:
 
 
 func add_experience(amount: int) -> void:
+	if amount <= 0:
+		return
 	experience += amount
 	if experience >= experience_to_next_level:
 		level_up()
+
+
+## Alias for add_experience (used in tests)
+func add_xp(amount: int) -> void:
+	add_experience(amount)
 
 
 func level_up() -> void:
