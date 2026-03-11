@@ -52,4 +52,4 @@ layer = 2
 
 [node name="BreadMenu" parent="UI" instance=ExtResource("7_menu")]
 
-[node name="DisplaySlots" parent="UI" instance=ExtResource("8_display")
+[node name="DisplaySlots" parent="UI" instance=ExtResource("8_display")]
