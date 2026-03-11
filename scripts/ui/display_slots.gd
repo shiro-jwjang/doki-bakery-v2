@@ -9,11 +9,11 @@ extends Control
 ## Number of display slots
 const SLOT_COUNT: int = 4
 
-## Slot container
-@onready var _slot_container: HBoxContainer = $HBoxContainer
-
 ## Array of DisplaySlot nodes
 var _slots: Array[Node] = []
+
+## Slot container
+@onready var _slot_container: HBoxContainer = $HBoxContainer
 
 
 func _ready() -> void:
