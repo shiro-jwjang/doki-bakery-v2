@@ -9,6 +9,7 @@ const SAVE_PATH := "user://test_save.json"
 var _original_gold: int = 0
 var _original_level: int = 1
 var _original_experience: int = 0
+var _original_save_path: String = ""
 
 
 func before_all() -> void:
@@ -16,6 +17,7 @@ func before_all() -> void:
 	_original_gold = GameManager.gold
 	_original_level = GameManager.level
 	_original_experience = GameManager.experience
+	_original_save_path = SaveManager.save_path
 
 
 func before_each() -> void:
@@ -32,6 +34,8 @@ func before_each() -> void:
 func after_each() -> void:
 	# Clean up test save
 	_delete_test_save()
+	# Restore original save path to prevent state leakage between tests
+	SaveManager.save_path = _original_save_path
 
 
 func after_all() -> void:
@@ -39,6 +43,7 @@ func after_all() -> void:
 	GameManager.gold = _original_gold
 	GameManager.level = _original_level
 	GameManager.experience = _original_experience
+	SaveManager.save_path = _original_save_path
 
 
 ## ==================== E2E TESTS ====================
@@ -177,7 +182,7 @@ func test_e2e_load_signal_emitted() -> void:
 
 ## Test that loading non-existent save returns empty dict
 func test_e2e_load_nonexistent_save() -> void:
-	# Use path that doesn't exist
+	# Use path that doesn't exist (save_path will be restored in after_each)
 	SaveManager.save_path = "user://nonexistent_save.json"
 
 	var data := SaveManager.load_game()
