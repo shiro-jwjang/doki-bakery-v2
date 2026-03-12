@@ -45,7 +45,8 @@ func _on_gold_changed(old: int, new: int) -> void:
 func _spawn_gold_popup(change: int) -> void:
 	var popup := GoldPopup.new()
 	popup.setup(change)
-	popup.position = Vector2(100, 100)
+	# Center the popup on screen (SNA-94 pattern)
+	popup.position = get_viewport().get_visible_rect().size * 0.5
 	add_child(popup)
 
 
