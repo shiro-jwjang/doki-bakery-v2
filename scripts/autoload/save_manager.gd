@@ -101,7 +101,7 @@ func calculate_offline_progress(time_elapsed: float) -> Dictionary:
 	# Offline earnings formula: level * 10 gold per hour
 	# time_elapsed is in seconds, convert to hours
 	var hours := time_elapsed / 3600.0
-	var gold_per_hour := GameManager.level * 10
+	var gold_per_hour: int = GameManager.level * 10
 	var gold_earned := int(hours * gold_per_hour)
 
 	return {"gold_earned": gold_earned, "time_elapsed": time_elapsed}

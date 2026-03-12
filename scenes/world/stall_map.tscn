@@ -4,5 +4,6 @@
 [ext_resource type="TileSet" path="res://resources/tilesets/stall_tileset.tres" id="1"]
 
 [node name="StallMap" type="TileMapLayer"]
+modulate = Color(0, 0, 0, 0)
 tile_set = ExtResource("1")
 script = ExtResource("2")
