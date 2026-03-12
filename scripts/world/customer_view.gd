@@ -12,17 +12,17 @@ extends Node2D
 ## - Customer ID tracking
 ## - Path movement
 
-## Default customer sprite texture
-const DEFAULT_TEXTURE = preload("res://assets/sprites/characters/chr_guest01.png")
-
-## Default movement speed (pixels per second)
-const DEFAULT_SPEED: float = 50.0
-
 ## Signal emitted when path movement is completed
 signal path_completed
 
 ## Signal emitted when customer arrives at target position
 signal arrived_at_target(position: Vector2)
+
+## Default customer sprite texture
+const DEFAULT_TEXTURE = preload("res://assets/sprites/characters/chr_guest01.png")
+
+## Default movement speed (pixels per second)
+const DEFAULT_SPEED: float = 50.0
 
 ## Customer ID for identification
 var customer_id: String = ""
@@ -33,6 +33,9 @@ var movement_speed: float = DEFAULT_SPEED
 ## Current animation state
 var _current_animation: String = "idle"
 
+## Timer for movement simulation
+var _move_timer: float = 0.0
+
 ## Sprite node for customer appearance
 @onready var _sprite: Sprite2D = $MovementPath/PathFollow2D/Sprite2D
 
@@ -41,9 +44,6 @@ var _current_animation: String = "idle"
 
 ## Path follower for movement along path
 @onready var _path_follow: PathFollow2D = $MovementPath/PathFollow2D
-
-## Timer for movement simulation
-var _move_timer: float = 0.0
 
 
 func _ready() -> void:
