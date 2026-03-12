@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3 uid="uid://avatar_layer_compositor"]
+
+[ext_resource type="Script" path="res://scripts/components/avatar_compositor.gd" id="1_compositor"]
+
+[node name="Avatar" type="Node2D"]
+script = ExtResource("1_compositor")
+
+[node name="SpriteHolder" type="Node2D" parent="."]
+
+[node name="HairDn" type="AnimatedSprite2D" parent="SpriteHolder"]
+z_index = 0
+
+[node name="Body" type="AnimatedSprite2D" parent="SpriteHolder"]
+z_index = 1
+
+[node name="Eye" type="AnimatedSprite2D" parent="SpriteHolder"]
+z_index = 2
+
+[node name="HairUp" type="AnimatedSprite2D" parent="SpriteHolder"]
+z_index = 3
+
+[node name="Hat" type="AnimatedSprite2D" parent="SpriteHolder"]
+z_index = 4
