@@ -1,19 +1,28 @@
-[gd_scene load_steps=2 format=3 uid="uid://hud_scene_v2"]
+[gd_scene format=3 uid="uid://bh37qhllxbdmr"]
 
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
+[ext_resource type="Script" uid="uid://cn2v315abbot" path="res://scripts/ui/hud.gd" id="1_hud"]
+[ext_resource type="Texture2D" uid="uid://c8eftm1urtac8" path="res://assets/placeholders/bread_white.png" id="2_hqnrr"]
 
-[node name="HUD" type="CanvasLayer"]
+[node name="HUD" type="Control" unique_id=1531281403]
 script = ExtResource("1_hud")
-
-[node name="Control" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 
-[node name="ExpBar" type="ProgressBar" parent="Control"]
+[node name="Control" type="Control" parent="." unique_id=698312421]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="ExpBar" type="ProgressBar" parent="Control" unique_id=474998989]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -24,25 +33,41 @@ offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(200, 10)
-value = 0.0
+value = 50.0
 show_percentage = false
 
-[node name="GoldenBreadBox" type="HBoxContainer" parent="Control"]
+[node name="GoldBox" type="HBoxContainer" parent="Control" unique_id=3000000000]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -250.0
+offset_bottom = 40.0
+grow_horizontal = 0
+alignment = 2
+
+[node name="Label" type="Label" parent="Control/GoldBox" unique_id=3000000001]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843137, 0, 1)
+text = "0 G"
+
+[node name="GoldenBreadBox" type="HBoxContainer" parent="Control" unique_id=2004297977]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -100.0
-offset_bottom = 40.0
+offset_top = 40.0
+offset_bottom = 80.0
 grow_horizontal = 0
 alignment = 2
 
-[node name="Icon" type="TextureRect" parent="Control/GoldenBreadBox"]
+[node name="Icon" type="TextureRect" parent="Control/GoldenBreadBox" unique_id=1890226595]
 layout_mode = 2
+texture = ExtResource("2_hqnrr")
 expand_mode = 2
 stretch_mode = 5
 
-[node name="Label" type="Label" parent="Control/GoldenBreadBox"]
+[node name="Label" type="Label" parent="Control/GoldenBreadBox" unique_id=1013814041]
 layout_mode = 2
 text = "0"
-

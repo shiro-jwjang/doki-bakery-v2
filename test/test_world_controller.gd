@@ -130,8 +130,8 @@ func test_gold_change_signal_propagates() -> void:
 		"Signal should be wired through WorldController"
 	)
 
-	# Create a simple CanvasLayer as mock HUD (no update_gold method, so forwarding is a no-op)
-	var mock_hud := CanvasLayer.new()
+	# Create a simple Control as mock HUD
+	var mock_hud := Control.new()
 	add_child_autofree(mock_hud)
 	world_controller.set_hud(mock_hud)
 

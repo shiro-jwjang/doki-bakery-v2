@@ -18,6 +18,8 @@ var _recipes: Array = []
 ## Container for bread buttons
 var _button_container: VBoxContainer = null
 
+@export var recipe_item_scene: PackedScene = preload("res://scenes/ui/recipe_item.tscn")
+
 
 func _ready() -> void:
 	# Safely find VBoxContainer (may not exist when instantiated without scene)
@@ -105,17 +107,17 @@ func _build_buttons() -> void:
 	for child in _button_container.get_children():
 		child.queue_free()
 
-	# Create a button for each recipe
+	# Create a RecipeItem for each recipe
 	for recipe in _recipes:
 		if recipe == null:
 			continue
-		var button := Button.new()
-		button.name = "Btn_%s" % recipe.id
-		button.text = recipe.display_name if recipe.display_name else recipe.id
-		button.pressed.connect(_on_bread_button_pressed.bind(recipe.id))
-		_button_container.add_child(button)
+		
+		var item = recipe_item_scene.instantiate()
+		_button_container.add_child(item)
+		item.setup(recipe)
+		item.pressed.connect(_on_recipe_selected.bind(recipe.id))
 
 
-## Handle bread button press
-func _on_bread_button_pressed(recipe_id: String) -> void:
+## Handle recipe selection
+func _on_recipe_selected(recipe_id: String) -> void:
 	select_bread(recipe_id)

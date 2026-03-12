@@ -42,6 +42,11 @@ func get_slots() -> Array:
 	return _slots
 
 
+## Get the maximum number of production slots
+func get_max_slots() -> int:
+	return _max_slots
+
+
 ## Get the number of active productions
 func get_active_count() -> int:
 	return _active_count
@@ -77,13 +82,18 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 		slot.recipe = _mock_recipe
 		# Initialize remaining time based on recipe production time
 		slot.remaining_time = _mock_recipe.production_time
+	else:
+		slot.recipe = DataManager.get_recipe(recipe_id)
+		if slot.recipe:
+			slot.remaining_time = slot.recipe.production_time
+		else:
+			push_error("BakeryManager: Recipe not found - %s" % recipe_id)
+			return false
 
 	_slots.append(slot)
 	_active_count += 1
 
 	production_started.emit(slot_index, recipe_id)
-	# Also emit EventBus signal so UI components can react
-	EventBus.production_started.emit(slot_index, recipe_id)
 	return true
 
 
@@ -94,21 +104,35 @@ func _is_slot_active(slot_index: int) -> bool:
 			return true
 	return false
 
-
 ## Complete production in the specified slot
 func complete_production(slot_index: int) -> void:
 	for slot in _slots:
-		if slot is ProductionSlotClass and slot.slot_index == slot_index:
+		if slot.slot_index == slot_index:
 			slot.is_active = false
 			slot.is_completed = true
 			slot.progress = 1.0
 			_active_count -= 1
 
 			if slot.recipe:
-				production_completed.emit(slot_index, slot.recipe.id)
-				# Emit EventBus signal → SalesManager subscribes and calls add_to_inventory()
-				EventBus.production_completed.emit(slot_index, slot.recipe.id)
+				var recipe_id = slot.recipe.id
+				production_completed.emit(slot_index, recipe_id)
+				
+				# AUTO-COLLECT: Automatically clear the slot when finished
+				collect_production(slot_index)
 			break
+
+
+## Collect finished production from a slot, clearing it for reuse.
+## Returns recipe_id if successful, empty string otherwise.
+func collect_production(slot_index: int) -> String:
+	for i in range(_slots.size()):
+		var slot = _slots[i]
+		if slot.slot_index == slot_index: # removed is_completed check for flexibility
+			var recipe_id = slot.recipe.id if slot.recipe else ""
+			_slots.remove_at(i)
+			EventBus.production_cleared.emit(slot_index)
+			return recipe_id
+	return ""
 
 
 ## Process function to handle production timers (wall clock based)
@@ -123,16 +147,18 @@ func _process(delta: float) -> void:
 
 	# Process each active slot
 	for slot in _slots:
-		if slot is ProductionSlotClass and slot.is_active and slot.recipe:
+		# Use property check for safety across script instances
+		if slot.is_active and slot.recipe:
 			# Calculate elapsed time using wall clock
 			var elapsed_time = current_time - slot.start_time
 
 			# Calculate remaining time based on wall clock
-			slot.remaining_time = maxf(0.0, slot.recipe.production_time - elapsed_time)
+			var p_time: float = slot.recipe.production_time
+			slot.remaining_time = maxf(0.0, p_time - elapsed_time)
 
 			# Update progress based on wall clock elapsed time
-			if slot.recipe.production_time > 0:
-				slot.progress = minf(1.0, elapsed_time / slot.recipe.production_time)
+			if p_time > 0:
+				slot.progress = minf(1.0, elapsed_time / p_time)
 				# Emit progress signal for UI updates
 				EventBus.production_progressed.emit(slot.slot_index, slot.progress)
 

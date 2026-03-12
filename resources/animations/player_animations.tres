@@ -1,19 +1,19 @@
-[gd_resource type="SpriteFrames" load_steps=2 format=3 uid="uid://b3x5q8r7k2n6p"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://b3x5q8r7k2n6p"]
 
-[ext_resource type="Texture2D" uid="uid://chr_avatar01" path="res://assets/sprites/characters/chr_avatar01.png" id="2_01234"]
+[ext_resource type="Texture2D" uid="uid://4cbs8oavf77e" path="res://assets/sprites/characters/chr_avatar01.png" id="2_01234"]
 
 [resource]
 animations = [{
-"loop": true,
-"name": "idle",
-"speed": 5.0,
 "frames": [{
 "duration": 1.0,
 "texture": ExtResource("2_01234")
-}]
-}, {
+}],
 "loop": true,
-"name": "walk",
-"speed": 10.0,
-"frames": []
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"walk",
+"speed": 10.0
 }]

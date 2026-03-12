@@ -12,29 +12,33 @@ signal bread_sold(recipe_id: String, price: int)
 ## Time before bread is automatically sold (seconds)
 const SELL_TIME: float = 5.0
 
+## UI Nodes
+@onready var _bread_icon: TextureRect = %BreadIcon
+@onready var _price_label: Label = %PriceLabel
+@onready var _sell_progress_bar: ProgressBar = %SellProgressBar
+@onready var _sell_timer: Timer = %SellTimer
+
 ## Recipe ID being displayed
 var _recipe_id: String = ""
 
 ## Price of the bread
 var _price: int = 0
 
-## Timer for auto-sell
-var _sell_timer: Timer = null
-
 ## Flag to track if bread is currently displayed
 var _has_bread: bool = false
 
 
 func _ready() -> void:
-	# Create and configure the sell timer
-	_sell_timer = Timer.new()
+	# Configure the sell timer (if not already via scene)
 	_sell_timer.wait_time = SELL_TIME
-	_sell_timer.one_shot = true
 	_sell_timer.timeout.connect(_on_sell_timer_timeout)
-	add_child(_sell_timer)
+	
+	_update_ui()
 
-	# SNA-97: Subscribe to baking_finished for auto-fill empty slots
-	EventBus.baking_finished.connect(_on_baking_finished)
+
+func _process(_delta: float) -> void:
+	if _has_bread and _sell_timer.time_left > 0:
+		_sell_progress_bar.value = 1.0 - (_sell_timer.time_left / SELL_TIME)
 
 
 ## Setup the display slot with a bread item
@@ -58,6 +62,7 @@ func setup(recipe_id: String, price: int) -> void:
 
 	# Start the auto-sell timer
 	_sell_timer.start()
+	_update_ui()
 
 
 ## Check if this slot has bread
@@ -104,6 +109,7 @@ func _sell_bread() -> void:
 	_has_bread = false
 	_recipe_id = ""
 	_price = 0
+	_update_ui()
 
 
 ## Handle baking_finished event - auto-fill empty display slots
@@ -127,8 +133,28 @@ func force_sell() -> void:
 
 
 ## Clean up signals when node is removed from scene tree
+func _update_ui() -> void:
+	if not is_inside_tree():
+		return
+		
+	if _has_bread:
+		_price_label.text = "%dG" % _price
+		_bread_icon.visible = true
+		_sell_progress_bar.visible = true
+		
+		# Load icon from recipe data
+		var recipe = DataManager.get_recipe(_recipe_id)
+		if recipe and recipe.icon:
+			_bread_icon.texture = recipe.icon
+		else:
+			_bread_icon.texture = null
+	else:
+		_price_label.text = ""
+		_bread_icon.visible = false
+		_sell_progress_bar.visible = false
+		_sell_progress_bar.value = 0.0
+
+
 func _exit_tree() -> void:
 	if _sell_timer != null and _sell_timer.timeout.is_connected(_on_sell_timer_timeout):
 		_sell_timer.timeout.disconnect(_on_sell_timer_timeout)
-	if EventBus.baking_finished.is_connected(_on_baking_finished):
-		EventBus.baking_finished.disconnect(_on_baking_finished)
