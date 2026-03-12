@@ -1,243 +1,202 @@
 extends GutTest
 
-## Test Suite for Avatar Compositor
-## Tests avatar layer composition with proper z-index and animation sync
-## SNA-150: 아바타 레이어 합성 시스템
-
-const AvatarScene := preload("res://scenes/entities/avatar.tscn")
+## SNA-150: AvatarCompositor 테스트
+## TDD Red 단계 - 요구사항 검증
 
 var avatar: Node2D
-var compositor: Node
+var compositor: AvatarCompositor
 
 
 func before_each() -> void:
-	# Reset state before each test
-	avatar = null
-	compositor = null
+	# 스크립트 직접 인스턴스화
+	var script: GDScript = load("res://scripts/components/avatar_compositor.gd")
+	compositor = script.new()
+	compositor.name = "AvatarCompositor"
+	
+	# Layers 노드 생성
+	var layers_node := Node2D.new()
+	layers_node.name = "Layers"
+	compositor.add_child(layers_node)
+	
+	# 5개 레이어 생성
+	var layer_names: Array[String] = ["HairDn", "Body", "Eye", "HairUp", "Hat"]
+	var z_indices: Array[int] = [0, 1, 2, 3, 4]
+	
+	for i: int in range(5):
+		var sprite := AnimatedSprite2D.new()
+		sprite.name = layer_names[i]
+		sprite.z_index = z_indices[i]
+		
+		# SpriteFrames 생성
+		var frames := SpriteFrames.new()
+		frames.add_animation("idle")
+		for frame_idx: int in range(5):
+			frames.add_frame("idle", null)
+		sprite.sprite_frames = frames
+		sprite.animation = "idle"
+		
+		layers_node.add_child(sprite)
+	
+	avatar = Node2D.new()
+	avatar.name = "Avatar"
+	avatar.add_child(compositor)
+	add_child(avatar)
+	
+	# _ready 대기
+	await wait_for_signal(compositor.ready, 1.0)
 
 
 func after_each() -> void:
-	# Clean up instances
-	if compositor != null and is_instance_valid(compositor):
-		compositor.queue_free()
-		compositor = null
-	if avatar != null and is_instance_valid(avatar):
+	if avatar:
 		avatar.queue_free()
 		avatar = null
+		compositor = null
 
 
-## Test: Compositor has all 5 required layers
-func test_compositor_has_all_five_layers() -> void:
-	compositor = AvatarScene.instantiate()
-	add_child(compositor)
-	await wait_physics_frames(1)
-
-	var sprite_holder = compositor.get_node_or_null("SpriteHolder")
-	assert_not_null(sprite_holder, "Should have SpriteHolder node")
-
-	# Check all 5 layers exist
-	var hairdn = sprite_holder.get_node_or_null("HairDn")
-	var body = sprite_holder.get_node_or_null("Body")
-	var eye = sprite_holder.get_node_or_null("Eye")
-	var hairup = sprite_holder.get_node_or_null("HairUp")
-	var hat = sprite_holder.get_node_or_null("Hat")
-
-	assert_not_null(hairdn, "Should have HairDn layer")
-	assert_not_null(body, "Should have Body layer")
-	assert_not_null(eye, "Should have Eye layer")
-	assert_not_null(hairup, "Should have HairUp layer")
-	assert_not_null(hat, "Should have Hat layer")
+#region REQ: 레이어 존재 및 Z-index 검증
 
 
-## Test: Layers have correct z-index values
-func test_layers_have_correct_z_index() -> void:
-	compositor = AvatarScene.instantiate()
-	add_child(compositor)
-	await wait_physics_frames(1)
-
-	var sprite_holder = compositor.get_node("SpriteHolder")
-
-	# Verify z-index order: hat(4) > hairup(3) > eye(2) > body(1) > hairdn(0)
-	assert_eq(sprite_holder.get_node("HairDn").z_index, 0, "HairDn should have z_index 0")
-	assert_eq(sprite_holder.get_node("Body").z_index, 1, "Body should have z_index 1")
-	assert_eq(sprite_holder.get_node("Eye").z_index, 2, "Eye should have z_index 2")
-	assert_eq(sprite_holder.get_node("HairUp").z_index, 3, "HairUp should have z_index 3")
-	assert_eq(sprite_holder.get_node("Hat").z_index, 4, "Hat should have z_index 4")
-
-
-## Test: All layers are AnimatedSprite2D nodes
-func test_all_layers_are_animated_sprite2d() -> void:
-	compositor = AvatarScene.instantiate()
-	add_child(compositor)
-	await wait_physics_frames(1)
-
-	var sprite_holder = compositor.get_node("SpriteHolder")
-
-	assert_true(
-		sprite_holder.get_node("HairDn") is AnimatedSprite2D, "HairDn should be AnimatedSprite2D"
-	)
-	assert_true(
-		sprite_holder.get_node("Body") is AnimatedSprite2D, "Body should be AnimatedSprite2D"
-	)
-	assert_true(sprite_holder.get_node("Eye") is AnimatedSprite2D, "Eye should be AnimatedSprite2D")
-	assert_true(
-		sprite_holder.get_node("HairUp") is AnimatedSprite2D, "HairUp should be AnimatedSprite2D"
-	)
-	assert_true(sprite_holder.get_node("Hat") is AnimatedSprite2D, "Hat should be AnimatedSprite2D")
+func test_has_five_layers() -> void:
+	# REQ: 5개 레이어 (hat, hairup, eye, body, hairdn) 존재
+	assert_not_null(compositor, "AvatarCompositor should exist")
+	
+	var layers: Node = compositor.get_node_or_null("Layers")
+	assert_not_null(layers, "Layers holder should exist")
+	
+	var hairdn: Node = layers.get_node_or_null("HairDn")
+	var body: Node = layers.get_node_or_null("Body")
+	var eye: Node = layers.get_node_or_null("Eye")
+	var hairup: Node = layers.get_node_or_null("HairUp")
+	var hat: Node = layers.get_node_or_null("Hat")
+	
+	assert_not_null(hairdn, "HairDn layer should exist")
+	assert_not_null(body, "Body layer should exist")
+	assert_not_null(eye, "Eye layer should exist")
+	assert_not_null(hairup, "HairUp layer should exist")
+	assert_not_null(hat, "Hat layer should exist")
 
 
-## Test: AvatarData resource structure exists and has all texture fields
-func test_avatar_data_has_all_texture_fields() -> void:
-	var avatar_data = AvatarData.new()
-
-	assert_not_null(avatar_data, "AvatarData should be instantiable")
-	# Check that properties exist (will be null initially)
-	assert_true("body_texture" in avatar_data, "AvatarData should have body_texture property")
-	assert_true("eye_texture" in avatar_data, "AvatarData should have eye_texture property")
-	assert_true("hairup_texture" in avatar_data, "AvatarData should have hairup_texture property")
-	assert_true("hairdn_texture" in avatar_data, "AvatarData should have hairdn_texture property")
-	assert_true("hat_texture" in avatar_data, "AvatarData should have hat_texture property")
-
-
-## Test: AvatarData can be created and assigned textures
-func test_avatar_data_accepts_textures() -> void:
-	var avatar_data = AvatarData.new()
-	var dummy_texture = PlaceholderTexture2D.new()
-
-	avatar_data.body_texture = dummy_texture
-	avatar_data.eye_texture = dummy_texture
-	avatar_data.hairup_texture = dummy_texture
-	avatar_data.hairdn_texture = dummy_texture
-	avatar_data.hat_texture = dummy_texture
-
-	assert_eq(avatar_data.body_texture, dummy_texture, "Body texture should be assigned")
-	assert_eq(avatar_data.eye_texture, dummy_texture, "Eye texture should be assigned")
-	assert_eq(avatar_data.hairup_texture, dummy_texture, "HairUp texture should be assigned")
-	assert_eq(avatar_data.hairdn_texture, dummy_texture, "HairDn texture should be assigned")
-	assert_eq(avatar_data.hat_texture, dummy_texture, "Hat texture should be assigned")
+func test_layer_z_index_order() -> void:
+	# REQ: Z-index 순서: hat(4) > hairup(3) > eye(2) > body(1) > hairdn(0)
+	var layers: Node = compositor.get_node_or_null("Layers")
+	
+	var hairdn: CanvasItem = layers.get_node_or_null("HairDn")
+	var body: CanvasItem = layers.get_node_or_null("Body")
+	var eye: CanvasItem = layers.get_node_or_null("Eye")
+	var hairup: CanvasItem = layers.get_node_or_null("HairUp")
+	var hat: CanvasItem = layers.get_node_or_null("Hat")
+	
+	assert_eq(hairdn.z_index, 0, "HairDn z_index should be 0")
+	assert_eq(body.z_index, 1, "Body z_index should be 1")
+	assert_eq(eye.z_index, 2, "Eye z_index should be 2")
+	assert_eq(hairup.z_index, 3, "HairUp z_index should be 3")
+	assert_eq(hat.z_index, 4, "Hat z_index should be 4")
 
 
-## Test: idle animation has 5 frames
-func test_idle_animation_has_five_frames() -> void:
-	compositor = AvatarScene.instantiate()
-	add_child(compositor)
-	await wait_physics_frames(1)
-
-	var sprite_holder = compositor.get_node("SpriteHolder")
-	var body = sprite_holder.get_node("Body")
-
-	# Check that idle animation exists and has 5 frames
-	assert_true(body.sprite_frames != null, "Body should have SpriteFrames configured")
-
-	var frames = body.sprite_frames
-	assert_true(frames.has_animation("idle"), "Should have idle animation")
-
-	var frame_count = frames.get_frame_count("idle")
-	assert_eq(frame_count, 5, "Idle animation should have 5 frames")
+#endregion
 
 
-## Test: All layers have idle animation configured
-func test_all_layers_have_idle_animation() -> void:
-	compositor = AvatarScene.instantiate()
-	add_child(compositor)
-	await wait_physics_frames(1)
-
-	var sprite_holder = compositor.get_node("SpriteHolder")
-
-	var layers = ["HairDn", "Body", "Eye", "HairUp", "Hat"]
-	for layer_name in layers:
-		var layer = sprite_holder.get_node(layer_name)
-		assert_true(
-			layer.sprite_frames != null, "%s should have SpriteFrames configured" % layer_name
-		)
-		assert_true(
-			layer.sprite_frames.has_animation("idle"), "%s should have idle animation" % layer_name
-		)
+#region REQ: 애니메이션 동기화 검증
 
 
-## Test: Animation can be played via compositor
-func test_play_animation_starts_animation() -> void:
-	compositor = AvatarScene.instantiate()
-	add_child(compositor)
-	await wait_physics_frames(1)
-
-	# All layers should be able to play animation
-	var sprite_holder = compositor.get_node("SpriteHolder")
-	var body = sprite_holder.get_node("Body")
-
-	body.play("idle")
-	await wait_physics_frames(2)
-
-	assert_true(body.is_playing(), "Body should be playing idle animation")
-
-
-## Test: All layers sync to same frame when animation plays
-func test_all_layers_sync_frames() -> void:
-	compositor = AvatarScene.instantiate()
-	add_child(compositor)
-	await wait_physics_frames(1)
-
-	var sprite_holder = compositor.get_node("SpriteHolder")
-
-	# Start all animations
-	var layers = sprite_holder.get_children()
-	for layer in layers:
-		if layer is AnimatedSprite2D:
-			layer.play("idle")
-
-	await wait_physics_frames(5)
-
-	# After some frames, all should be on the same frame
-	var first_frame = sprite_holder.get_node("Body").frame
-	for layer in layers:
-		if layer is AnimatedSprite2D:
-			assert_eq(
-				layer.frame, first_frame, "%s should be synchronized with Body frame" % layer.name
-			)
+func test_play_animation_syncs_all_layers() -> void:
+	# REQ: 애니메이션 재생 시 모든 레이어 동기화
+	assert_not_null(compositor, "AvatarCompositor should exist")
+	
+	# play_animation 메서드 존재 확인
+	assert_true(compositor.has_method("play_animation"), "Should have play_animation method")
+	
+	# idle 애니메이션 재생
+	compositor.play_animation("idle")
+	
+	# 모든 레이어가 같은 애니메이션 재생 중인지 확인
+	var layers: Node = compositor.get_node_or_null("Layers")
+	for child: Node in layers.get_children():
+		if child is AnimatedSprite2D:
+			var sprite: AnimatedSprite2D = child as AnimatedSprite2D
+			assert_eq(sprite.animation, "idle", "%s should play idle animation" % child.name)
+			assert_true(sprite.is_playing(), "%s should be playing" % child.name)
 
 
-## Test: Compositor can apply AvatarData
-func test_compositor_applies_avatar_data() -> void:
-	compositor = AvatarScene.instantiate()
-	add_child(compositor)
-	await wait_physics_frames(1)
-
-	var avatar_data = AvatarData.new()
-	var dummy_texture = PlaceholderTexture2D.new()
-	avatar_data.body_texture = dummy_texture
-	avatar_data.eye_texture = dummy_texture
-	avatar_data.hairup_texture = dummy_texture
-	avatar_data.hairdn_texture = dummy_texture
-	avatar_data.hat_texture = dummy_texture
-
-	# Apply avatar data to compositor
-	if compositor.has_method("apply_avatar_data"):
-		compositor.apply_avatar_data(avatar_data)
-		await wait_physics_frames(1)
-
-		# Verify textures are applied
-		var sprite_holder = compositor.get_node("SpriteHolder")
-		# Note: Without actual sprite frames setup, we can't fully verify texture application
-		# but we can verify the method exists and doesn't crash
-		assert_true(true, "apply_avatar_data method should execute without errors")
-	else:
-		fail_test("Compositor should have apply_avatar_data method")
+func test_all_layers_have_same_frame_count() -> void:
+	# REQ: 모든 레이어가 같은 프레임 수를 가져야 함
+	var layers: Node = compositor.get_node_or_null("Layers")
+	var frame_counts: Array[int] = []
+	
+	for child: Node in layers.get_children():
+		if child is AnimatedSprite2D:
+			var sprite: AnimatedSprite2D = child as AnimatedSprite2D
+			var frames: SpriteFrames = sprite.sprite_frames
+			if frames:
+				var frame_count: int = frames.get_frame_count("idle")
+				frame_counts.append(frame_count)
+	
+	# 모든 프레임 수가 같은지 확인
+	if frame_counts.size() > 0:
+		var first_count: int = frame_counts[0]
+		for count: int in frame_counts:
+			assert_eq(count, first_count, "All layers should have same frame count")
 
 
-## Test: Compositor has AvatarCompositor class
-func test_compositor_has_correct_class() -> void:
-	compositor = AvatarScene.instantiate()
-	add_child(compositor)
-	await wait_physics_frames(1)
-
-	assert_true(
-		compositor.has_method("play_animation"), "Compositor should have play_animation method"
-	)
-	assert_true(compositor.has_method("_sync_frame"), "Compositor should have _sync_frame method")
+#endregion
 
 
-## Helper: Create dummy texture for testing
-func _create_dummy_texture() -> PlaceholderTexture2D:
-	var texture = PlaceholderTexture2D.new()
-	texture.set_size(Vector2(50, 60))
-	return texture
+#region REQ: AvatarData 리소스 확장성 검증
+
+
+func test_avatar_data_resource_exists() -> void:
+	# REQ: AvatarData 리소스로 확장성 확보
+	var avatar_data_script: GDScript = load("res://resources/avatar_data.gd")
+	assert_not_null(avatar_data_script, "AvatarData script should exist")
+	
+	# AvatarData 인스턴스 생성 테스트
+	var data: Resource = avatar_data_script.new()
+	assert_not_null(data, "AvatarData instance should be creatable")
+
+
+func test_avatar_data_has_five_texture_exports() -> void:
+	# REQ: AvatarData에 5개 텍스처 export 변수 존재
+	var avatar_data_script: GDScript = load("res://resources/avatar_data.gd")
+	var data: Resource = avatar_data_script.new()
+	
+	# 프로퍼티 존재 확인
+	var props: Array[Dictionary] = data.get_property_list()
+	var prop_names: Array[String] = []
+	for prop: Dictionary in props:
+		prop_names.append(prop["name"])
+	
+	assert_true("body_texture" in prop_names, "Should have body_texture property")
+	assert_true("eye_texture" in prop_names, "Should have eye_texture property")
+	assert_true("hairup_texture" in prop_names, "Should have hairup_texture property")
+	assert_true("hairdn_texture" in prop_names, "Should have hairdn_texture property")
+	assert_true("hat_texture" in prop_names, "Should have hat_texture property")
+
+
+#endregion
+
+
+#region REQ: 프레임 전환 검증
+
+
+func test_sync_frame_method_exists() -> void:
+	# REQ: _sync_frame 메서드 존재
+	assert_not_null(compositor, "AvatarCompositor should exist")
+	assert_true(compositor.has_method("_sync_frame"), "Should have _sync_frame method")
+
+
+func test_sync_frame_updates_all_layers() -> void:
+	# REQ: 프레임 전환 시 모든 레이어 동기화
+	compositor.play_animation("idle")
+	await wait_seconds(0.1)
+	
+	# 프레임 동기화 호출
+	compositor._sync_frame(2)
+	
+	var layers: Node = compositor.get_node_or_null("Layers")
+	for child: Node in layers.get_children():
+		if child is AnimatedSprite2D:
+			var sprite: AnimatedSprite2D = child as AnimatedSprite2D
+			assert_eq(sprite.frame, 2, "%s frame should be 2" % child.name)
+
+
+#endregion

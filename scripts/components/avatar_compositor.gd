@@ -1,83 +1,63 @@
 class_name AvatarCompositor
 extends Node2D
 
-## Avatar layer compositor for character rendering
-## Manages 5 layers with proper z-index and animation synchronization
 ## SNA-150: 아바타 레이어 합성 시스템
+## AvatarCompositor - 레이어 합성 및 애니메이션 동기화
 
-## Node references
-@onready var _sprite_holder: Node2D = $SpriteHolder
-@onready var _hairdn: AnimatedSprite2D = $SpriteHolder/HairDn
-@onready var _body: AnimatedSprite2D = $SpriteHolder/Body
-@onready var _eye: AnimatedSprite2D = $SpriteHolder/Eye
-@onready var _hairup: AnimatedSprite2D = $SpriteHolder/HairUp
-@onready var _hat: AnimatedSprite2D = $SpriteHolder/Hat
+## 현재 재생 중인 애니메이션
+var current_animation: String = ""
+
+## 현재 프레임
+var current_frame: int = 0
+
+## 모든 레이어 목록
+var _layer_list: Array[AnimatedSprite2D] = []
+
+## 레이어 홀더
+@onready var layers: Node2D = $Layers
+
+## 애니메이션 레이어들 (Z-index 순서)
+@onready var hairdn: AnimatedSprite2D = $Layers/HairDn
+@onready var body: AnimatedSprite2D = $Layers/Body
+@onready var eye: AnimatedSprite2D = $Layers/Eye
+@onready var hairup: AnimatedSprite2D = $Layers/HairUp
+@onready var hat: AnimatedSprite2D = $Layers/Hat
 
 
 func _ready() -> void:
-	# Initialize SpriteFrames with idle animation for all layers
-	_setup_idle_animation()
-
-	# Connect frame changed signal to sync all layers
-	if _body:
-		_body.frame_changed.connect(_on_frame_changed)
+	# 레이어 목록 초기화
+	_layer_list = [hairdn, body, eye, hairup, hat]
 
 
-## Setup idle animation with 5 frames for all layers
-func _setup_idle_animation() -> void:
-	var dummy_texture = PlaceholderTexture2D.new()
-	dummy_texture.set_size(Vector2(50, 60))
-
-	var layers = [_hairdn, _body, _eye, _hairup, _hat]
-	for layer in layers:
-		if layer:
-			var sprite_frames = SpriteFrames.new()
-			sprite_frames.add_animation("idle")
-			for i in range(5):
-				sprite_frames.add_frame("idle", dummy_texture)
-			layer.sprite_frames = sprite_frames
-			layer.animation = "idle"
-
-
-## Play animation on all layers
+## 애니메이션 재생
 func play_animation(anim_name: String) -> void:
-	if _hairdn and _hairdn.sprite_frames and _hairdn.sprite_frames.has_animation(anim_name):
-		_hairdn.play(anim_name)
-	if _body and _body.sprite_frames and _body.sprite_frames.has_animation(anim_name):
-		_body.play(anim_name)
-	if _eye and _eye.sprite_frames and _eye.sprite_frames.has_animation(anim_name):
-		_eye.play(anim_name)
-	if _hairup and _hairup.sprite_frames and _hairup.sprite_frames.has_animation(anim_name):
-		_hairup.play(anim_name)
-	if _hat and _hat.sprite_frames and _hat.sprite_frames.has_animation(anim_name):
-		_hat.play(anim_name)
+	current_animation = anim_name
+	current_frame = 0
+
+	# 모든 레이어에 같은 애니메이션 재생
+	for layer: AnimatedSprite2D in _layer_list:
+		if layer and layer.sprite_frames:
+			if layer.sprite_frames.has_animation(anim_name):
+				layer.play(anim_name)
 
 
-## Synchronize all layers to the same frame
+## 프레임 동기화
 func _sync_frame(frame: int) -> void:
-	if _hairdn:
-		_hairdn.frame = frame
-	if _body:
-		_body.frame = frame
-	if _eye:
-		_eye.frame = frame
-	if _hairup:
-		_hairup.frame = frame
-	if _hat:
-		_hat.frame = frame
+	current_frame = frame
+
+	# 모든 레이어의 프레임 동기화
+	for layer: AnimatedSprite2D in _layer_list:
+		if layer and layer.sprite_frames:
+			var max_frames: int = layer.sprite_frames.get_frame_count(current_animation)
+			if frame < max_frames:
+				layer.frame = frame
 
 
-## Apply avatar data to set textures
+## 아바타 데이터 적용
 func apply_avatar_data(data: AvatarData) -> void:
-	if data == null:
+	if not data:
 		return
 
-	# Note: Texture application requires proper SpriteFrames setup
-	# This is a placeholder for the actual implementation
-	# Real implementation would update SpriteFrames with new textures
-
-
-## Callback when body frame changes - sync all other layers
-func _on_frame_changed() -> void:
-	if _body:
-		_sync_frame(_body.frame)
+	# 각 레이어에 텍스처 적용
+	# Note: 실제 구현에서는 SpriteFrames를 동적으로 생성해야 함
+	# 현재는 씬에 미리 설정된 SpriteFrames를 사용

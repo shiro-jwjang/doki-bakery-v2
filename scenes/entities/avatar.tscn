@@ -1,23 +1,155 @@
-[gd_scene load_steps=2 format=3 uid="uid://avatar_layer_compositor"]
+[gd_scene load_steps=8 format=3 uid="uid://avatar_compositor"]
 
 [ext_resource type="Script" path="res://scripts/components/avatar_compositor.gd" id="1_compositor"]
 
+[sub_resource type="SpriteFrames" id="SpriteFrames_hairdn"]
+animations = [{
+"frames": [{
+"duration": 0.15,
+"texture": null
+}, {
+"duration": 0.15,
+"texture": null
+}, {
+"duration": 0.05,
+"texture": null
+}, {
+"duration": 0.1,
+"texture": null
+}, {
+"duration": 0.1,
+"texture": null
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_body"]
+animations = [{
+"frames": [{
+"duration": 0.15,
+"texture": null
+}, {
+"duration": 0.15,
+"texture": null
+}, {
+"duration": 0.05,
+"texture": null
+}, {
+"duration": 0.1,
+"texture": null
+}, {
+"duration": 0.1,
+"texture": null
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_eye"]
+animations = [{
+"frames": [{
+"duration": 0.15,
+"texture": null
+}, {
+"duration": 0.15,
+"texture": null
+}, {
+"duration": 0.05,
+"texture": null
+}, {
+"duration": 0.1,
+"texture": null
+}, {
+"duration": 0.1,
+"texture": null
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_hairup"]
+animations = [{
+"frames": [{
+"duration": 0.15,
+"texture": null
+}, {
+"duration": 0.15,
+"texture": null
+}, {
+"duration": 0.05,
+"texture": null
+}, {
+"duration": 0.1,
+"texture": null
+}, {
+"duration": 0.1,
+"texture": null
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_hat"]
+animations = [{
+"frames": [{
+"duration": 0.15,
+"texture": null
+}, {
+"duration": 0.15,
+"texture": null
+}, {
+"duration": 0.05,
+"texture": null
+}, {
+"duration": 0.1,
+"texture": null
+}, {
+"duration": 0.1,
+"texture": null
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}]
+
 [node name="Avatar" type="Node2D"]
+
+[node name="AvatarCompositor" type="Node2D" parent="."]
 script = ExtResource("1_compositor")
 
-[node name="SpriteHolder" type="Node2D" parent="."]
+[node name="Layers" type="Node2D" parent="AvatarCompositor"]
 
-[node name="HairDn" type="AnimatedSprite2D" parent="SpriteHolder"]
+[node name="HairDn" type="AnimatedSprite2D" parent="AvatarCompositor/Layers"]
 z_index = 0
+sprite_frames = SubResource("SpriteFrames_hairdn")
+animation = &"idle"
+autoplay = &""
 
-[node name="Body" type="AnimatedSprite2D" parent="SpriteHolder"]
+[node name="Body" type="AnimatedSprite2D" parent="AvatarCompositor/Layers"]
 z_index = 1
+sprite_frames = SubResource("SpriteFrames_body")
+animation = &"idle"
+autoplay = &""
 
-[node name="Eye" type="AnimatedSprite2D" parent="SpriteHolder"]
+[node name="Eye" type="AnimatedSprite2D" parent="AvatarCompositor/Layers"]
 z_index = 2
+sprite_frames = SubResource("SpriteFrames_eye")
+animation = &"idle"
+autoplay = &""
 
-[node name="HairUp" type="AnimatedSprite2D" parent="SpriteHolder"]
+[node name="HairUp" type="AnimatedSprite2D" parent="AvatarCompositor/Layers"]
 z_index = 3
+sprite_frames = SubResource("SpriteFrames_hairup")
+animation = &"idle"
+autoplay = &""
 
-[node name="Hat" type="AnimatedSprite2D" parent="SpriteHolder"]
+[node name="Hat" type="AnimatedSprite2D" parent="AvatarCompositor/Layers"]
 z_index = 4
+sprite_frames = SubResource("SpriteFrames_hat")
+animation = &"idle"
+autoplay = &""
