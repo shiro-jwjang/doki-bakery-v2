@@ -11,7 +11,7 @@ extends Node2D
 ## - Customer ID tracking
 
 ## Default customer sprite texture
-const DEFAULT_TEXTURE = preload("res://assets/sprites/characters/chr_guest01.png")
+const DEFAULT_TEXTURE = preload("res://assets/Inbox/chr_guest01.png")
 
 ## Customer ID for identification
 var customer_id: String = ""
@@ -23,8 +23,9 @@ var customer_id: String = ""
 func _ready() -> void:
 	# Set initial position (will be updated by movement system)
 	position = Vector2(0, 0)
-	# Apply default texture
-	_sprite.texture = DEFAULT_TEXTURE
+	# Apply default texture if sprite exists
+	if _sprite != null and _sprite.texture == null:
+		_sprite.texture = DEFAULT_TEXTURE
 
 
 ## Setup the customer view with a customer ID
@@ -43,4 +44,5 @@ func get_customer_id() -> String:
 ## Set the customer sprite texture
 ## @param texture: Texture to use for the sprite
 func set_sprite_texture(texture: Texture2D) -> void:
-	_sprite.texture = texture
+	if _sprite != null:
+		_sprite.texture = texture
