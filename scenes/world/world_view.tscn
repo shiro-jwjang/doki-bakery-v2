@@ -8,8 +8,9 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/production_panel.tscn" id="6_panel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/bread_menu.tscn" id="7_menu"]
 [ext_resource type="PackedScene" path="res://scenes/ui/display_slots.tscn" id="8_display"]
-[ext_resource type="Texture2D" uid="uid://back_wall01" path="res://assets/Inbox/back_wall01.png" id="9_wall1"]
-[ext_resource type="Texture2D" uid="uid://back_wall02" path="res://assets/Inbox/back_wall02.png" id="10_wall2"]
+[ext_resource type="Texture2D" uid="uid://back_floor" path="res://assets/sprites/backgrounds/back_floor.png" id="9_floor"]
+[ext_resource type="Texture2D" uid="uid://back_wall01" path="res://assets/sprites/backgrounds/back_wall01.png" id="10_wall1"]
+[ext_resource type="Texture2D" uid="uid://back_wall02" path="res://assets/sprites/backgrounds/back_wall02.png" id="11_wall2"]
 
 [node name="WorldView" type="Node2D"]
 script = ExtResource("1_0abcd")
@@ -25,13 +26,20 @@ position = Vector2(600, 500)
 [node name="Background" type="CanvasLayer" parent="."]
 layer = -1
 
+[node name="BackFloor" type="Sprite2D" parent="Background"]
+z_index = -2
+position = Vector2(600, 500)
+texture = ExtResource("9_floor")
+
 [node name="BackWall01" type="Sprite2D" parent="Background"]
+z_index = -1
 position = Vector2(400, 200)
-texture = ExtResource("9_wall1")
+texture = ExtResource("10_wall1")
 
 [node name="BackWall02" type="Sprite2D" parent="Background"]
+z_index = -1
 position = Vector2(800, 200)
-texture = ExtResource("10_wall2")
+texture = ExtResource("11_wall2")
 
 [node name="StallMap" parent="Background" instance=ExtResource("5_stall")]
 
@@ -52,4 +60,4 @@ layer = 2
 
 [node name="BreadMenu" parent="UI" instance=ExtResource("7_menu")]
 
-[node name="DisplaySlots" parent="UI" instance=ExtResource("8_display")
+[node name="DisplaySlots" parent="UI" instance=ExtResource("8_display")]
