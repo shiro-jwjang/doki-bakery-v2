@@ -1,4 +1,4 @@
-extends CanvasLayer
+extends Control
 
 ## HUD Autoload (or manually added to scene)
 ## Displays UI elements including experience bar
@@ -7,6 +7,7 @@ extends CanvasLayer
 
 @onready var exp_bar: ProgressBar = $Control/ExpBar
 @onready var premium_label: Label = $Control/GoldenBreadBox/Label
+@onready var gold_label: Label = $Control/GoldBox/Label
 
 
 func _ready() -> void:
@@ -23,6 +24,7 @@ func _ready() -> void:
 	# Initialize bar with current values
 	_update_exp_bar()
 	_update_premium_label()
+	_update_gold_label()
 
 
 ## Update experience bar when XP changes
@@ -39,6 +41,7 @@ func _on_level_up(_new_level: int) -> void:
 func _on_gold_changed(old: int, new: int) -> void:
 	var change := new - old
 	_spawn_gold_popup(change)
+	_update_gold_label()
 
 
 ## Spawn a gold popup showing the change amount
@@ -50,7 +53,6 @@ func _spawn_gold_popup(change: int) -> void:
 	add_child(popup)
 
 
-## Update the experience bar value and max value
 func _update_exp_bar() -> void:
 	if exp_bar == null:
 		return
@@ -77,3 +79,9 @@ func _on_premium_changed(_old: int, new: int) -> void:
 func _update_premium_label() -> void:
 	if premium_label != null:
 		premium_label.text = str(GameManager.legendary_bread)
+
+
+## Update gold label with current total
+func _update_gold_label() -> void:
+	if gold_label != null:
+		gold_label.text = str(GameManager.gold) + " G"

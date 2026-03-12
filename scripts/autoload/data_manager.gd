@@ -29,20 +29,28 @@ func _load_all_data() -> void:
 
 
 func _load_recipes() -> void:
-	var dir := DirAccess.open(RECIPES_PATH)
-	if dir == null:
-		push_warning("Recipes directory not found: " + RECIPES_PATH)
+	if not DirAccess.dir_exists_absolute(RECIPES_PATH):
+		push_error("DataManager: Recipes directory NOT FOUND at " + RECIPES_PATH)
 		return
 
-	dir.list_dir_begin()
-	var file_name := dir.get_next()
-	while file_name != "":
-		if file_name.ends_with(".tres"):
-			var resource := load(RECIPES_PATH + file_name) as RecipeData
-			if resource:
-				_recipes[resource.id] = resource
-		file_name = dir.get_next()
-	dir.list_dir_end()
+	var dir := DirAccess.open(RECIPES_PATH)
+	if dir:
+		dir.list_dir_begin()
+		var file_name := dir.get_next()
+		while file_name != "":
+			if not dir.current_is_dir() and file_name.ends_with(".tres"):
+				var full_path = RECIPES_PATH + file_name
+				var resource = load(full_path)
+				# Use property check instead of 'is' for better reliability with resources
+				if resource and resource.get("id") != null and resource.get("display_name") != null:
+					_recipes[resource.id] = resource
+				else:
+					push_warning("DataManager: File %s is not a valid RecipeData" % file_name)
+			file_name = dir.get_next()
+		dir.list_dir_end()
+		print("DataManager: Loaded %d recipes" % _recipes.size())
+	else:
+		push_error("DataManager: Failed to open recipes directory: " + RECIPES_PATH)
 
 
 func _load_levels() -> void:
@@ -55,11 +63,14 @@ func _load_levels() -> void:
 	var file_name := dir.get_next()
 	while file_name != "":
 		if file_name.ends_with(".tres"):
-			var resource := load(LEVELS_PATH + file_name) as LevelData
-			if resource:
+			var resource = load(LEVELS_PATH + file_name)
+			if resource and resource.get("level") != null:
 				_levels[resource.level] = resource
+			else:
+				push_warning("DataManager: File %s is not a valid LevelData" % file_name)
 		file_name = dir.get_next()
 	dir.list_dir_end()
+	print("DataManager: Loaded %d levels" % _levels.size())
 
 
 func _load_shops() -> void:
@@ -72,11 +83,14 @@ func _load_shops() -> void:
 	var file_name := dir.get_next()
 	while file_name != "":
 		if file_name.ends_with(".tres"):
-			var resource := load(SHOPS_PATH + file_name) as ShopData
-			if resource:
+			var resource = load(SHOPS_PATH + file_name)
+			if resource and resource.get("shop_level") != null:
 				_shop_stages[resource.shop_level] = resource
+			else:
+				push_warning("DataManager: File %s is not a valid ShopData" % file_name)
 		file_name = dir.get_next()
 	dir.list_dir_end()
+	print("DataManager: Loaded %d shop stages" % _shop_stages.size())
 
 
 ## 레시피 조회

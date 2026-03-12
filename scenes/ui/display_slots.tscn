@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/display_slots.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/ui/display_slot.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/display_slot.tscn" id="2"]
 
 [node name="DisplaySlots" type="Control"]
 layout_mode = 3
@@ -11,9 +11,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -50.0
+offset_top = -60.0
 offset_right = 200.0
-offset_bottom = 50.0
+offset_bottom = 60.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
@@ -25,24 +25,17 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 10
 alignment = 1
 
-[node name="DisplaySlot0" type="Control" parent="HBoxContainer"]
-custom_minimum_size = Vector2(80, 100)
+[node name="DisplaySlot0" parent="HBoxContainer" instance=ExtResource("2")]
 layout_mode = 2
-script = ExtResource("2")
 
-[node name="DisplaySlot1" type="Control" parent="HBoxContainer"]
-custom_minimum_size = Vector2(80, 100)
+[node name="DisplaySlot1" parent="HBoxContainer" instance=ExtResource("2")]
 layout_mode = 2
-script = ExtResource("2")
 
-[node name="DisplaySlot2" type="Control" parent="HBoxContainer"]
-custom_minimum_size = Vector2(80, 100)
+[node name="DisplaySlot2" parent="HBoxContainer" instance=ExtResource("2")]
 layout_mode = 2
-script = ExtResource("2")
 
-[node name="DisplaySlot3" type="Control" parent="HBoxContainer"]
-custom_minimum_size = Vector2(80, 100)
+[node name="DisplaySlot3" parent="HBoxContainer" instance=ExtResource("2")]
 layout_mode = 2
-script = ExtResource("2")
