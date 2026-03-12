@@ -1,0 +1,25 @@
+{
+    "version": "1.0",
+    "fileName": "chr01_hat.bmp",
+    "width": 250,
+    "height": 60,
+    "columns": 5,
+    "rows": 1,
+    "frames": [
+        {
+            "duration": 150
+        },
+        {
+            "duration": 150
+        },
+        {
+            "duration": 50
+        },
+        {
+            "duration": 100
+        },
+        {
+            "duration": 100
+        }
+    ]
+}
