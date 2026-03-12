@@ -52,8 +52,17 @@ signal bread_sold(recipe_id: String, price: int)
 ## Emitted when a customer arrives at the bakery
 signal customer_arrived(customer_id: String)
 
+## Emitted when a customer is spawned
+signal customer_spawned(customer_id: String)
+
+## Emitted when a customer arrives at the display counter
+signal customer_arrived_at_display(customer_id: String)
+
 ## Emitted when a customer purchases a recipe
 signal customer_purchased(customer_id: String, recipe_id: String, price: int)
+
+## Emitted when a customer leaves the bakery
+signal customer_left(customer_id: String)
 
 ## Emitted when a recipe is unlocked
 signal recipe_unlocked(recipe_id: String)
