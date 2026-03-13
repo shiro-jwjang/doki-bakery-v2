@@ -9,10 +9,12 @@ extends Button
 
 var slot_index: int = -1
 
+
 func setup(index: int) -> void:
 	slot_index = index
 	_status_label.text = "빈 슬롯"
 	_progress_bar.value = 0.0
+
 
 func set_production(recipe_id: String) -> void:
 	var recipe = DataManager.get_recipe(recipe_id)
@@ -20,8 +22,10 @@ func set_production(recipe_id: String) -> void:
 	_status_label.text = "베이킹 중 %s" % d_name
 	_progress_bar.value = 0.0
 
+
 func set_progress(progress: float) -> void:
 	_progress_bar.value = progress
+
 
 func set_completed(recipe_id: String) -> void:
 	var recipe = DataManager.get_recipe(recipe_id)

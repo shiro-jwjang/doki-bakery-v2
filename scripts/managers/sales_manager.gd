@@ -27,11 +27,11 @@ func _on_production_completed(_slot_index: int, recipe_id: String) -> void:
 	var recipe = DataManager.get_recipe(recipe_id)
 	if recipe == null:
 		return
-	
+
 	# Award XP for successful baking
 	if "xp_reward" in recipe:
 		GameManager.add_experience(recipe.xp_reward)
-		
+
 	add_to_inventory(recipe_id, recipe.base_price)
 
 

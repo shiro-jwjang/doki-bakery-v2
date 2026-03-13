@@ -82,6 +82,15 @@ signal load_completed
 ## Emitted when save data is loaded (with parsed save data)
 signal save_loaded(data: Dictionary)
 
+## Emitted when the recipe book UI is opened
+signal recipe_book_opened
+
+## Emitted when the recipe book UI is closed
+signal recipe_book_closed
+
+## Emitted when bread details are viewed in the recipe book
+signal bread_details_viewed(recipe_id: String)
+
 ## ==================== ACTION REQUEST SIGNALS (UI → Logic) ====================
 
 ## Emitted to request starting production in a slot

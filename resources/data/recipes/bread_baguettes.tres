@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=2 format=3 uid="uid://bread_baguettes"]
+
+[ext_resource type="Script" path="res://resources/data/recipe_data.gd" id="1_abc12"]
+
+[resource]
+script = ExtResource("1_abc12")
+id = "bread_002"
+display_name = "바게트"
+description = "길고 바삭한 프렌치 빵"
+production_time = 8.0
+base_price = 150
+unlock_level = 2
+xp_reward = 15

@@ -32,7 +32,7 @@ func _ready() -> void:
 	# Configure the sell timer (if not already via scene)
 	_sell_timer.wait_time = SELL_TIME
 	_sell_timer.timeout.connect(_on_sell_timer_timeout)
-	
+
 	_update_ui()
 
 
@@ -136,12 +136,12 @@ func force_sell() -> void:
 func _update_ui() -> void:
 	if not is_inside_tree():
 		return
-		
+
 	if _has_bread:
 		_price_label.text = "%dG" % _price
 		_bread_icon.visible = true
 		_sell_progress_bar.visible = true
-		
+
 		# Load icon from recipe data
 		var recipe = DataManager.get_recipe(_recipe_id)
 		if recipe and recipe.icon:

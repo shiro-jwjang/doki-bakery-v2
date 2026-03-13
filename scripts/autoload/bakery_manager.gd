@@ -104,6 +104,7 @@ func _is_slot_active(slot_index: int) -> bool:
 			return true
 	return false
 
+
 ## Complete production in the specified slot
 func complete_production(slot_index: int) -> void:
 	for slot in _slots:
@@ -116,7 +117,7 @@ func complete_production(slot_index: int) -> void:
 			if slot.recipe:
 				var recipe_id = slot.recipe.id
 				production_completed.emit(slot_index, recipe_id)
-				
+
 				# AUTO-COLLECT: Automatically clear the slot when finished
 				collect_production(slot_index)
 			break
@@ -127,7 +128,7 @@ func complete_production(slot_index: int) -> void:
 func collect_production(slot_index: int) -> String:
 	for i in range(_slots.size()):
 		var slot = _slots[i]
-		if slot.slot_index == slot_index: # removed is_completed check for flexibility
+		if slot.slot_index == slot_index:  # removed is_completed check for flexibility
 			var recipe_id = slot.recipe.id if slot.recipe else ""
 			_slots.remove_at(i)
 			EventBus.production_cleared.emit(slot_index)
