@@ -44,7 +44,7 @@ func _ready() -> void:
 	_create_level_up_notification()
 	# Connect EventBus signals to UI handlers
 	_connect_event_bus_signals()
-	
+
 	# Explicitly ensure UI visibility
 	if ui_layer:
 		ui_layer.visible = true
@@ -92,7 +92,7 @@ func _connect_event_bus_signals() -> void:
 
 	# Connect local UI signals
 	_connect_ui_signals()
-	
+
 	# Ensure BreadMenu is hidden initially
 	if bread_menu:
 		bread_menu.visible = false
@@ -160,7 +160,10 @@ func validate_connections() -> Dictionary:
 
 ## Connect local UI signals (coordination between components)
 func _connect_ui_signals() -> void:
-	if production_panel and not production_panel.slot_clicked.is_connected(_on_production_slot_clicked):
+	if (
+		production_panel
+		and not production_panel.slot_clicked.is_connected(_on_production_slot_clicked)
+	):
 		production_panel.slot_clicked.connect(_on_production_slot_clicked)
 
 
@@ -288,7 +291,7 @@ func _create_level_up_notification() -> void:
 			ui_layer.add_child(level_up_notification)
 		else:
 			add_child(level_up_notification)
-			
+
 		if level_up_notification:
 			level_up_notification.visible = false
 
