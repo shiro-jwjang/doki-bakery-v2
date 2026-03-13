@@ -1,0 +1,7 @@
+[gd_resource type="FontFile" format=3 uid="uid://bnotosanskr"]
+
+[ext_resource type="FontFile" path="res://assets/fonts/NotoColorEmoji.tres" id="2_emoji"]
+
+[resource]
+font_path = "res://assets/fonts/NotoSansKR-Regular.ttf"
+fallbacks = Array[FontFile]([ExtResource("2_emoji")])
