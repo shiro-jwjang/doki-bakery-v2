@@ -155,3 +155,11 @@ func get_unlocks_for_level(level: int) -> Array:
 	if level_data:
 		return level_data.unlock_recipes
 	return []
+
+
+## SNA-166: 레벨별 필요 경험치 반환
+func get_xp_required_for_level(level: int) -> int:
+	var level_data = get_level(level)
+	if level_data:
+		return level_data.required_xp
+	return 0
