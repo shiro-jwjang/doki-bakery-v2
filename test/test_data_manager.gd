@@ -37,3 +37,42 @@ func test_get_all_recipes_returns_array() -> void:
 	var recipes := DataManager.get_all_recipes()
 	assert_true(recipes is Array, "Should return array")
 	assert_true(recipes.size() > 0, "Should have at least one recipe")
+
+
+## SNA-155: Verify recipe data is loaded
+func test_recipes_loaded_correctly() -> void:
+	var recipes := DataManager.get_all_recipes()
+	assert_eq(recipes.size(), 1, "Should have exactly 1 recipe")
+	var recipe := DataManager.get_recipe("bread_001")
+	assert_not_null(recipe, "Recipe bread_001 should exist")
+	assert_eq(recipe.id, "bread_001", "Recipe ID should match")
+
+
+## SNA-155: Verify level data is loaded (10 levels)
+func test_levels_loaded_correctly() -> void:
+	var levels := DataManager.get_all_levels()
+	assert_eq(levels.size(), 10, "Should have exactly 10 levels")
+	for i in range(1, 11):
+		var level := DataManager.get_level(i)
+		assert_not_null(level, "Level %d should exist" % i)
+		assert_eq(level.level, i, "Level number should match")
+
+
+## SNA-155: Verify shop data is loaded (5 shop levels)
+func test_shops_loaded_correctly() -> void:
+	var shops := DataManager.get_all_shop_stages()
+	assert_eq(shops.size(), 5, "Should have exactly 5 shop stages")
+	for i in range(1, 6):
+		var shop := DataManager.get_shop_stage(i)
+		assert_not_null(shop, "Shop stage %d should exist" % i)
+		assert_eq(shop.shop_level, i, "Shop stage should match")
+
+
+## SNA-155: Verify data loading is not empty
+func test_no_empty_data_loaded() -> void:
+	var recipes := DataManager.get_all_recipes()
+	var levels := DataManager.get_all_levels()
+	var shops := DataManager.get_all_shop_stages()
+	assert_gt(recipes.size(), 0, "Recipes should not be empty")
+	assert_gt(levels.size(), 0, "Levels should not be empty")
+	assert_gt(shops.size(), 0, "Shops should not be empty")
