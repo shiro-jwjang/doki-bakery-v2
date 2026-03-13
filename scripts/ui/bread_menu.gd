@@ -111,7 +111,7 @@ func _build_buttons() -> void:
 	for recipe in _recipes:
 		if recipe == null:
 			continue
-		
+
 		var item = recipe_item_scene.instantiate()
 		_button_container.add_child(item)
 		item.setup(recipe)
