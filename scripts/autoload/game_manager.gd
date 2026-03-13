@@ -37,7 +37,6 @@ var game_state: String = "menu":
 var bread_inventory: Dictionary = {}  # SNA-46
 
 var _is_loaded: bool = false
-var _level_data_cache: Dictionary = {}
 
 
 func add_gold(amount: int) -> void:
@@ -105,24 +104,8 @@ func level_up() -> void:
 
 
 func _get_xp_required_for_level(lvl: int) -> int:
-	# Level 1 = 0 XP, Level 2 = 100 XP, Level 3 = 250 XP, etc.
-	# Load from LevelData resources
-	if lvl <= 1:
-		return 0
-
-	if _level_data_cache.has(lvl):
-		return _level_data_cache[lvl]
-
-	var level_data_path := "res://resources/config/levels/level_%02d.tres" % lvl
-	if ResourceLoader.exists(level_data_path):
-		var level_data := load(level_data_path) as Resource
-		if level_data and level_data.get("required_xp") != null:
-			var required_xp: int = level_data.get("required_xp")
-			_level_data_cache[lvl] = required_xp
-			return required_xp
-
-	# Fallback to calculation if resource not found (shouldn't happen)
-	return 100 * (1 << (lvl - 2))  # 100, 200, 400, 800, etc.
+	# SNA-166: Delegate to DataManager for level data lookup
+	return DataManager.get_xp_required_for_level(lvl)
 
 
 func add_premium(amount: int) -> void:
