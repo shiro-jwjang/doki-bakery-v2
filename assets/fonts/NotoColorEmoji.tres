@@ -1,0 +1,4 @@
+[gd_resource type="FontFile" format=3 uid="uid://bnotocoloremoji"]
+
+[resource]
+font_path = "res://assets/fonts/NotoColorEmoji.ttf"
