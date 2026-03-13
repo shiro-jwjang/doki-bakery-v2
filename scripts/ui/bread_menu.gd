@@ -45,17 +45,22 @@ func get_target_slot() -> int:
 
 
 ## Show the menu for a specific slot
-## Does nothing if the slot is already busy
-func show_for_slot(slot_index: int) -> void:
-	# Check if slot is already busy
-	var slots = BakeryManager.get_slots()
-	for slot in slots:
-		if slot.slot_index == slot_index and slot.is_active:
-			# Slot is busy, don't show menu
-			return
+## If force is false, does nothing if the slot is already busy
+func show_for_slot(slot_index: int, force: bool = false) -> void:
+	if not force and _is_slot_busy(slot_index):
+		return
 
 	_target_slot = slot_index
 	visible = true
+
+
+## Check if a slot is currently busy
+func _is_slot_busy(slot_index: int) -> bool:
+	var slots = BakeryManager.get_slots()
+	for slot in slots:
+		if slot.slot_index == slot_index and slot.is_active:
+			return true
+	return false
 
 
 ## Hide the menu
