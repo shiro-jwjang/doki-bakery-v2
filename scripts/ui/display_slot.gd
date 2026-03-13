@@ -1,4 +1,4 @@
-extends Control
+extends "res://scripts/ui/base_ui_component.gd"
 
 ## DisplaySlot
 ##
@@ -12,12 +12,6 @@ signal bread_sold(recipe_id: String, price: int)
 ## Time before bread is automatically sold (seconds)
 const SELL_TIME: float = 5.0
 
-## UI Nodes
-@onready var _bread_icon: TextureRect = %BreadIcon
-@onready var _price_label: Label = %PriceLabel
-@onready var _sell_progress_bar: ProgressBar = %SellProgressBar
-@onready var _sell_timer: Timer = %SellTimer
-
 ## Recipe ID being displayed
 var _recipe_id: String = ""
 
@@ -26,6 +20,12 @@ var _price: int = 0
 
 ## Flag to track if bread is currently displayed
 var _has_bread: bool = false
+
+## UI Nodes
+@onready var _bread_icon: TextureRect = %BreadIcon
+@onready var _price_label: Label = %PriceLabel
+@onready var _sell_progress_bar: ProgressBar = %SellProgressBar
+@onready var _sell_timer: Timer = %SellTimer
 
 
 func _ready() -> void:
@@ -37,8 +37,13 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if _has_bread and _sell_timer.time_left > 0:
+	if _has_bread and _sell_timer != null and _sell_timer.time_left > 0:
 		_sell_progress_bar.value = 1.0 - (_sell_timer.time_left / SELL_TIME)
+
+
+func _exit_tree() -> void:
+	if _sell_timer != null and _sell_timer.timeout.is_connected(_on_sell_timer_timeout):
+		_sell_timer.timeout.disconnect(_on_sell_timer_timeout)
 
 
 ## Setup the display slot with a bread item
@@ -80,12 +85,32 @@ func get_price() -> int:
 	return _price
 
 
+## Force sell the bread immediately (e.g., for manual sales)
+func force_sell() -> void:
+	if _has_bread:
+		_sell_timer.stop()
+		_sell_bread()
+
+
 ## Handle sell timer timeout - sell the bread automatically
 func _on_sell_timer_timeout() -> void:
 	if not _has_bread:
 		return
 
 	_sell_bread()
+
+
+## Handle baking_finished event - auto-fill empty display slots
+func _on_baking_finished(recipe_id: String) -> void:
+	# Only fill if this slot is empty
+	if _has_bread:
+		return
+
+	var recipe = DataManager.get_recipe(recipe_id)
+	if recipe == null:
+		return
+
+	setup(recipe_id, recipe.base_price)
 
 
 ## Sell the bread and award gold via GameManager (direct autoload reference)
@@ -112,49 +137,24 @@ func _sell_bread() -> void:
 	_update_ui()
 
 
-## Handle baking_finished event - auto-fill empty display slots
-func _on_baking_finished(recipe_id: String) -> void:
-	# Only fill if this slot is empty
-	if _has_bread:
-		return
-
-	var recipe = DataManager.get_recipe(recipe_id)
-	if recipe == null:
-		return
-
-	setup(recipe_id, recipe.base_price)
-
-
-## Force sell the bread immediately (e.g., for manual sales)
-func force_sell() -> void:
-	if _has_bread:
-		_sell_timer.stop()
-		_sell_bread()
-
-
-## Clean up signals when node is removed from scene tree
+## Update UI elements safely using BaseUIComponent.safe_update
 func _update_ui() -> void:
-	if not is_inside_tree():
-		return
+	safe_update(
+		func():
+			if _has_bread:
+				_price_label.text = "%dG" % _price
+				_bread_icon.visible = true
+				_sell_progress_bar.visible = true
 
-	if _has_bread:
-		_price_label.text = "%dG" % _price
-		_bread_icon.visible = true
-		_sell_progress_bar.visible = true
-
-		# Load icon from recipe data
-		var recipe = DataManager.get_recipe(_recipe_id)
-		if recipe and recipe.icon:
-			_bread_icon.texture = recipe.icon
-		else:
-			_bread_icon.texture = null
-	else:
-		_price_label.text = ""
-		_bread_icon.visible = false
-		_sell_progress_bar.visible = false
-		_sell_progress_bar.value = 0.0
-
-
-func _exit_tree() -> void:
-	if _sell_timer != null and _sell_timer.timeout.is_connected(_on_sell_timer_timeout):
-		_sell_timer.timeout.disconnect(_on_sell_timer_timeout)
+				# Load icon from recipe data
+				var recipe = DataManager.get_recipe(_recipe_id)
+				if recipe and recipe.icon:
+					_bread_icon.texture = recipe.icon
+				else:
+					_bread_icon.texture = null
+			else:
+				_price_label.text = ""
+				_bread_icon.visible = false
+				_sell_progress_bar.visible = false
+				_sell_progress_bar.value = 0.0
+	)
