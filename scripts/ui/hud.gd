@@ -1,4 +1,4 @@
-extends Control
+extends "res://scripts/ui/base_ui_component.gd"
 
 ## HUD Autoload (or manually added to scene)
 ## Displays UI elements including experience bar
