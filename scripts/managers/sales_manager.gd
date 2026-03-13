@@ -17,8 +17,6 @@ var _inventory_items: Dictionary = {}
 
 
 func _ready() -> void:
-	# Subscribe to production_completed via EventBus (autoload direct reference)
-	# Guard against duplicate connections (e.g., re-added to scene tree)
 	if not EventBus.production_completed.is_connected(_on_production_completed):
 		EventBus.production_completed.connect(_on_production_completed)
 
@@ -29,6 +27,11 @@ func _on_production_completed(_slot_index: int, recipe_id: String) -> void:
 	var recipe = DataManager.get_recipe(recipe_id)
 	if recipe == null:
 		return
+
+	# Award XP for successful baking
+	if "xp_reward" in recipe:
+		GameManager.add_experience(recipe.xp_reward)
+
 	add_to_inventory(recipe_id, recipe.base_price)
 
 

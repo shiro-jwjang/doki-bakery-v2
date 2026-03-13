@@ -2,7 +2,7 @@ extends GutTest
 
 ## Test cases for HUD Premium Currency (legendary_golden_bread) Display
 
-var hud: CanvasLayer
+var hud: Control
 var world_controller: Node
 
 func before_each():

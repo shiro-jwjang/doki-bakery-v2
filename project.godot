@@ -31,6 +31,7 @@ SalesManager="*res://scripts/managers/sales_manager.gd"
 EconomyManager="*res://scripts/autoload/economy_manager.gd"
 BakeryManager="*res://scripts/autoload/bakery_manager.gd"
 CustomerSpawner="*res://scripts/autoload/customer_spawner.gd"
+CustomerFlow="*res://scripts/customer/customer_flow.gd"
 UIManager="*res://scenes/autoload/ui_manager.tscn"
 
 [display]
@@ -47,3 +48,7 @@ window/stretch/mode="canvas_items"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/godotsteam/plugin.cfg")
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0

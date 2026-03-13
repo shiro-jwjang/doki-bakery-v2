@@ -40,6 +40,9 @@ signal production_progressed(slot_index: int, progress: float)
 ## Emitted when production completes in a slot
 signal production_completed(slot_index: int, recipe_id: String)
 
+## Emitted when a production slot is cleared and ready for reuse
+signal production_cleared(slot_index: int)
+
 ## Emitted when baking finishes and bread is ready for display
 signal baking_finished(recipe_id: String)
 
@@ -52,8 +55,17 @@ signal bread_sold(recipe_id: String, price: int)
 ## Emitted when a customer arrives at the bakery
 signal customer_arrived(customer_id: String)
 
+## Emitted when a customer is spawned
+signal customer_spawned(customer_id: String)
+
+## Emitted when a customer arrives at the display counter
+signal customer_arrived_at_display(customer_id: String)
+
 ## Emitted when a customer purchases a recipe
 signal customer_purchased(customer_id: String, recipe_id: String, price: int)
+
+## Emitted when a customer leaves the bakery
+signal customer_left(customer_id: String)
 
 ## Emitted when a recipe is unlocked
 signal recipe_unlocked(recipe_id: String)
@@ -69,6 +81,15 @@ signal load_completed
 
 ## Emitted when save data is loaded (with parsed save data)
 signal save_loaded(data: Dictionary)
+
+## Emitted when the recipe book UI is opened
+signal recipe_book_opened
+
+## Emitted when the recipe book UI is closed
+signal recipe_book_closed
+
+## Emitted when bread details are viewed in the recipe book
+signal bread_details_viewed(recipe_id: String)
 
 ## ==================== ACTION REQUEST SIGNALS (UI → Logic) ====================
 

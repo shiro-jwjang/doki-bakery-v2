@@ -6,5 +6,6 @@ extends Resource
 @export var production_time: float = 1.0
 @export var base_price: int = 10
 @export var unlock_level: int = 1
+@export var description: String = ""
 @export var xp_reward: int = 10
 @export var icon: Texture2D
