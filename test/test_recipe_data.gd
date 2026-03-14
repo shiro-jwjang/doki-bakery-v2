@@ -45,3 +45,17 @@ func test_recipe_default_values() -> void:
 	assert_eq(default_recipe.production_time, 1.0, "Default production time should be 1.0")
 	assert_eq(default_recipe.base_price, 10, "Default base price should be 10")
 	assert_eq(default_recipe.unlock_level, 1, "Default unlock level should be 1")
+
+
+func test_get_display_name_or_id_returns_display_name_when_set() -> void:
+	recipe.id = "bread_001"
+	recipe.display_name = "크로와상"
+	assert_eq(recipe.get_display_name_or_id(), "크로와상", "Should return display_name when set")
+
+
+func test_get_display_name_or_id_returns_id_when_display_name_empty() -> void:
+	recipe.id = "bread_001"
+	recipe.display_name = ""
+	assert_eq(
+		recipe.get_display_name_or_id(), "bread_001", "Should return id when display_name is empty"
+	)
