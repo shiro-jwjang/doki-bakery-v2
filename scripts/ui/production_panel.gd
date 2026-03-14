@@ -74,7 +74,8 @@ func _get_or_create_slot(slot_index: int) -> Node:
 	var slot = slot_scene.instantiate()
 	_container.add_child(slot)
 	slot.setup(slot_index)
-	slot.pressed.connect(_on_slot_button_pressed.bind(slot_index))
+	if not slot.pressed.is_connected(_on_slot_button_pressed.bind(slot_index)):
+		slot.pressed.connect(_on_slot_button_pressed.bind(slot_index))
 
 	_slot_data[slot_index] = slot
 	return slot

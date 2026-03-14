@@ -62,7 +62,8 @@ func _ready() -> void:
 	# Create purchase timer
 	_purchase_timer = Timer.new()
 	_purchase_timer.one_shot = true
-	_purchase_timer.timeout.connect(_on_purchase_timer_timeout)
+	if not _purchase_timer.timeout.is_connected(_on_purchase_timer_timeout):
+		_purchase_timer.timeout.connect(_on_purchase_timer_timeout)
 	add_child(_purchase_timer)
 
 
