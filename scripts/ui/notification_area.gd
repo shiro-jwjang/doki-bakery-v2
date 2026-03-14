@@ -1,10 +1,9 @@
+class_name NotificationArea
 extends Control
 
 const MAX_NOTIFICATIONS: int = 3
 const NOTIFICATION_DURATION: float = 3.0  # seconds
 const NotificationItemScene = preload("res://scenes/ui/notification_item.tscn")
-
-class_name NotificationArea
 
 ## NotificationArea - HUD 우측 상단 알림 팝업 시스템
 ## SNA-141: 알림 팝업 (NotificationArea) — TDD
