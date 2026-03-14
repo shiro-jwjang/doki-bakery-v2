@@ -390,6 +390,13 @@ func _create_customer_flow() -> Node:
 		_customer_flow = get_tree().root.get_node("CustomerFlow")
 		return _customer_flow
 
+	# Create instance for testing
+	var CustomerFlow_script = load("res://scripts/customer/customer_flow.gd")
+	if CustomerFlow_script != null:
+		_customer_flow = CustomerFlow_script.new()
+		add_child_autoqfree(_customer_flow)
+		return _customer_flow
+
 	return null
 
 
@@ -438,7 +445,7 @@ func _setup_mock_inventory() -> void:
 
 func _create_mock_recipe() -> Resource:
 	var recipe = Resource.new()
-	if Resource.exists("res://resources/data/recipe_data.gd"):
+	if ResourceLoader.exists("res://resources/data/recipe_data.gd"):
 		recipe.set_script(load("res://resources/data/recipe_data.gd"))
 		recipe.id = "test_bread"
 		recipe.base_price = 100
@@ -484,3 +491,106 @@ func _on_customer_purchased(customer_id: String, recipe_id: String, price: int) 
 
 func _on_customer_left(customer_id: String) -> void:
 	_signals_received["customer_left"] = {"customer_id": customer_id}
+
+
+## ==================== WORLD VIEW TESTS ====================
+## SNA-162: CustomerFlow._get_world_view() 개선
+
+
+## Test that _get_world_view() finds WorldView in scene tree
+func test_get_world_view_finds_existing_world_view() -> void:
+	if _create_customer_flow() == null:
+		pending("CustomerFlow not implemented yet")
+		return
+
+	if not _customer_flow.has_method("_get_world_view"):
+		pending("_get_world_view method not implemented")
+		return
+
+	# Create a mock WorldView node
+	var world_view = Node.new()
+	world_view.name = "WorldView"
+	add_child_autoqfree(world_view)
+
+	# Mock get_tree().current_scene to return our test scene
+	var test_scene = Node.new()
+	test_scene.name = "TestScene"
+	test_scene.add_child(world_view)
+	add_child_autoqfree(test_scene)
+
+	# The method should find WorldView regardless of scene structure
+	var result = _customer_flow._get_world_view()
+	assert_true(result != null, "_get_world_view() should find WorldView node")
+
+
+## Test that _get_world_view() is robust to scene structure changes
+func test_get_world_view_robust_to_scene_structure() -> void:
+	if _create_customer_flow() == null:
+		pending("CustomerFlow not implemented yet")
+		return
+
+	if not _customer_flow.has_method("_get_world_view"):
+		pending("_get_world_view method not implemented")
+		return
+
+	# Test 1: WorldView at different depths
+	var world_view_deep = Node.new()
+	world_view_deep.name = "WorldView"
+	var container = Node.new()
+	container.name = "Container"
+	container.add_child(world_view_deep)
+
+	var test_scene = Node.new()
+	test_scene.name = "TestScene"
+	test_scene.add_child(container)
+	add_child_autoqfree(test_scene)
+
+	var result = _customer_flow._get_world_view()
+	assert_true(result != null, "_get_world_view() should find WorldView at any depth")
+
+
+## Test that _get_world_view() handles missing WorldView gracefully
+func test_get_world_view_returns_null_when_missing() -> void:
+	if _create_customer_flow() == null:
+		pending("CustomerFlow not implemented yet")
+		return
+
+	if not _customer_flow.has_method("_get_world_view"):
+		pending("_get_world_view method not implemented")
+		return
+
+	# Create a scene without WorldView
+	var test_scene = Node.new()
+	test_scene.name = "TestScene"
+	add_child_autoqfree(test_scene)
+
+	# Should return null, not crash
+	var result = _customer_flow._get_world_view()
+	assert_true(result == null, "_get_world_view() should return null when WorldView doesn't exist")
+
+
+## Test that _get_world_view() doesn't hardcode scene path
+func test_get_world_view_no_hardcoded_path() -> void:
+	if _create_customer_flow() == null:
+		pending("CustomerFlow not implemented yet")
+		return
+
+	if not _customer_flow.has_method("_get_world_view"):
+		pending("_get_world_view method not implemented")
+		return
+
+	# Create WorldView with arbitrary parent structure
+	var world_view = Node.new()
+	world_view.name = "WorldView"
+	var random_parent = Node.new()
+	random_parent.name = "RandomParent" + str(randi())  # Dynamic name
+	random_parent.add_child(world_view)
+
+	var test_scene = Node.new()
+	test_scene.name = "TestScene"
+	test_scene.add_child(random_parent)
+	add_child_autoqfree(test_scene)
+
+	# Should find WorldView regardless of parent structure
+	var result = _customer_flow._get_world_view()
+	assert_true(result != null, "_get_world_view() should find WorldView without hardcoded path")

@@ -13,7 +13,13 @@ extends Node
 ## - CustomerView lifecycle management
 
 ## Customer state machine
-enum State { ENTERING, MOVING_TO_DISPLAY, BUYING, LEAVING, DESPAWNED }  ## Customer is entering from left  ## Customer is moving to display counter  ## Customer is selecting/purchasing bread  ## Customer is leaving to right  ## Customer has been despawned
+enum State {
+	ENTERING,  ## Customer is entering from left
+	MOVING_TO_DISPLAY,  ## Customer is moving to display counter
+	BUYING,  ## Customer is selecting/purchasing bread
+	LEAVING,  ## Customer is leaving to right
+	DESPAWNED  ## Customer has been despawned
+}
 
 ## Customer scene for view
 const CUSTOMER_VIEW_SCENE = preload("res://scenes/world/customer_view.tscn")
@@ -315,18 +321,14 @@ func _despawn_customer() -> void:
 
 
 ## Get world view node
-## Returns: WorldView node or null
+## Searches for WorldView in the scene tree without hardcoding paths
+## Returns: WorldView node or null if not found
 func _get_world_view() -> Node:
-	var world_view_scene = load("res://scenes/world/world_view.tscn")
-	if world_view_scene == null:
+	if get_tree() == null or get_tree().current_scene == null:
 		return null
 
-	# Try to find existing world view in scene tree
-	var world_view = get_tree().current_scene.find_child("WorldView", true, false)
-	if world_view != null:
-		return world_view
-
-	return null
+	# find_child with recursive=true searches at any depth in scene tree
+	return get_tree().current_scene.find_child("WorldView", true, false)
 
 
 ## ==================== CLEANUP ====================
