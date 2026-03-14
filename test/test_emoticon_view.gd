@@ -79,7 +79,9 @@ func test_fade_in_animation() -> void:
 	# Check modulate alpha is 1.0 after fade in
 	var sprite: Node = emoticon_view.get_node_or_null("Sprite2D")
 	if sprite:
-		assert_almost_eq(sprite.modulate.a, 1.0, 0.1, "Sprite should be fully visible after fade in")
+		assert_almost_eq(
+			sprite.modulate.a, 1.0, 0.1, "Sprite should be fully visible after fade in"
+		)
 
 
 ## REQ: 페이드 아웃 애니메이션
@@ -109,7 +111,9 @@ func test_event_bus_signal_connection() -> void:
 	# Check if EventBus has emotion_triggered signal
 	var event_bus := get_node_or_null("/root/EventBus")
 	if event_bus:
-		assert_has_signal(event_bus, "emotion_triggered", "EventBus should have emotion_triggered signal")
+		assert_has_signal(
+			event_bus, "emotion_triggered", "EventBus should have emotion_triggered signal"
+		)
 
 
 ## REQ: 캐릭터 ID와 함께 이모티콘 표시
@@ -129,4 +133,6 @@ func test_emoticon_position_offset() -> void:
 	var sprite: Node = emoticon_view.get_node_or_null("Sprite2D")
 	if sprite:
 		# Position should be negative Y (above character)
-		assert_true(sprite.position.y <= 0, "Sprite should be positioned above character (negative Y)")
+		assert_true(
+			sprite.position.y <= 0, "Sprite should be positioned above character (negative Y)"
+		)

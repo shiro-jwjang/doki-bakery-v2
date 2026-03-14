@@ -1,175 +1,198 @@
+## EmoticonView - 이모티콘 표시 컴포넌트
+## SNA-140: 이모티콘 이벤트 (EmoticonView) — 표시 + 클릭 처리
+##
+## 손님/요정의 감정 표현을 위한 이모티콘 이벤트 시스템
 class_name EmoticonView
 extends Node2D
 
-## EmoticonView
-##
-## Displays emoticons above character heads with fade animations.
-## SNA-140: EmoticonView — TDD
-##
-## Emoticon types:
-## - heart: Satisfaction (delicious bread purchased)
-## - star: Moved (rare bread purchased)
-## - yummy: Tasty (normal purchase)
-## - thinking: Thinking (checking display)
-## - question: Curious (bread out of stock)
+## ==================== SIGNALS ====================
 
-## Emoticon sprite
-@onready var sprite: Sprite2D = $Sprite2D
+## Emitted when emoticon becomes visible
+signal emoticon_shown(emoticon_type: String)
 
-## Animation player for fade effects
-@onready var anim_player: AnimationPlayer = $AnimationPlayer
+## Emitted when emoticon is hidden
+signal emoticon_hidden
 
-## Emoticon resource paths
+## ==================== CONSTANTS ====================
+
+# Emoticon type to texture path mapping
 const EMOTICON_PATHS := {
-	"heart": "res://assets/sprites/ui/emoticons/heart.tres",
-	"star": "res://assets/sprites/ui/emoticons/star.tres",
-	"yummy": "res://assets/sprites/ui/emoticons/yummy.tres",
-	"thinking": "res://assets/sprites/ui/emoticons/thinking.tres",
-	"question": "res://assets/sprites/ui/emoticons/question.tres",
+	"heart": "res://assets/sprites/ui/emoticons/heart.png",
+	"star": "res://assets/sprites/ui/emoticons/star.png",
+	"yummy": "res://assets/sprites/ui/emoticons/yummy.png",
+	"thinking": "res://assets/sprites/ui/emoticons/thinking.png",
+	"question": "res://assets/sprites/ui/emoticons/question.png",
 }
 
-## Auto-hide timer
-var _hide_timer: Timer = null
+# Placeholder textures for testing (colored squares)
+const PLACEHOLDER_COLORS := {
+	"heart": Color.RED,
+	"star": Color.YELLOW,
+	"yummy": Color.GREEN,
+	"thinking": Color.BLUE,
+	"question": Color.PURPLE,
+}
+
+## ==================== EXPORTS ====================
+
+## Offset from character position (negative Y = above)
+@export var position_offset: Vector2 = Vector2(0, -40)
+
+## Default display duration in seconds
+@export var default_duration: float = 2.0
+
+## Fade animation duration
+@export var fade_duration: float = 0.3
+
+## ==================== PUBLIC VARIABLES ====================
+
+## Character ID this emoticon belongs to
+var character_id: String = ""
+
+## ==================== PRIVATE VARIABLES ====================
+
+var _sprite: Sprite2D
+var _tween: Tween
+var _is_showing: bool = false
+var _current_type: String = ""
+
+## ==================== LIFECYCLE ====================
 
 
 func _ready() -> void:
-	# Start hidden
-	if sprite:
-		sprite.visible = false
-		sprite.modulate.a = 0.0
-	
-	# Create animation player if it doesn't exist
-	if not anim_player:
-		anim_player = AnimationPlayer.new()
-		anim_player.name = "AnimationPlayer"
-		add_child(anim_player)
-		_create_fade_animation()
-	
-	# Create auto-hide timer
-	_hide_timer = Timer.new()
-	_hide_timer.name = "HideTimer"
-	_hide_timer.one_shot = true
-	_hide_timer.timeout.connect(_on_hide_timer_timeout)
-	add_child(_hide_timer)
-	
-	# Connect to EventBus emotion_triggered signal
-	# Note: Connect in ready to ensure EventBus is loaded
-	if EventBus.has_signal("emotion_triggered"):
-		if not EventBus.emotion_triggered.is_connected(_on_emotion_triggered):
-			EventBus.emotion_triggered.connect(_on_emotion_triggered)
-
-
-## Show emoticon with specified type and duration
-## type: Emoticon type (heart, star, yummy, thinking, question)
-## duration: Display duration in seconds (default 2.0)
-func show_emoticon(type: String, duration: float = 2.0) -> void:
-	if not sprite:
-		return
-	
-	# Load emoticon texture
-	if EMOTICON_PATHS.has(type):
-		var texture_path = EMOTICON_PATHS[type]
-		if ResourceLoader.exists(texture_path):
-			sprite.texture = load(texture_path)
-		else:
-			# Fallback: create placeholder texture
-			sprite.texture = _create_placeholder_texture(type)
-	
-	# Show sprite
-	sprite.visible = true
-	sprite.modulate.a = 0.0
-	
-	# Play fade in animation
-	if anim_player and anim_player.has_animation("fade_in"):
-		anim_player.play("fade_in")
-	
-	# Start auto-hide timer
-	if _hide_timer:
-		_hide_timer.wait_time = duration
-		_hide_timer.start()
-
-
-## Hide emoticon immediately
-func hide_emoticon() -> void:
-	if not sprite:
-		return
-	
-	# Play fade out animation
-	if anim_player and anim_player.has_animation("fade_out"):
-		anim_player.play("fade_out")
-		await anim_player.animation_finished
-	else:
-		sprite.visible = false
-		sprite.modulate.a = 0.0
-
-
-## Create fade in/out animations
-func _create_fade_animation() -> void:
-	if not anim_player:
-		return
-	
-	var fade_in = Animation.new()
-	fade_in.resource_name = "fade_in"
-	fade_in.length = 0.3
-	fade_in.track_set_path(0, "Sprite2D:modulate:a")
-	fade_in.track_insert_key(0, 0.0, 0.0)
-	fade_in.track_insert_key(0, 0.3, 1.0)
-	fade_in.loop_mode = Animation.LOOP_NONE
-	anim_player.add_animation("fade_in", fade_in)
-	
-	var fade_out = Animation.new()
-	fade_out.resource_name = "fade_out"
-	fade_out.length = 0.3
-	fade_out.track_set_path(0, "Sprite2D:modulate:a")
-	fade_out.track_insert_key(0, 0.0, 1.0)
-	fade_out.track_insert_key(0, 0.3, 0.0)
-	fade_out.loop_mode = Animation.LOOP_NONE
-	anim_player.add_animation("fade_out", fade_out)
-
-
-## Create placeholder texture when asset is missing
-func _create_placeholder_texture(type: String) -> ImageTexture:
-	var image = Image.create(16, 16, false, Image.FORMAT_RGBA8)
-	image.fill(Color.TRANSPARENT)
-	
-	# Draw simple shapes based on type
-	var color_map := {
-		"heart": Color.RED,
-		"star": Color.YELLOW,
-		"yummy": Color.ORANGE,
-		"thinking": Color.BLUE,
-		"question": Color.GREEN,
-	}
-	
-	var color = color_map.get(type, Color.WHITE)
-	
-	for y in range(16):
-		for x in range(16):
-			# Simple pixel art pattern
-			var dx = abs(x - 8)
-			var dy = abs(y - 8)
-			if dx + dy < 6:
-				image.set_pixel(x, y, color)
-	
-	var texture = ImageTexture.new()
-	texture.set_image(image)
-	return texture
-
-
-## Handle EventBus emotion_triggered signal
-func _on_emotion_triggered(character_id: String, emotion_type: String) -> void:
-	# Only respond if this is the target character
-	if get_parent() and get_parent().name == character_id:
-		show_emoticon(emotion_type, 2.0)
-
-
-## Handle auto-hide timer timeout
-func _on_hide_timer_timeout() -> void:
+	_setup_sprite()
+	_connect_event_bus()
 	hide_emoticon()
 
 
 func _exit_tree() -> void:
-	# Disconnect EventBus signal
-	if EventBus.has_signal("emotion_triggered"):
-		if EventBus.emotion_triggered.is_connected(_on_emotion_triggered):
-			EventBus.emotion_triggered.disconnect(_on_emotion_triggered)
+	_disconnect_event_bus()
+	_cleanup_tween()
+
+
+## ==================== PUBLIC API ====================
+
+
+## Show an emoticon with the specified type and duration
+func show_emoticon(emoticon_type: String, duration: float = -1.0) -> void:
+	if duration < 0:
+		duration = default_duration
+
+	# Cancel any existing animation
+	_cleanup_tween()
+
+	# Set texture
+	var texture := _get_emoticon_texture(emoticon_type)
+	if texture:
+		_sprite.texture = texture
+	_current_type = emoticon_type
+
+	# Position sprite
+	_sprite.position = position_offset
+
+	# Start visible but transparent for fade in
+	_sprite.modulate.a = 0.0
+	_sprite.show()
+	_is_showing = true
+
+	# Fade in animation
+	_tween = create_tween()
+	_tween.tween_property(_sprite, "modulate:a", 1.0, fade_duration)
+	_tween.tween_callback(_on_fade_in_complete.bind(duration))
+
+	emoticon_shown.emit(emoticon_type)
+
+
+## Hide the current emoticon
+func hide_emoticon() -> void:
+	if not _is_showing:
+		return
+
+	_cleanup_tween()
+
+	# Fade out animation
+	_tween = create_tween()
+	_tween.tween_property(_sprite, "modulate:a", 0.0, fade_duration)
+	_tween.tween_callback(_on_fade_out_complete)
+
+
+## Check if emoticon is currently showing
+func is_showing() -> bool:
+	return _is_showing
+
+
+## Get texture for emoticon type (used by tests)
+func _get_emoticon_texture(emoticon_type: String) -> Texture2D:
+	var path: String = EMOTICON_PATHS.get(emoticon_type, "")
+
+	if path.is_empty():
+		return null
+
+	if ResourceLoader.exists(path):
+		return load(path)
+
+	# Create placeholder texture for missing assets
+	return _create_placeholder_texture(emoticon_type)
+
+
+## ==================== PRIVATE METHODS ====================
+
+
+func _setup_sprite() -> void:
+	_sprite = Sprite2D.new()
+	_sprite.name = "Sprite2D"
+	_sprite.centered = true
+	_sprite.scale = Vector2(3.0, 3.0)  # 16x16 -> 48x48
+	_sprite.hide()
+	add_child(_sprite)
+
+
+func _connect_event_bus() -> void:
+	var event_bus := get_node_or_null("/root/EventBus")
+	if event_bus and event_bus.has_signal("emotion_triggered"):
+		if not event_bus.emotion_triggered.is_connected(_on_emotion_triggered):
+			event_bus.emotion_triggered.connect(_on_emotion_triggered)
+
+
+func _disconnect_event_bus() -> void:
+	var event_bus := get_node_or_null("/root/EventBus")
+	if event_bus and event_bus.has_signal("emotion_triggered"):
+		if event_bus.emotion_triggered.is_connected(_on_emotion_triggered):
+			event_bus.emotion_triggered.disconnect(_on_emotion_triggered)
+
+
+func _cleanup_tween() -> void:
+	if _tween and _tween.is_valid():
+		_tween.kill()
+	_tween = null
+
+
+func _create_placeholder_texture(emoticon_type: String) -> ImageTexture:
+	var color: Color = PLACEHOLDER_COLORS.get(emoticon_type, Color.WHITE)
+	var image := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	image.fill(color)
+
+	var texture := ImageTexture.create_from_image(image)
+	return texture
+
+
+## ==================== CALLBACKS ====================
+
+
+func _on_fade_in_complete(duration: float) -> void:
+	# Wait for duration, then fade out
+	_tween = create_tween()
+	_tween.tween_interval(duration - fade_duration)  # Subtract fade time from total
+	_tween.tween_callback(hide_emoticon)
+
+
+func _on_fade_out_complete() -> void:
+	_sprite.hide()
+	_is_showing = false
+	emoticon_hidden.emit()
+
+
+func _on_emotion_triggered(triggered_character_id: String, emotion_type: String) -> void:
+	# Only show if this emoticon belongs to the triggered character
+	if character_id.is_empty() or character_id == triggered_character_id:
+		show_emoticon(emotion_type)
