@@ -29,8 +29,7 @@ func _ready() -> void:
 	visible = false
 
 	# Connect to EventBus for production requests
-	if not EventBus.baking_requested.is_connected(_on_baking_requested):
-		EventBus.baking_requested.connect(_on_baking_requested)
+	_connect_signal(EventBus.baking_requested, _on_baking_requested)
 
 	# Load recipes from DataManager
 	_load_recipes()

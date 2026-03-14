@@ -17,3 +17,15 @@ extends Control
 func safe_update(callable: Callable) -> void:
 	if is_inside_tree():
 		callable.call()
+
+
+## Connect a signal if not already connected.
+##
+## This helper prevents duplicate signal connections by checking if the
+## signal is already connected to the callback before connecting.
+##
+## @param sig: The Signal to connect
+## @param callback: The Callable to connect to the signal
+func _connect_signal(sig: Signal, callback: Callable) -> void:
+	if not sig.is_connected(callback):
+		sig.connect(callback)

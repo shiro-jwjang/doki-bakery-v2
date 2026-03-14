@@ -337,7 +337,8 @@ func _exit_tree() -> void:
 		_tween.kill()
 
 	if _purchase_timer != null and is_instance_valid(_purchase_timer):
-		_purchase_timer.timeout.disconnect(_on_purchase_timer_timeout)
+		if _purchase_timer.timeout.is_connected(_on_purchase_timer_timeout):
+			_purchase_timer.timeout.disconnect(_on_purchase_timer_timeout)
 
 	if _customer_view != null and is_instance_valid(_customer_view):
 		_customer_view.queue_free()
