@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=3 uid="uid://notification_item"]
+
+[ext_resource type="Script" path="res://scripts/ui/notification_area.gd" id="notification_area"]
+
+[node name="NotificationItem" type="Control"]
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = -30.0
+offset_right = 200.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(40, 40)
+size_flags_vertical = 1
+expand_mode = 2
+stretch_mode = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Notification Title"
+theme_override_font_sizes/font_size = 16
+
+[node name="Description" type="Label" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Notification description text"
+autowrap_mode = 3
