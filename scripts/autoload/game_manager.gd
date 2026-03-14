@@ -39,6 +39,39 @@ var bread_inventory: Dictionary = {}  # SNA-46
 var _is_loaded: bool = false
 
 
+## SNA-161: Get current game state as a dictionary (State management only)
+## This method does NOT perform file I/O.
+## Returns: Dictionary containing current game state
+func get_state() -> Dictionary:
+	return {
+		"gold": gold,
+		"legendary_bread": legendary_bread,
+		"level": level,
+		"experience": experience,
+		"play_time": play_time,
+		"game_state": game_state
+	}
+
+
+## SNA-161: Set game state from a dictionary (State management only)
+## This method does NOT perform file I/O.
+## Parameters:
+##   data: Dictionary - The state data to apply
+func set_state(data: Dictionary) -> void:
+	if data.has("gold"):
+		gold = data.gold
+	if data.has("legendary_bread"):
+		legendary_bread = data.legendary_bread
+	if data.has("level"):
+		level = clamp(data.level, 1, MAX_LEVEL)
+	if data.has("experience"):
+		experience = data.experience
+	if data.has("play_time"):
+		play_time = data.play_time
+	if data.has("game_state"):
+		game_state = data.game_state
+
+
 func add_gold(amount: int) -> void:
 	gold += amount
 	print("Added %d gold, new total: %d" % [amount, gold])
@@ -123,6 +156,9 @@ func spend_premium(amount: int) -> bool:
 	return false
 
 
+## Legacy method: Save game state to file
+## Deprecated: Use GameManager.get_state() with SaveManager.save_to_disk() instead
+## This method now delegates to SaveManager
 func save_game(path: String = "user://save.json") -> bool:
 	var save_data := {
 		"version": "1.0",
@@ -137,46 +173,30 @@ func save_game(path: String = "user://save.json") -> bool:
 		"production_slots": []
 	}
 
-	var file := FileAccess.open(path, FileAccess.WRITE)
-	if file == null:
-		return false
-
-	file.store_string(JSON.stringify(save_data))
-	file.close()
-	return true
+	# SNA-161: Delegate file I/O to SaveManager
+	return SaveManager.save_to_disk(save_data, path)
 
 
 func set_game_state(state: String) -> void:
 	game_state = state
 
 
-## Load game state from save file
+## Legacy method: Load game state from file
+## Deprecated: Use SaveManager.load_from_disk() with GameManager.set_state() instead
+## This method now delegates to SaveManager
 func load_game() -> bool:
 	var save_path := "user://save.json"
 
-	if not FileAccess.file_exists(save_path):
-		# No save file exists, reset to defaults
+	# SNA-161: Delegate file I/O to SaveManager
+	var data: Dictionary = SaveManager.load_from_disk(save_path)
+
+	if data.is_empty():
+		# No save file exists or error loading
 		_reset_to_defaults()
 		return true
-
-	var file := FileAccess.open(save_path, FileAccess.READ)
-	if file == null:
-		_reset_to_defaults()
-		return true
-
-	var json_string := file.get_as_text()
-	file.close()
-
-	var json := JSON.new()
-	var error := json.parse(json_string)
-	if error != OK:
-		# Corrupted JSON, reset to defaults
-		_reset_to_defaults()
-		return true
-
-	var data: Dictionary = json.data
 
 	# Load fields with defaults for missing keys
+	# Support both old and new field names for compatibility
 	if data.has("gold"):
 		gold = data["gold"]
 	else:
