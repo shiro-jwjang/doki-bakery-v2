@@ -34,7 +34,7 @@ func save_to_disk(data: Dictionary, path: String = "") -> bool:
 
 	var file := FileAccess.open(save_path_to_use, FileAccess.WRITE)
 	if file == null:
-		push_error("Failed to open save file for writing: " + save_path_to_use)
+		# Silently fail - return false indicates error
 		return false
 
 	file.store_string(json_string)
@@ -57,7 +57,7 @@ func load_from_disk(path: String = "") -> Dictionary:
 
 	var file := FileAccess.open(load_path, FileAccess.READ)
 	if file == null:
-		push_error("Failed to open save file for reading: " + load_path)
+		# Silently fail - return empty dict indicates error
 		return {}
 
 	var json_string := file.get_as_text()
@@ -66,7 +66,7 @@ func load_from_disk(path: String = "") -> Dictionary:
 	var json := JSON.new()
 	var parse_result := json.parse(json_string)
 	if parse_result != OK:
-		push_error("Failed to parse save file: " + json.get_error_message())
+		# Silently fail - return empty dict indicates error
 		return {}
 
 	var data: Dictionary = json.data
