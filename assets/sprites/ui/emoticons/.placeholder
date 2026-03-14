@@ -1,0 +1,16 @@
+# Emoticon Sprites
+
+This directory contains emoticon sprites for the EmoticonView component.
+
+## Emoticon Types
+
+- heart.tres - Satisfaction (❤️)
+- star.tres - Moved (⭐)
+- yummy.tres - Tasty (😋)
+- thinking.tres - Thinking (💭)
+- question.tres - Curious (❓)
+
+## Specifications
+
+- Size: 16×16 pixels (displayed at 48×48)
+- Format: AtlasTexture or ImageTexture resources
