@@ -8,3 +8,7 @@ extends Resource
 @export var unlock_level: int = 1
 @export var xp_reward: int = 10
 @export var icon: Texture2D
+
+
+func get_display_name_or_id() -> String:
+	return display_name if display_name != "" else id
