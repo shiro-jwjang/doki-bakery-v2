@@ -31,7 +31,8 @@ var _has_bread: bool = false
 func _ready() -> void:
 	# Configure the sell timer (if not already via scene)
 	_sell_timer.wait_time = SELL_TIME
-	_sell_timer.timeout.connect(_on_sell_timer_timeout)
+	# SNA-160: unified signal connection pattern
+	_connect_signal(_sell_timer.timeout, _on_sell_timer_timeout)
 
 	_update_ui()
 
