@@ -23,7 +23,7 @@ func set_production(recipe_id: String) -> void:
 	safe_update(
 		func():
 			var recipe = DataManager.get_recipe(recipe_id)
-			var d_name = recipe.display_name if recipe else recipe_id
+			var d_name = recipe.get_display_name_or_id() if recipe else recipe_id
 			_status_label.text = "베이킹 중 %s" % d_name
 			_progress_bar.value = 0.0
 	)
@@ -37,7 +37,7 @@ func set_completed(recipe_id: String) -> void:
 	safe_update(
 		func():
 			var recipe = DataManager.get_recipe(recipe_id)
-			var d_name = recipe.display_name if recipe else recipe_id
+			var d_name = recipe.get_display_name_or_id() if recipe else recipe_id
 			_status_label.text = "완료! %s" % d_name
 			_progress_bar.value = 1.0
 	)
