@@ -11,6 +11,9 @@
 [ext_resource type="Texture2D" uid="uid://c3nl54amckwk1" path="res://assets/sprites/backgrounds/back_floor.png" id="9_floor"]
 [ext_resource type="Texture2D" uid="uid://0semko6v6h0d" path="res://assets/sprites/backgrounds/back_wall01.png" id="10_wall1"]
 [ext_resource type="Texture2D" uid="uid://dykowd488k5iw" path="res://assets/sprites/backgrounds/back_wall02.png" id="11_wall2"]
+[ext_resource type="Texture2D" uid="uid://c3nl54amckwk2" path="res://assets/sprites/furniture/obj_oven.png" id="12_oven"]
+[ext_resource type="Texture2D" uid="uid://cf2ycqhcymweu" path="res://assets/sprites/furniture/obj_table.png" id="13_table"]
+[ext_resource type="Texture2D" uid="uid://bwohdi2vc8wtu" path="res://assets/sprites/furniture/obj_window.png" id="14_window"]
 
 [node name="WorldView" type="Node2D" unique_id=42957385]
 script = ExtResource("1_0abcd")
@@ -47,6 +50,24 @@ scale = Vector2(2, 2)
 texture = ExtResource("11_wall2")
 
 [node name="StallMap" parent="Background" unique_id=1183379370 instance=ExtResource("5_stall")]
+
+[node name="Oven" type="Sprite2D" parent="Background"]
+z_index = 0
+position = Vector2(500, 450)
+scale = Vector2(2, 2)
+texture = ExtResource("12_oven")
+
+[node name="Table" type="Sprite2D" parent="Background"]
+z_index = 0
+position = Vector2(700, 480)
+scale = Vector2(2, 2)
+texture = ExtResource("13_table")
+
+[node name="Window" type="Sprite2D" parent="Background"]
+z_index = 0
+position = Vector2(850, 300)
+scale = Vector2(2, 2)
+texture = ExtResource("14_window")
 
 [node name="Entities" type="CanvasLayer" parent="." unique_id=530375923]
 
