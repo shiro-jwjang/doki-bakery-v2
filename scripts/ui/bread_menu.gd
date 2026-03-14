@@ -28,9 +28,8 @@ func _ready() -> void:
 	# Start hidden
 	visible = false
 
-	# Connect to EventBus for production requests
-	if not EventBus.baking_requested.is_connected(_on_baking_requested):
-		EventBus.baking_requested.connect(_on_baking_requested)
+	# Connect to EventBus for production requests (SNA-160: unified pattern)
+	_connect_signal(EventBus.baking_requested, _on_baking_requested)
 
 	# Load recipes from DataManager
 	_load_recipes()
