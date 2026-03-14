@@ -93,6 +93,10 @@ signal sell_requested(customer_id: String, recipe_id: String)
 ## Emitted to request an upgrade
 signal upgrade_requested(upgrade_type: String)
 
+## Emitted to request showing a notification
+## SNA-141: NotificationArea 연동
+signal notification_requested(title: String, description: String, icon: Texture2D, priority: int)
+
 
 func _ready() -> void:
 	# Use call_deferred to connect after all autoloads are ready
