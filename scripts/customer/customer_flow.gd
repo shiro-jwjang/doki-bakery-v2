@@ -131,8 +131,16 @@ func _create_customer_view() -> void:
 	if _customer_view != null and is_instance_valid(_customer_view):
 		_customer_view.queue_free()
 
-	_customer_view = CUSTOMER_VIEW_SCENE.instantiate()
-	_customer_view.setup(customer_id)
+	# Try to instantiate customer view scene
+	if CUSTOMER_VIEW_SCENE != null:
+		_customer_view = CUSTOMER_VIEW_SCENE.instantiate()
+		# Setup customer view if it has the method
+		if _customer_view.has_method("setup"):
+			_customer_view.setup(customer_id)
+	else:
+		# Fallback: Create a basic Node2D for test environments
+		_customer_view = Node2D.new()
+		_customer_view.name = "Customer_" + customer_id
 
 	# Add to world scene
 	var world_view = _get_world_view()
@@ -147,8 +155,12 @@ func _create_customer_view() -> void:
 		else:
 			world_view.add_child(_customer_view)
 	else:
-		# Fallback: add to current scene
-		get_tree().current_scene.add_child(_customer_view)
+		# Fallback 1: Try to add to current scene (runtime environment)
+		if get_tree() != null and get_tree().current_scene != null:
+			get_tree().current_scene.add_child(_customer_view)
+		# Fallback 2: Add to self (test environment or edge cases)
+		else:
+			add_child(_customer_view)
 
 
 ## Spawn customer at left side
@@ -324,11 +336,22 @@ func _despawn_customer() -> void:
 ## Searches for WorldView in the scene tree without hardcoding paths
 ## Returns: WorldView node or null if not found
 func _get_world_view() -> Node:
-	if get_tree() == null or get_tree().current_scene == null:
+	if get_tree() == null:
 		return null
 
-	# find_child with recursive=true searches at any depth in scene tree
-	return get_tree().current_scene.find_child("WorldView", true, false)
+	# Try to find in current_scene first (runtime environment)
+	if get_tree().current_scene != null:
+		var result = get_tree().current_scene.find_child("WorldView", true, false)
+		if result != null:
+			return result
+
+	# Fallback: Search in entire scene tree (test environment)
+	# This allows tests to add WorldView anywhere in the tree
+	var root = get_tree().root
+	if root != null:
+		return root.find_child("WorldView", true, false)
+
+	return null
 
 
 ## ==================== CLEANUP ====================
