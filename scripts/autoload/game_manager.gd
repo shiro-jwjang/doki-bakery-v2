@@ -1,13 +1,9 @@
 extends Node
 
-const MAX_LEVEL: int = 10
-
-
 ## Helper method for setters that emit (old, new) signal pattern
 ## Used to reduce duplication in property setters
 func _emit_property_changed(old_value: int, new_value: int, changed_signal: Signal) -> void:
 	changed_signal.emit(old_value, new_value)
-
 
 var gold: int = 0:
 	set(value):
@@ -71,7 +67,7 @@ func set_state(data: Dictionary) -> void:
 	if data.has("legendary_bread"):
 		legendary_bread = data.legendary_bread
 	if data.has("level"):
-		level = clamp(data.level, 1, MAX_LEVEL)
+		level = clamp(data.level, 1, GameConstants.MAX_LEVEL)
 	if data.has("experience"):
 		experience = data.experience
 	if data.has("play_time"):
@@ -122,7 +118,7 @@ func get_level() -> int:
 
 func _check_level_up() -> void:
 	# Handle multiple level ups if needed
-	while level < MAX_LEVEL:
+	while level < GameConstants.MAX_LEVEL:
 		var required_xp := _get_xp_required_for_level(level + 1)
 		if experience >= required_xp:
 			_level_up()
@@ -216,7 +212,7 @@ func load_game() -> bool:
 	else:
 		legendary_bread = 0
 	if data.has("level"):
-		level = clamp(data["level"], 1, MAX_LEVEL)  # Ensure valid level range
+		level = clamp(data["level"], 1, GameConstants.MAX_LEVEL)  # Ensure valid level range
 	else:
 		level = 1
 	if data.has("experience"):
