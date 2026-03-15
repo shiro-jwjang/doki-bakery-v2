@@ -63,7 +63,11 @@ func _load_shops() -> void:
 ## required_prop: Optional additional property to validate (e.g., "display_name" for recipes)
 ## web_files: Optional list of files for web platform (DirAccess doesn't work reliably on web)
 func _load_resources(
-	path: String, id_prop: String, target_dict: Dictionary, required_prop: String = "", web_files: Array = []
+	path: String,
+	id_prop: String,
+	target_dict: Dictionary,
+	required_prop: String = "",
+	web_files: Array = []
 ) -> void:
 	var files_to_load: Array = []
 
@@ -109,8 +113,7 @@ func _load_resources(
 				)
 		else:
 			push_warning(
-				"DataManager: File %s is not a valid resource (missing '%s')"
-				% [file_name, id_prop]
+				"DataManager: File %s is not a valid resource (missing '%s')" % [file_name, id_prop]
 			)
 
 

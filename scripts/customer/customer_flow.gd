@@ -13,13 +13,12 @@ extends Node
 ## - CustomerView lifecycle management
 
 ## Customer state machine
-enum State {
-	ENTERING,  ## Customer is entering from left
-	MOVING_TO_DISPLAY,  ## Customer is moving to display counter
-	BUYING,  ## Customer is selecting/purchasing bread
-	LEAVING,  ## Customer is leaving to right
-	DESPAWNED  ## Customer has been despawned
-}
+## - ENTERING: Customer is entering from left
+## - MOVING_TO_DISPLAY: Customer is moving to display counter
+## - BUYING: Customer is selecting/purchasing bread
+## - LEAVING: Customer is leaving to right
+## - DESPAWNED: Customer has been despawned
+enum State { ENTERING, MOVING_TO_DISPLAY, BUYING, LEAVING, DESPAWNED }
 
 ## Customer scene for view
 const CUSTOMER_VIEW_SCENE = preload("res://scenes/world/customer_view.tscn")
