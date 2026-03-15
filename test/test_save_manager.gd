@@ -52,44 +52,36 @@ func test_save_manager_singleton_exists() -> void:
 	assert_not_null(SaveManager, "SaveManager singleton should exist")
 
 
-## Test get_save_data returns correct structure
-func test_get_save_data_structure() -> void:
-	# SNA-161: SaveManager.get_save_data() now delegates to GameManager.get_state()
-	# This test verifies GameManager.get_state() returns correct structure
+## Test GameManager.get_state returns correct structure
+func test_game_manager_get_state_structure() -> void:
+	# SNA-189: Test GameManager.get_state() returns correct structure
 	GameManager.gold = 500
 	GameManager.legendary_bread = 3
 	GameManager.level = 2
 	GameManager.experience = 50
 	GameManager.play_time = 100.0
 
-	var data: Dictionary = SaveManager.get_save_data()
+	var game_state: Dictionary = GameManager.get_state()
 
-	# SaveManager wraps game state in a "game" key
-	assert_true(data.has("game"), "Save data should have game key")
-	var game_data = data.get("game", {})
-
-	assert_true(game_data.has("gold"), "Game data should have gold")
-	assert_eq(game_data.get("gold"), 500, "Gold should be saved")
-	assert_true(game_data.has("legendary_bread"), "Game data should have legendary_bread")
-	assert_eq(game_data.get("legendary_bread"), 3, "Legendary bread should be saved")
-	assert_true(game_data.has("level"), "Game data should have level")
-	assert_eq(game_data.get("level"), 2, "Level should be saved")
-	assert_true(game_data.has("experience"), "Game data should have experience")
-	assert_eq(game_data.get("experience"), 50, "Experience should be saved")
-	assert_true(game_data.has("play_time"), "Game data should have play_time")
-	assert_eq(game_data.get("play_time"), 100.0, "Play time should be saved")
+	assert_true(game_state.has("gold"), "Game state should have gold")
+	assert_eq(game_state.get("gold"), 500, "Gold should be saved")
+	assert_true(game_state.has("legendary_bread"), "Game state should have legendary_bread")
+	assert_eq(game_state.get("legendary_bread"), 3, "Legendary bread should be saved")
+	assert_true(game_state.has("level"), "Game state should have level")
+	assert_eq(game_state.get("level"), 2, "Level should be saved")
+	assert_true(game_state.has("experience"), "Game state should have experience")
+	assert_eq(game_state.get("experience"), 50, "Experience should be saved")
+	assert_true(game_state.has("play_time"), "Game state should have play_time")
+	assert_eq(game_state.get("play_time"), 100.0, "Play time should be saved")
 
 
-## Test apply_save_data correctly restores GameManager
-func test_apply_save_data() -> void:
-	var save_data := {
-		"version": 1,
-		"timestamp": "2026-03-06T12:00:00Z",
-		"game":
-		{"gold": 1000, "legendary_bread": 5, "level": 3, "experience": 150, "play_time": 3600.0}
+## Test GameManager.set_state correctly restores state
+func test_game_manager_set_state() -> void:
+	var game_state := {
+		"gold": 1000, "legendary_bread": 5, "level": 3, "experience": 150, "play_time": 3600.0
 	}
 
-	SaveManager.apply_save_data(save_data)
+	GameManager.set_state(game_state)
 
 	assert_eq(GameManager.gold, 1000, "Gold should be restored")
 	assert_eq(GameManager.legendary_bread, 5, "Legendary bread should be restored")
@@ -98,25 +90,35 @@ func test_apply_save_data() -> void:
 	assert_eq(GameManager.play_time, 3600.0, "Play time should be restored")
 
 
-## Test save_game creates file
-func test_save_game_creates_file() -> void:
+## Test save_to_disk creates file
+func test_save_to_disk_creates_file() -> void:
 	GameManager.gold = 100
 	GameManager.level = 2
 
-	var result := SaveManager.save_game()
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	var result := SaveManager.save_to_disk(save_data)
 
-	assert_true(result, "save_game should return true")
+	assert_true(result, "save_to_disk should return true")
 	assert_true(FileAccess.file_exists(_test_save_path), "Save file should exist")
 
 
-## Test load_game reads saved data
-func test_load_game_reads_data() -> void:
+## Test load_from_disk reads saved data
+func test_load_from_disk_reads_data() -> void:
 	# First save some data
 	GameManager.gold = 777
 	GameManager.legendary_bread = 7
 	GameManager.level = 5
 	GameManager.experience = 300
-	SaveManager.save_game()
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	SaveManager.save_to_disk(save_data)
 
 	# Reset GameManager
 	GameManager.gold = 0
@@ -125,7 +127,7 @@ func test_load_game_reads_data() -> void:
 	GameManager.experience = 0
 
 	# Load the saved data
-	var loaded_data: Dictionary = SaveManager.load_game()
+	var loaded_data: Dictionary = SaveManager.load_from_disk()
 
 	assert_not_null(loaded_data, "Loaded data should not be null")
 	assert_eq(int(loaded_data.get("game", {}).get("gold", 0)), 777, "Gold should be loaded")
@@ -144,7 +146,12 @@ func test_load_game_reads_data() -> void:
 func test_save_completed_signal() -> void:
 	EventBus.save_completed.connect(_on_save_completed)
 
-	SaveManager.save_game()
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	SaveManager.save_to_disk(save_data)
 
 	assert_true(_save_completed_received, "save_completed signal should be emitted")
 
@@ -153,23 +160,28 @@ func test_save_completed_signal() -> void:
 func test_save_loaded_signal() -> void:
 	# First save some data
 	GameManager.gold = 250
-	SaveManager.save_game()
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	SaveManager.save_to_disk(save_data)
 
 	EventBus.save_loaded.connect(_on_save_loaded)
 
-	SaveManager.load_game()
+	SaveManager.load_from_disk()
 
 	assert_true(_save_loaded_received, "save_loaded signal should be emitted")
 	assert_not_null(_save_loaded_data.get("game"), "Signal data should contain game data")
 
 
-## Test load_game returns empty dict when file doesn't exist
-func test_load_game_no_file() -> void:
+## Test load_from_disk returns empty dict when file doesn't exist
+func test_load_from_disk_no_file() -> void:
 	# Remove save file if it exists
 	if FileAccess.file_exists(_test_save_path):
 		DirAccess.remove_absolute(_test_save_path)
 
-	var result := SaveManager.load_game()
+	var result := SaveManager.load_from_disk()
 
 	assert_eq(result.size(), 0, "Should return empty dictionary when file doesn't exist")
 
@@ -233,7 +245,12 @@ func test_save_load_cycle() -> void:
 	GameManager.set_game_state("playing")
 
 	# Save
-	assert_true(SaveManager.save_game(), "Save should succeed")
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	assert_true(SaveManager.save_to_disk(save_data), "Save should succeed")
 
 	# Reset everything
 	GameManager.gold = 0
@@ -244,8 +261,8 @@ func test_save_load_cycle() -> void:
 	GameManager.set_game_state("menu")
 
 	# Load
-	var loaded_data: Dictionary = SaveManager.load_game()
-	SaveManager.apply_save_data(loaded_data)
+	var loaded_data: Dictionary = SaveManager.load_from_disk()
+	GameManager.set_state(loaded_data.get("game", {}))
 
 	# Verify all data is preserved
 	assert_eq(GameManager.gold, 1234, "Gold should be preserved")

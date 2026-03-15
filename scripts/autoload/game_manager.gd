@@ -1,9 +1,11 @@
 extends Node
 
+
 ## Helper method for setters that emit (old, new) signal pattern
 ## Used to reduce duplication in property setters
 func _emit_property_changed(old_value: int, new_value: int, changed_signal: Signal) -> void:
 	changed_signal.emit(old_value, new_value)
+
 
 var gold: int = 0:
 	set(value):
@@ -160,86 +162,8 @@ func spend_premium(amount: int) -> bool:
 	return false
 
 
-## Legacy method: Save game state to file
-## Deprecated: Use GameManager.get_state() with SaveManager.save_to_disk() instead
-## This method now delegates to SaveManager
-func save_game(path: String = "user://save.json") -> bool:
-	var save_data := {
-		"version": "1.0",
-		"gold": gold,
-		"premium": legendary_bread,
-		"level": level,
-		"xp": experience,
-		"play_time": play_time,
-		"game_state": game_state,
-		"unlocked_recipes": [],
-		"shop_stage": 1,
-		"production_slots": []
-	}
-
-	# SNA-161: Delegate file I/O to SaveManager
-	return SaveManager.save_to_disk(save_data, path)
-
-
 func set_game_state(state: String) -> void:
 	game_state = state
-
-
-## Legacy method: Load game state from file
-## Deprecated: Use SaveManager.load_from_disk() with GameManager.set_state() instead
-## This method now delegates to SaveManager
-func load_game() -> bool:
-	var save_path := "user://save.json"
-
-	# SNA-161: Delegate file I/O to SaveManager
-	var data: Dictionary = SaveManager.load_from_disk(save_path)
-
-	if data.is_empty():
-		# No save file exists or error loading
-		_reset_to_defaults()
-		return true
-
-	# Load fields with defaults for missing keys
-	# Support both old and new field names for compatibility
-	if data.has("gold"):
-		gold = data["gold"]
-	else:
-		gold = 0
-	if data.has("legendary_bread"):
-		legendary_bread = data["legendary_bread"]
-	elif data.has("premium"):
-		legendary_bread = data["premium"]  # Support both names
-	else:
-		legendary_bread = 0
-	if data.has("level"):
-		level = clamp(data["level"], 1, GameConstants.MAX_LEVEL)  # Ensure valid level range
-	else:
-		level = 1
-	if data.has("experience"):
-		experience = data["experience"]
-	elif data.has("xp"):
-		experience = data["xp"]  # Support both names
-	else:
-		experience = 0
-	if data.has("play_time"):
-		play_time = data["play_time"]
-	else:
-		play_time = 0.0
-	if data.has("game_state"):
-		game_state = data["game_state"]
-	else:
-		game_state = "menu"
-
-	return true
-
-
-func _reset_to_defaults() -> void:
-	gold = 0
-	legendary_bread = 0
-	level = 1
-	experience = 0
-	play_time = 0.0
-	game_state = "menu"
 
 
 func _process(delta: float) -> void:
