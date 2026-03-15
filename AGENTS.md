@@ -10,6 +10,7 @@ This folder is home. Treat it that way.
 4. **문서화**: 결정 사항은 기록
 5. **에러 처리**: 명확한 에러 메시지
 6. **Git 브랜치**: 항상 `develop` 브랜치에서 작업 시작
+7. **코드 작업**: ACP Claude Code 사용 (`sessions_spawn runtime="acp" agentId="claude"`)
 
 ## First Run
 
