@@ -312,7 +312,7 @@ func test_production_completed_signal_emitted() -> void:
 ## Test that slot is released after production completes
 func test_slot_released_after_completion() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("_process"):
-		_mock_recipe.production_time = 0.1
+		_mock_recipe_provider.get_recipe("bread_001").production_time = 0.1
 		_manager.start_production(0, "bread_001")
 
 		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
@@ -335,7 +335,7 @@ func test_slot_released_after_completion() -> void:
 ## Test that completed bread is marked as completed
 func test_completed_bread_marked_completed() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("_process"):
-		_mock_recipe.production_time = 0.1
+		_mock_recipe_provider.get_recipe("bread_001").production_time = 0.1
 		_manager.start_production(0, "bread_001")
 
 		var slots = _manager.get_slots()
