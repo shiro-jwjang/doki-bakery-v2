@@ -3,13 +3,12 @@ extends GutTest
 ## Test suite for LevelUpNotification UI component
 ## SNA-99: 레벨업 시 해금 알림 표시
 
-const LevelUpNotificationScript = preload("res://scripts/ui/level_up_notification.gd")
-
 var notification: Control
 
 
 func before_each() -> void:
-	notification = LevelUpNotificationScript.new()
+	var LevelUpNotificationScene = preload("res://scenes/ui/level_up_notification.tscn")
+	notification = LevelUpNotificationScene.instantiate()
 	add_child_autofree(notification)
 	await wait_physics_frames(1)
 
@@ -68,7 +67,9 @@ func test_notification_shows_unlocked_items_text() -> void:
 	notification.show_unlocks(5, unlocked_items)
 
 	# Check that item names are displayed
-	var items_text = notification.get_items_text() if notification.has_method("get_items_text") else ""
+	var items_text = (
+		notification.get_items_text() if notification.has_method("get_items_text") else ""
+	)
 	assert_true(items_text.length() > 0, "Should display unlocked items text")
 
 

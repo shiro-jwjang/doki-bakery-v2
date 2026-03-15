@@ -137,12 +137,16 @@ func _get_emoticon_texture(emoticon_type: String) -> Texture2D:
 
 
 func _setup_sprite() -> void:
-	_sprite = Sprite2D.new()
-	_sprite.name = "Sprite2D"
-	_sprite.centered = true
-	_sprite.scale = Vector2(3.0, 3.0)  # 16x16 -> 48x48
-	_sprite.hide()
-	add_child(_sprite)
+	# Check if sprite already exists in scene (from scene file)
+	_sprite = get_node_or_null("Sprite2D")
+	if _sprite == null:
+		# Create new sprite if not in scene
+		_sprite = Sprite2D.new()
+		_sprite.name = "Sprite2D"
+		_sprite.centered = true
+		_sprite.scale = Vector2(3.0, 3.0)  # 16x16 -> 48x48
+		_sprite.hide()
+		add_child(_sprite)
 
 
 func _connect_event_bus() -> void:

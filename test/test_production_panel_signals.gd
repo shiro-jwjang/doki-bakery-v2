@@ -103,4 +103,6 @@ func test_panel_no_process_polling() -> void:
 	# Verify slot UI was updated via signals alone
 	var slot_ui = panel.get_slot_ui(0)
 	assert_not_null(slot_ui, "Slot UI should exist")
-	assert_true(slot_ui._status_label.text.contains("완료"), "Slot should show completion without polling")
+	assert_true(
+		slot_ui._status_label.text.contains("완료"), "Slot should show completion without polling"
+	)

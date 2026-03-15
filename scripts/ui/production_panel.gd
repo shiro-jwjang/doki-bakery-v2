@@ -22,16 +22,18 @@ func _ready() -> void:
 	var started_callback := on_production_started
 	var progressed_callback := on_production_progressed
 	var completed_callback := on_production_completed
-	
+
 	if not EventBus.production_started.is_connected(started_callback):
 		EventBus.production_started.connect(started_callback)
 	if not EventBus.production_progressed.is_connected(progressed_callback):
 		EventBus.production_progressed.connect(progressed_callback)
 	if not EventBus.production_completed.is_connected(completed_callback):
 		EventBus.production_completed.connect(completed_callback)
-	
+
 	# Initialize slots from BakeryManager count
-	_initialize_slots()
+	# Only initialize if container exists (requires scene file)
+	if _container != null:
+		_initialize_slots()
 
 
 func _initialize_slots() -> void:
@@ -45,9 +47,13 @@ func _initialize_slots() -> void:
 		var slot_ui = get_slot_ui(slot_data.slot_index)
 		if slot_ui:
 			if slot_data.is_completed:
-				slot_ui.set_completed(slot_data.recipe.get_display_name_or_id() if slot_data.recipe else "")
+				slot_ui.set_completed(
+					slot_data.recipe.get_display_name_or_id() if slot_data.recipe else ""
+				)
 			elif slot_data.is_active:
-				slot_ui.set_production(slot_data.recipe.get_display_name_or_id() if slot_data.recipe else "")
+				slot_ui.set_production(
+					slot_data.recipe.get_display_name_or_id() if slot_data.recipe else ""
+				)
 				slot_ui.set_progress(slot_data.progress)
 
 
@@ -82,6 +88,10 @@ func on_production_completed(slot_index: int, recipe_id: String) -> void:
 func _get_or_create_slot(slot_index: int) -> Node:
 	if _slot_data.has(slot_index):
 		return _slot_data[slot_index]
+
+	if _container == null:
+		push_error("ProductionPanel: _container is null, cannot create slot")
+		return null
 
 	var slot = slot_scene.instantiate()
 	_container.add_child(slot)

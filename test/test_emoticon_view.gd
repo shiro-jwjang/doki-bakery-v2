@@ -14,9 +14,9 @@ func before_all() -> void:
 
 
 func before_each() -> void:
-	# Create fresh EmoticonView instance for each test
-	emoticon_view = Node2D.new()
-	emoticon_view.set_script(EmoticonViewScript)
+	# Create fresh EmoticonView instance for each test from scene
+	var EmoticonViewScene = preload("res://scenes/ui/emoticon_view.tscn")
+	emoticon_view = EmoticonViewScene.instantiate()
 	add_child_autofree(emoticon_view)
 	await wait_for_signal(emoticon_view.ready, 1.0)
 

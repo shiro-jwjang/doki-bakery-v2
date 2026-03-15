@@ -99,3 +99,9 @@ func remove_from_inventory(recipe_id: String, amount: int = 1) -> bool:
 		_inventory_items.erase(recipe_id)
 
 	return true
+
+
+## Get all recipe IDs currently in inventory
+## Returns: Array of recipe IDs
+func get_inventory_recipe_ids() -> Array:
+	return _inventory.keys()

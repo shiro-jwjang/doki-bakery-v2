@@ -127,9 +127,6 @@ func complete_production(slot_index: int) -> void:
 			if recipe:
 				var recipe_id: String = recipe.id
 				production_completed.emit(slot_index, recipe_id)
-
-				# AUTO-COLLECT: Automatically clear the slot when finished
-				collect_production(slot_index)
 			break
 
 

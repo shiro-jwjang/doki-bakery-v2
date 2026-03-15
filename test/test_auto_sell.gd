@@ -21,7 +21,9 @@ func before_each() -> void:
 	var display_slot_scene = preload("res://scenes/ui/display_slot.tscn")
 	display_slot = display_slot_scene.instantiate()
 	add_child(display_slot)
-	display_slot._sell_timer.wait_time = 0.1  # Fast forward timer for tests
+	# Fast forward timer for tests - access via node path
+	var timer = display_slot.get_node("SellTimer")
+	timer.wait_time = 0.1
 	await wait_physics_frames(2)
 
 

@@ -9,6 +9,15 @@ var slot_index: int = -1
 @onready var _status_label: Label = %StatusLabel
 @onready var _progress_bar: ProgressBar = %ProgressBar
 
+## Public getters for UI elements (for testing)
+var label: Label:
+	get:
+		return _status_label
+
+var progress_bar: ProgressBar:
+	get:
+		return _progress_bar
+
 
 func setup(index: int) -> void:
 	slot_index = index

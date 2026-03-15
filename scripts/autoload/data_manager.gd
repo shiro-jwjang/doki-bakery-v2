@@ -69,7 +69,7 @@ func _load_resources(
 		if not dir.current_is_dir() and file_name.ends_with(".tres"):
 			var full_path = path + file_name
 			var resource = load(full_path)
-			
+
 			# Validate resource
 			if resource and resource.get(id_prop) != null:
 				# Check for additional required property if specified
@@ -84,8 +84,10 @@ func _load_resources(
 					)
 			else:
 				push_warning(
-					"DataManager: File %s is not a valid resource (missing '%s')"
-					% [file_name, id_prop]
+					(
+						"DataManager: File %s is not a valid resource (missing '%s')"
+						% [file_name, id_prop]
+					)
 				)
 		file_name = dir.get_next()
 	dir.list_dir_end()
