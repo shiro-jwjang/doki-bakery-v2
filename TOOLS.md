@@ -41,8 +41,34 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 5. **검증 방법** - 어떻게 확인할지
 
 ### 참고: SNA-183 반성
-- 31개 → 1개 실패로 줄였지만 구체적 정보 없이 시작해서 시간 낭비
+- 31개 → 0개 실패로 줄였지만 구체적 정보 없이 시작해서 시간 낭비
 - "safe_update should execute callable" 에러를 미리 줬으면 더 빨랐을 것
+
+---
+
+## Linear 이슈 상태 관리
+
+### 워크플로우
+```
+Todo → In Progress → PR 생성 → In Review → PR merge → Done
+```
+
+### 상태별 액션
+| 상태 | 액션 | 언제 |
+|---|---|---|
+| Todo | 작업 시작 안 함 | 이슈 생성 시 |
+| In Progress | 작업 중 | 코드 작성 시작 |
+| In Review | PR 생성 후 | PR merge 대기 |
+| Done | PR merge 완료 | 모든 리뷰 통과 |
+
+### ❌ 절대 하지 말 것
+- PR merge 전에 Done으로 변경
+- 사용자 확인 없이 상태 변경
+- "이슈 처리는?" 질문에 성급하게 Done 처리
+
+### 참고: SNA-183 반성
+- PR 생성 후 바로 Done으로 변경함 (잘못됨)
+- 올바른 흐름: PR 생성 → In Review → merge → Done
 
 ---
 
