@@ -4,6 +4,8 @@ extends GutTest
 ## Tests that notifications appear correctly with animations and queue management
 ## SNA-141: 알림 팝업 (NotificationArea) — TDD
 
+const NotificationArea = preload("res://scripts/ui/notification_area.gd")
+
 var notification_area: NotificationArea
 var test_icon: Texture2D
 

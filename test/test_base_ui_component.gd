@@ -124,9 +124,9 @@ func test_safe_update_with_node_removal() -> void:
 func test_safe_update_callable_exception_handling() -> void:
 	"""safe_update should execute callable even if it accesses null"""
 	var component: Control = BaseUIComponent.new()
-	var was_executed: bool = false
+	var tracker := _CallableTracker.new()
 	var test_callable := func():
-		was_executed = true
+		tracker.was_called = true
 		# Access a null reference (won't crash, but shows error handling)
 		var _null_ref: Node = null
 		if _null_ref == null:
@@ -134,11 +134,15 @@ func test_safe_update_callable_exception_handling() -> void:
 			pass
 
 	# Add to scene tree
-	add_child_autofree(component)
+	add_child(component)
 	await wait_physics_frames(1)  # Ensure component is inside tree
 
 	# Call safe_update - should execute the callable
 	component.safe_update(test_callable)
 
 	# Verify the callable was executed
-	assert_true(was_executed, "safe_update should execute callable")
+	assert_true(tracker.was_called, "safe_update should execute callable")
+
+	# Clean up
+	remove_child(component)
+	component.queue_free()
