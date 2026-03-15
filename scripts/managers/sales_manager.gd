@@ -28,9 +28,8 @@ func _on_production_completed(_slot_index: int, recipe_id: String) -> void:
 	if recipe == null:
 		return
 
-	# Award XP for successful baking
-	if "xp_reward" in recipe:
-		GameManager.add_experience(recipe.xp_reward)
+	# Award XP for successful baking (delegated to EconomyManager)
+	EconomyManager.award_production_xp(recipe)
 
 	add_to_inventory(recipe_id, recipe.base_price)
 
