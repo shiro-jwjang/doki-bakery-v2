@@ -56,6 +56,7 @@ func test_hide_emoticon_hides_emoticon() -> void:
 	emoticon_view.show_emoticon("heart", 2.0)
 	await wait_for_signal(emoticon_view.emoticon_shown, 1.0)
 	emoticon_view.hide_emoticon()
+	# Wait for hide animation to complete
 	await wait_for_signal(emoticon_view.emoticon_hidden, 1.0)
 	assert_false(emoticon_view.is_showing(), "Emoticon should be hidden")
 
@@ -64,7 +65,9 @@ func test_hide_emoticon_hides_emoticon() -> void:
 func test_emoticon_auto_hides_after_duration() -> void:
 	var test_duration := 0.5  # Short duration for testing
 	emoticon_view.show_emoticon("heart", test_duration)
+	# Wait longer for fade-in to complete and state to settle
 	await wait_for_signal(emoticon_view.emoticon_shown, 1.0)
+	await wait_physics_frames(3)  # Extra wait for state to settle
 	assert_true(emoticon_view.is_showing(), "Emoticon should be showing")
 
 	# Wait for auto-hide

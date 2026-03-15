@@ -17,9 +17,9 @@ func before_each() -> void:
 	SalesManager._inventory.clear()
 	SalesManager._inventory_items.clear()
 
-	# Create DisplaySlot from scene
-	var DisplaySlotScene = preload("res://scenes/ui/display_slot.tscn")
-	display_slot = DisplaySlotScene.instantiate()
+	# Create DisplaySlot from scene (not new() to init @onready vars)
+	var display_slot_scene = preload("res://scenes/ui/display_slot.tscn")
+	display_slot = display_slot_scene.instantiate()
 	add_child(display_slot)
 	# Fast forward timer for tests - access via node path
 	var timer = display_slot.get_node("SellTimer")

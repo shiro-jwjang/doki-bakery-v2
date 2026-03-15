@@ -76,6 +76,7 @@ func test_baking_requested_signal_exists() -> void:
 func test_baking_requested_params() -> void:
 	EventBus.baking_requested.connect(_on_baking_requested)
 
+	# Use bread_001 which exists in DataManager
 	EventBus.baking_requested.emit(2, "bread_001")
 
 	assert_true(_signal_emitted, "baking_requested should be emitted")

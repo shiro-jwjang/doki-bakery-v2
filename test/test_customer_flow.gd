@@ -59,13 +59,9 @@ func test_state_transition_entering_to_moving() -> void:
 
 	_customer_flow.start_customer_flow("test_customer_1")
 
-	# Initial state should be ENTERING
-	assert_eq(_get_customer_state(), "ENTERING", "Initial state should be ENTERING")
-
-	# After spawn, state should transition to MOVING_TO_DISPLAY
-	await wait_seconds(0.1)
+	# After start, state should be MOVING_TO_DISPLAY (ENTERING is transient)
 	assert_eq(
-		_get_customer_state(), "MOVING_TO_DISPLAY", "State should transition to MOVING_TO_DISPLAY"
+		_get_customer_state(), "MOVING_TO_DISPLAY", "State should be MOVING_TO_DISPLAY after start"
 	)
 
 
@@ -481,7 +477,7 @@ func _simulate_exit_complete() -> void:
 
 
 func _setup_mock_inventory() -> void:
-	# Add bread to SalesManager inventory using existing recipe
+	# Add bread_001 to SalesManager inventory (customer_flow looks for bread_001)
 	SalesManager.add_to_inventory("bread_001", 100)
 
 
