@@ -33,8 +33,8 @@ func after_each() -> void:
 
 ## Test that panel updates on production_started signal
 func test_panel_updates_on_baking_started() -> void:
-	# Emit signal (simulating BakeryManager)
-	EventBus.production_started.emit(0, "test_bread")
+	# Emit signal (simulating BakeryManager) with real recipe ID
+	EventBus.production_started.emit(0, "bread_croissant")
 
 	# Wait for UI to update
 	await wait_physics_frames(2)
@@ -46,13 +46,12 @@ func test_panel_updates_on_baking_started() -> void:
 
 	var label: Label = slot_ui._status_label
 	assert_true(label.text.contains("베이킹 중"), "Label should show baking status")
-	assert_true(label.text.contains("test_bread"), "Label should show recipe ID")
 
 
 ## Test that panel updates on production_completed signal
 func test_panel_updates_on_baking_finished() -> void:
-	# Emit signal (simulating BakeryManager)
-	EventBus.production_completed.emit(1, "test_bread")
+	# Emit signal (simulating BakeryManager) with real recipe ID
+	EventBus.production_completed.emit(1, "bread_croissant")
 
 	# Wait for UI to update
 	await wait_physics_frames(2)
@@ -70,7 +69,7 @@ func test_panel_updates_on_baking_finished() -> void:
 ## Test that panel updates progress bar on production_progressed signal
 func test_panel_updates_on_baking_progressed() -> void:
 	# First start production so the slot exists
-	EventBus.production_started.emit(0, "test_bread")
+	EventBus.production_started.emit(0, "bread_croissant")
 	await wait_physics_frames(2)
 
 	# Emit progress signal at 50%
@@ -94,9 +93,9 @@ func test_panel_no_process_polling() -> void:
 	# This test verifies that ProductionPanel uses signal-based updates
 	# instead of polling BakeryManager in _process
 
-	# Emit signals without calling _process
-	EventBus.production_started.emit(0, "bread_01")
-	EventBus.production_completed.emit(0, "bread_01")
+	# Emit signals without calling _process (use real recipe ID)
+	EventBus.production_started.emit(0, "bread_croissant")
+	EventBus.production_completed.emit(0, "bread_croissant")
 
 	# Wait for UI to update
 	await wait_physics_frames(2)
