@@ -95,21 +95,18 @@ func test_backward_compatibility_load_shops() -> void:
 	assert_gt(all_shops.size(), 0, "Should load shops via original method")
 
 
-## Test that _load_all_data still works
+## SNA-178: Test that getters work with lazy loading
 func test_load_all_data_integration() -> void:
-	data_manager._load_all_data()
-
+	# SNA-178: Just call getters - lazy loading will trigger automatically
 	# Verify all data types were loaded
 	assert_gt(data_manager.get_all_recipes().size(), 0, "Should have recipes")
 	assert_gt(data_manager.get_all_levels().size(), 0, "Should have levels")
 	assert_gt(data_manager.get_all_shop_stages().size(), 0, "Should have shops")
 
 
-## Test that get_recipe still works
+## SNA-178: Test that get_recipe works with lazy loading
 func test_get_recipe_after_load() -> void:
-	data_manager._load_all_data()
-
-	# Get first recipe from all recipes
+	# SNA-178: get_all_recipes() triggers lazy loading automatically
 	var all_recipes = data_manager.get_all_recipes()
 	if all_recipes.size() > 0:
 		var first_recipe = all_recipes[0]

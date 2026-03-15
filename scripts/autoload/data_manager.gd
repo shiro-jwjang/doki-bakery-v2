@@ -2,6 +2,7 @@ extends Node
 
 ## DataManager Autoload
 ## 정적 데이터(.tres) 로딩/캐싱/조회
+## SNA-178: Lazy loading 도입 - 필요 시점에 on-demand 로딩
 
 # 리소스 타입 preload
 const RecipeData = preload("res://resources/data/recipe_data.gd")
@@ -17,15 +18,36 @@ var _recipes: Dictionary = {}  # id -> RecipeData
 var _levels: Dictionary = {}  # level -> LevelData
 var _shop_stages: Dictionary = {}  # stage -> ShopData
 
+# SNA-178: Lazy loading state flags
+var _recipes_loaded := false
+var _levels_loaded := false
+var _shops_loaded := false
 
+
+## SNA-178: _ready에서 더 이상 모든 데이터를 로드하지 않음
 func _ready() -> void:
-	_load_all_data()
+	pass  # Lazy loading: 필요 시점에 로드
 
 
-func _load_all_data() -> void:
-	_load_recipes()
-	_load_levels()
-	_load_shops()
+## SNA-178: 레시피 lazy loading
+func _ensure_recipes_loaded() -> void:
+	if not _recipes_loaded:
+		_load_recipes()
+		_recipes_loaded = true
+
+
+## SNA-178: 레벨 lazy loading
+func _ensure_levels_loaded() -> void:
+	if not _levels_loaded:
+		_load_levels()
+		_levels_loaded = true
+
+
+## SNA-178: 매장 lazy loading
+func _ensure_shops_loaded() -> void:
+	if not _shops_loaded:
+		_load_shops()
+		_shops_loaded = true
 
 
 func _load_recipes() -> void:
@@ -93,34 +115,58 @@ func _load_resources(
 	dir.list_dir_end()
 
 
-## 레시피 조회
+## SNA-178: 레시피 조회 - lazy loading 적용
 func get_recipe(id: String) -> RecipeData:
+	_ensure_recipes_loaded()
 	return _recipes.get(id)
 
 
-## 레벨 데이터 조회
+## SNA-178: 레벨 데이터 조회 - lazy loading 적용
 func get_level(level: int) -> LevelData:
+	_ensure_levels_loaded()
 	return _levels.get(level)
 
 
-## 매장 단계 조회
+## SNA-178: 매장 단계 조회 - lazy loading 적용
 func get_shop_stage(stage: int) -> ShopData:
+	_ensure_shops_loaded()
 	return _shop_stages.get(stage)
 
 
-## 모든 레시피 반환
+## SNA-178: 모든 레시피 반환 - lazy loading 적용
 func get_all_recipes() -> Array:
+	_ensure_recipes_loaded()
 	return _recipes.values()
 
 
-## 모든 레벨 반환
+## SNA-178: 모든 레벨 반환 - lazy loading 적용
 func get_all_levels() -> Array:
+	_ensure_levels_loaded()
 	return _levels.values()
 
 
-## 모든 매장 단계 반환
+## SNA-178: 모든 매장 단계 반환 - lazy loading 적용
 func get_all_shop_stages() -> Array:
+	_ensure_shops_loaded()
 	return _shop_stages.values()
+
+
+## SNA-178: 레시피 캐시 비우기
+func clear_recipe_cache() -> void:
+	_recipes.clear()
+	_recipes_loaded = false
+
+
+## SNA-178: 레벨 캐시 비우기
+func clear_level_cache() -> void:
+	_levels.clear()
+	_levels_loaded = false
+
+
+## SNA-178: 매장 캐시 비우기
+func clear_shop_cache() -> void:
+	_shop_stages.clear()
+	_shops_loaded = false
 
 
 ## 레벨에서 해금되는 아이템 목록 조회
