@@ -47,9 +47,13 @@ func _initialize_slots() -> void:
 		var slot_ui = get_slot_ui(slot_data.slot_index)
 		if slot_ui:
 			if slot_data.is_completed:
-				slot_ui.set_completed(slot_data.recipe.get_display_name_or_id() if slot_data.recipe else "")
+				slot_ui.set_completed(
+					slot_data.recipe.get_display_name_or_id() if slot_data.recipe else ""
+				)
 			elif slot_data.is_active:
-				slot_ui.set_production(slot_data.recipe.get_display_name_or_id() if slot_data.recipe else "")
+				slot_ui.set_production(
+					slot_data.recipe.get_display_name_or_id() if slot_data.recipe else ""
+				)
 				slot_ui.set_progress(slot_data.progress)
 
 

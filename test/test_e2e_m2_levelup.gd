@@ -261,7 +261,9 @@ func test_e2e_complete_production_to_level_up_flow() -> void:
 	var exp_bar: ProgressBar = hud.get_node_or_null("Control/ExpBar")
 	if exp_bar != null:
 		# Exp bar should reflect current XP
-		assert_eq(exp_bar.value, float(GameManager.experience), "HUD exp bar should match GameManager XP")
+		assert_eq(
+			exp_bar.value, float(GameManager.experience), "HUD exp bar should match GameManager XP"
+		)
 
 
 ## Test 7: Level up with excess XP carries over correctly
