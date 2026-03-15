@@ -5,7 +5,7 @@ extends GutTest
 ## SNA-96: 슬롯 클릭 → BreadMenu → 생산 시작 풀 플로우
 
 const ProductionPanelScene = preload("res://scenes/ui/production_panel.tscn")
-const BreadMenuClass = preload("res://scripts/ui/bread_menu.gd")
+const BreadMenuScene = preload("res://scenes/ui/bread_menu.tscn")
 const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
 const MockTimeProviderClass = preload("res://scripts/utils/mock_time_provider.gd")
 const MockRecipeProviderClass = preload("res://scripts/utils/mock_recipe_provider.gd")
@@ -39,7 +39,7 @@ func before_each() -> void:
 	await wait_physics_frames(2)
 
 	# Create BreadMenu
-	bread_menu = BreadMenuClass.new()
+	bread_menu = BreadMenuScene.instantiate()
 	add_child(bread_menu)
 	await wait_physics_frames(2)
 

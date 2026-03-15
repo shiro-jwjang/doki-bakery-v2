@@ -7,7 +7,7 @@ extends GutTest
 ## 2. Display slots automatically sell bread after 5 seconds
 ## 3. Gold is awarded when bread is sold
 
-const DisplaySlotClass = preload("res://scripts/ui/display_slot.gd")
+const DisplaySlotScene = preload("res://scenes/ui/display_slot.tscn")
 
 var display_slot: Control
 
@@ -18,8 +18,7 @@ func before_each() -> void:
 	SalesManager._inventory_items.clear()
 
 	# Create DisplaySlot from scene (not new() to init @onready vars)
-	var display_slot_scene = preload("res://scenes/ui/display_slot.tscn")
-	display_slot = display_slot_scene.instantiate()
+	display_slot = DisplaySlotScene.instantiate()
 	add_child(display_slot)
 	# Fast forward timer for tests - access via node path
 	var timer = display_slot.get_node("SellTimer")
