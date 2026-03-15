@@ -7,9 +7,13 @@ extends GutTest
 
 const BakeryManagerClass = preload("res://scripts/autoload/bakery_manager.gd")
 const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
+const MockTimeProviderClass = preload("res://scripts/utils/mock_time_provider.gd")
+const MockRecipeProviderClass = preload("res://scripts/utils/mock_recipe_provider.gd")
 
 var _manager: Node
 var _mock_recipe: Resource
+var _mock_time_provider: MockTimeProvider
+var _mock_recipe_provider: MockRecipeProvider
 
 # Signal tracking variables
 var _signal_received := false
@@ -26,17 +30,21 @@ func before_each() -> void:
 	_mock_recipe.id = "bread_001"
 	_mock_recipe.production_time = 10.0
 
+	# Create mock providers for testing
+	_mock_time_provider = MockTimeProviderClass.new()
+	_mock_time_provider.reset_time()
+
+	_mock_recipe_provider = MockRecipeProviderClass.new()
+	_mock_recipe_provider.set_recipe(_mock_recipe)
+
 	# Set up manager state
 	_manager._max_slots = 3
 	_manager._slots = []
 	_manager._active_count = 0
-	_manager._mock_recipe = _mock_recipe
 
-	# Enable mock time for testing (wall clock simulation)
-	if _manager.has_method("reset_mock_time"):
-		_manager.reset_mock_time()
-	else:
-		_manager._mock_time = 0.0
+	# Inject mock providers using DI
+	_manager.set_time_provider(_mock_time_provider)
+	_manager.set_recipe_provider(_mock_recipe_provider)
 
 	add_child_autofree(_manager)
 
@@ -366,7 +374,7 @@ func test_production_timer_decreases() -> void:
 	):
 		_mock_recipe.production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_manager._mock_time = 0.0
+		_mock_time_provider.reset_time()
 		_manager.start_production(0, "bread_001")
 
 		var time_before = _manager.get_remaining_time(0)
@@ -396,7 +404,7 @@ func test_remaining_time_wall_clock_based() -> void:
 	):
 		_mock_recipe.production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_manager._mock_time = 0.0
+		_mock_time_provider.reset_time()
 		_manager.start_production(0, "bread_001")
 
 		# Get initial remaining time
@@ -423,7 +431,7 @@ func test_wall_clock_variable_delta() -> void:
 	):
 		_mock_recipe.production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_manager._mock_time = 0.0
+		_mock_time_provider.reset_time()
 		_manager.start_production(0, "bread_001")
 
 		# Process with variable delta times (simulating frame rate fluctuations)
@@ -454,7 +462,7 @@ func test_progress_from_wall_clock() -> void:
 	):
 		_mock_recipe.production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_manager._mock_time = 0.0
+		_mock_time_provider.reset_time()
 		_manager.start_production(0, "bread_001")
 
 		# Process half the time
