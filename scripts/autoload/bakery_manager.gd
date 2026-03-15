@@ -6,6 +6,7 @@ extends Node
 ## tracking active slots, and enforcing slot limits based on ShopData.
 ## SNA-74: BakeryManager 슬롯 관리
 ## SNA-174: Dictionary 기반 슬롯 관리
+## SNA-177: DI 패턴 도입 (TimeProvider, RecipeProvider)
 
 ## Signal emitted when production starts
 signal production_started(slot_index: int, recipe_id: String)
@@ -15,6 +16,12 @@ signal production_completed(slot_index: int, recipe_id: String)
 
 ## Signal emitted when production fails
 signal production_failed(slot_index: int, reason: String)
+
+## Time provider for wall clock abstraction (DI)
+var _time_provider: TimeProvider = null
+
+## Recipe provider for recipe lookup (DI)
+var _recipe_provider: RecipeProvider = null
 
 ## Maximum number of production slots
 var _max_slots: int = 3
@@ -26,14 +33,11 @@ var _slots: Array = []
 ## Current number of active productions
 var _active_count: int = 0
 
-## Mock recipe for testing (used in tests)
-var _mock_recipe: Resource = null
-
-## Mock time for testing (null = use real wall clock time)
-var _mock_time: float = -1.0
-
 
 func _ready() -> void:
+	# Initialize providers with default implementations
+	_time_provider = SystemTimeProvider.new()
+	_recipe_provider = DataManagerRecipeProvider.new()
 	set_process(true)
 
 
@@ -68,14 +72,10 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 		return false
 
 	# Get recipe
-	var recipe: Resource
-	if _mock_recipe:
-		recipe = _mock_recipe
-	else:
-		recipe = DataManager.get_recipe(recipe_id)
-		if not recipe:
-			push_error("BakeryManager: Recipe not found - %s" % recipe_id)
-			return false
+	var recipe: Resource = _recipe_provider.get_recipe(recipe_id)
+	if not recipe:
+		push_error("BakeryManager: Recipe not found - %s" % recipe_id)
+		return false
 
 	# Create new production slot as Dictionary
 	var slot: Dictionary = {
@@ -95,11 +95,9 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 	return true
 
 
-## Get current time (mock or real wall clock)
+## Get current time from time provider
 func _get_current_time() -> float:
-	if _mock_time >= 0.0:
-		return _mock_time
-	return Time.get_unix_time_from_system()
+	return _time_provider.get_current_time()
 
 
 ## Check if a slot is currently active
@@ -146,13 +144,11 @@ func collect_production(slot_index: int) -> String:
 
 ## Process function to handle production timers (wall clock based)
 func _process(delta: float) -> void:
-	# Use mock time if available (for testing), otherwise use real wall clock
-	var current_time: float
-	if _mock_time >= 0.0:
-		_mock_time += delta  # Advance mock time by delta FIRST
-		current_time = _mock_time  # Then use updated mock time
-	else:
-		current_time = Time.get_unix_time_from_system()
+	# Advance mock time if using MockTimeProvider
+	if _time_provider is MockTimeProvider:
+		_time_provider.advance_time(delta)
+
+	var current_time: float = _time_provider.get_current_time()
 
 	# Process each active slot
 	for slot in _slots:
@@ -192,22 +188,23 @@ func get_remaining_time(slot_index: int) -> float:
 	return 0.0
 
 
-## Reset mock time to 0.0 (for testing)
-## This should be called before starting production in tests
-## to ensure consistent timing
-func reset_mock_time() -> void:
-	_mock_time = 0.0
+## Set time provider (for testing)
+## This allows tests to inject MockTimeProvider
+func set_time_provider(provider: TimeProvider) -> void:
+	_time_provider = provider
 
 
-## Set mock recipe for testing
-## This allows tests to use a consistent recipe without DataManager
-func set_mock_recipe(recipe: Resource) -> void:
-	_mock_recipe = recipe
+## Set recipe provider (for testing)
+## This allows tests to inject MockRecipeProvider
+func set_recipe_provider(provider: RecipeProvider) -> void:
+	_recipe_provider = provider
 
 
-## Clear mock recipe (for testing)
-func clear_mock_recipe() -> void:
-	_mock_recipe = null
+## Helper for testing: Reset to default providers
+## Use in tests that need to reset BakeryManager state
+func reset_to_default_providers() -> void:
+	_time_provider = SystemTimeProvider.new()
+	_recipe_provider = DataManagerRecipeProvider.new()
 
 
 ## Restore production slots from save data
@@ -226,7 +223,7 @@ func restore_slots(slots_data: Array) -> void:
 		if recipe_id.is_empty():
 			continue
 
-		var recipe: Resource = DataManager.get_recipe(recipe_id)
+		var recipe: Resource = _recipe_provider.get_recipe(recipe_id)
 		if not recipe:
 			continue
 
@@ -241,7 +238,7 @@ func restore_slots(slots_data: Array) -> void:
 		}
 
 		# Recalculate remaining time based on current time
-		var current_time: float = Time.get_unix_time_from_system()
+		var current_time: float = _time_provider.get_current_time()
 		var elapsed: float = current_time - slot["start_time"]
 		slot["remaining_time"] = maxf(0.0, recipe.production_time - elapsed)
 		if recipe.production_time > 0:

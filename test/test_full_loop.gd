@@ -5,11 +5,15 @@ extends GutTest
 ## SNA-79: 풀 루프 통합 테스트 (생산→판매→골드/경험치→레벨업)
 
 const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
+const MockTimeProviderClass = preload("res://scripts/utils/mock_time_provider.gd")
+const MockRecipeProviderClass = preload("res://scripts/utils/mock_recipe_provider.gd")
 
 var _test_recipe: Resource
 var _initial_gold: int
 var _initial_xp: int
 var _initial_level: int
+var _mock_time_provider: MockTimeProvider
+var _mock_recipe_provider: MockRecipeProvider
 
 # Signal tracking
 var _level_up_received := false
@@ -47,8 +51,16 @@ func before_each() -> void:
 	CustomerSpawner.set_displayed_breads([])
 	CustomerSpawner.set_purchase_probability(1.0)  # 100% purchase rate
 
-	# Enable mock time for BakeryManager
-	BakeryManager.reset_mock_time()
+	# Create mock providers
+	_mock_time_provider = MockTimeProviderClass.new()
+	_mock_time_provider.reset_time()
+
+	_mock_recipe_provider = MockRecipeProviderClass.new()
+	_mock_recipe_provider.add_recipe(_test_recipe)
+
+	# Inject mock providers
+	BakeryManager.set_time_provider(_mock_time_provider)
+	BakeryManager.set_recipe_provider(_mock_recipe_provider)
 
 
 func after_each() -> void:
@@ -72,9 +84,6 @@ func _clear_production_slots() -> void:
 
 ## Test basic production completion flow
 func test_production_completion_flow() -> void:
-	# Setup mock recipe BEFORE starting production
-	BakeryManager._mock_recipe = _test_recipe
-
 	# Start production with recipe_id string
 	var success = BakeryManager.start_production(0, "test_bread")
 	assert_true(success, "Production should start successfully")
@@ -166,7 +175,6 @@ func test_level_up_on_xp_threshold() -> void:
 ## Tests the full flow from generating bread to selling it to a customer.
 func test_full_production_to_purchase_loop() -> void:
 	# 1. Start production
-	BakeryManager._mock_recipe = _test_recipe
 	var success = BakeryManager.start_production(0, "test_bread")
 	assert_true(success, "Production should start successfully")
 
