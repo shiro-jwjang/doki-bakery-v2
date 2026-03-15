@@ -5,6 +5,7 @@ extends Node
 ## Manages production slots for the bakery. Handles starting production,
 ## tracking active slots, and enforcing slot limits based on ShopData.
 ## SNA-74: BakeryManager 슬롯 관리
+## SNA-174: Dictionary 기반 슬롯 관리
 
 ## Signal emitted when production starts
 signal production_started(slot_index: int, recipe_id: String)
@@ -15,12 +16,11 @@ signal production_completed(slot_index: int, recipe_id: String)
 ## Signal emitted when production fails
 signal production_failed(slot_index: int, reason: String)
 
-const ProductionSlotClass = preload("res://resources/data/production_slot.gd")
-
 ## Maximum number of production slots
 var _max_slots: int = 3
 
-## Array of active production slots
+## Array of active production slots (Dictionary-based)
+## Each slot: {slot_index, recipe, start_time, progress, is_active, is_completed, remaining_time}
 var _slots: Array = []
 
 ## Current number of active productions
@@ -67,28 +67,26 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 	if _is_slot_active(slot_index):
 		return false
 
-	# Create new production slot
-	var slot = ProductionSlotClass.new()
-	slot.slot_index = slot_index
-	slot.is_active = true
-	# Use mock time if available (for testing), otherwise use real wall clock
-	if _mock_time >= 0.0:
-		slot.start_time = _mock_time
-	else:
-		slot.start_time = Time.get_unix_time_from_system()
-
-	# Use mock recipe if available (for testing), otherwise try DataManager
+	# Get recipe
+	var recipe: Resource
 	if _mock_recipe:
-		slot.recipe = _mock_recipe
-		# Initialize remaining time based on recipe production time
-		slot.remaining_time = _mock_recipe.production_time
+		recipe = _mock_recipe
 	else:
-		slot.recipe = DataManager.get_recipe(recipe_id)
-		if slot.recipe:
-			slot.remaining_time = slot.recipe.production_time
-		else:
+		recipe = DataManager.get_recipe(recipe_id)
+		if not recipe:
 			push_error("BakeryManager: Recipe not found - %s" % recipe_id)
 			return false
+
+	# Create new production slot as Dictionary
+	var slot: Dictionary = {
+		"slot_index": slot_index,
+		"recipe": recipe,
+		"start_time": _get_current_time(),
+		"progress": 0.0,
+		"is_active": true,
+		"is_completed": false,
+		"remaining_time": recipe.production_time
+	}
 
 	_slots.append(slot)
 	_active_count += 1
@@ -97,10 +95,21 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 	return true
 
 
+## Get current time (mock or real wall clock)
+func _get_current_time() -> float:
+	if _mock_time >= 0.0:
+		return _mock_time
+	return Time.get_unix_time_from_system()
+
+
 ## Check if a slot is currently active
 func _is_slot_active(slot_index: int) -> bool:
 	for slot in _slots:
-		if slot is ProductionSlotClass and slot.slot_index == slot_index and slot.is_active:
+		if (
+			slot is Dictionary
+			and slot.get("slot_index") == slot_index
+			and slot.get("is_active", false)
+		):
 			return true
 	return false
 
@@ -108,14 +117,15 @@ func _is_slot_active(slot_index: int) -> bool:
 ## Complete production in the specified slot
 func complete_production(slot_index: int) -> void:
 	for slot in _slots:
-		if slot.slot_index == slot_index:
-			slot.is_active = false
-			slot.is_completed = true
-			slot.progress = 1.0
+		if slot.get("slot_index") == slot_index:
+			slot["is_active"] = false
+			slot["is_completed"] = true
+			slot["progress"] = 1.0
 			_active_count -= 1
 
-			if slot.recipe:
-				var recipe_id = slot.recipe.id
+			var recipe: Resource = slot.get("recipe")
+			if recipe:
+				var recipe_id: String = recipe.id
 				production_completed.emit(slot_index, recipe_id)
 
 				# AUTO-COLLECT: Automatically clear the slot when finished
@@ -127,9 +137,10 @@ func complete_production(slot_index: int) -> void:
 ## Returns recipe_id if successful, empty string otherwise.
 func collect_production(slot_index: int) -> String:
 	for i in range(_slots.size()):
-		var slot = _slots[i]
-		if slot.slot_index == slot_index:  # removed is_completed check for flexibility
-			var recipe_id = slot.recipe.id if slot.recipe else ""
+		var slot: Dictionary = _slots[i]
+		if slot.get("slot_index") == slot_index:
+			var recipe: Resource = slot.get("recipe")
+			var recipe_id: String = recipe.id if recipe else ""
 			_slots.remove_at(i)
 			EventBus.production_cleared.emit(slot_index)
 			return recipe_id
@@ -148,33 +159,39 @@ func _process(delta: float) -> void:
 
 	# Process each active slot
 	for slot in _slots:
-		# Use property check for safety across script instances
-		if slot.is_active and slot.recipe:
+		if slot is Dictionary and slot.get("is_active", false) and slot.get("recipe"):
 			# Calculate elapsed time using wall clock
-			var elapsed_time = current_time - slot.start_time
+			var start_time: float = slot.get("start_time", 0.0)
+			var elapsed_time: float = current_time - start_time
 
 			# Calculate remaining time based on wall clock
-			var p_time: float = slot.recipe.production_time
-			slot.remaining_time = maxf(0.0, p_time - elapsed_time)
+			var recipe: Resource = slot.get("recipe")
+			var p_time: float = recipe.production_time
+			slot["remaining_time"] = maxf(0.0, p_time - elapsed_time)
 
 			# Update progress based on wall clock elapsed time
 			if p_time > 0:
-				slot.progress = minf(1.0, elapsed_time / p_time)
+				slot["progress"] = minf(1.0, elapsed_time / p_time)
 				# Emit progress signal for UI updates
-				EventBus.production_progressed.emit(slot.slot_index, slot.progress)
+				var slot_index: int = slot.get("slot_index", 0)
+				EventBus.production_progressed.emit(slot_index, slot["progress"])
 
 			# Check if production is complete
-			if slot.remaining_time <= 0:
-				slot.remaining_time = 0
-				slot.progress = 1.0
-				complete_production(slot.slot_index)
+			if slot["remaining_time"] <= 0:
+				slot["remaining_time"] = 0
+				slot["progress"] = 1.0
+				complete_production(slot.get("slot_index", 0))
 
 
 ## Get remaining time for a slot
 func get_remaining_time(slot_index: int) -> float:
 	for slot in _slots:
-		if slot is ProductionSlotClass and slot.slot_index == slot_index and slot.is_active:
-			return slot.remaining_time
+		if (
+			slot is Dictionary
+			and slot.get("slot_index") == slot_index
+			and slot.get("is_active", false)
+		):
+			return slot.get("remaining_time", 0.0)
 	return 0.0
 
 
@@ -208,24 +225,31 @@ func restore_slots(slots_data: Array) -> void:
 		if not slot_data is Dictionary:
 			continue
 
-		var slot = ProductionSlotClass.new()
-		slot.slot_index = slot_data.get("slot_index", 0)
-		slot.start_time = slot_data.get("start_time", 0.0)
-		slot.is_active = slot_data.get("is_active", false)
-		slot.is_completed = slot_data.get("is_completed", false)
+		var recipe_id: String = slot_data.get("recipe_id", "")
+		if recipe_id.is_empty():
+			continue
 
-		# Get recipe from DataManager
-		var recipe_id = slot_data.get("recipe_id", "")
-		if not recipe_id.is_empty():
-			slot.recipe = DataManager.get_recipe(recipe_id)
-			if slot.recipe:
-				# Recalculate remaining time based on current time
-				var current_time = Time.get_unix_time_from_system()
-				var elapsed = current_time - slot.start_time
-				slot.remaining_time = maxf(0.0, slot.recipe.production_time - elapsed)
-				if slot.recipe.production_time > 0:
-					slot.progress = minf(1.0, elapsed / slot.recipe.production_time)
+		var recipe: Resource = DataManager.get_recipe(recipe_id)
+		if not recipe:
+			continue
+
+		var slot: Dictionary = {
+			"slot_index": slot_data.get("slot_index", 0),
+			"recipe": recipe,
+			"start_time": slot_data.get("start_time", 0.0),
+			"progress": slot_data.get("progress", 0.0),
+			"is_active": slot_data.get("is_active", false),
+			"is_completed": slot_data.get("is_completed", false),
+			"remaining_time": 0.0
+		}
+
+		# Recalculate remaining time based on current time
+		var current_time: float = Time.get_unix_time_from_system()
+		var elapsed: float = current_time - slot["start_time"]
+		slot["remaining_time"] = maxf(0.0, recipe.production_time - elapsed)
+		if recipe.production_time > 0:
+			slot["progress"] = minf(1.0, elapsed / recipe.production_time)
 
 		_slots.append(slot)
-		if slot.is_active:
+		if slot["is_active"]:
 			_active_count += 1
