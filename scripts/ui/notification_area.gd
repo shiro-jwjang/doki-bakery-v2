@@ -1,10 +1,9 @@
 extends Control
+class_name NotificationArea
 
 const MAX_NOTIFICATIONS: int = 3
 const NOTIFICATION_DURATION: float = 3.0  # seconds
 const NotificationItemScene = preload("res://scenes/ui/notification_item.tscn")
-
-class_name NotificationArea
 
 ## NotificationArea - HUD 우측 상단 알림 팝업 시스템
 ## SNA-141: 알림 팝업 (NotificationArea) — TDD
@@ -29,6 +28,12 @@ func _ready() -> void:
 
 ## Show a notification with the given parameters
 func show_notification(title: String, desc: String, icon: Texture2D, priority: int = 0) -> void:
+	# Ensure @onready vars are initialized (for testing)
+	if not is_inside_tree():
+		await tree_entered
+	if vbox_container == null:
+		vbox_container = $VBoxContainer
+
 	var notification_data := {
 		"title": title, "description": desc, "icon": icon, "priority": priority
 	}

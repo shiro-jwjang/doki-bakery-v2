@@ -98,9 +98,7 @@ func show_emoticon(emoticon_type: String, duration: float = -1.0) -> void:
 	# Fade in animation
 	_tween = create_tween()
 	_tween.tween_property(_sprite, "modulate:a", 1.0, fade_duration)
-	_tween.tween_callback(_on_fade_in_complete.bind(duration))
-
-	emoticon_shown.emit(emoticon_type)
+	_tween.tween_callback(_on_fade_in_complete.bind(duration, emoticon_type))
 
 
 ## Hide the current emoticon
@@ -179,7 +177,10 @@ func _create_placeholder_texture(emoticon_type: String) -> ImageTexture:
 ## ==================== CALLBACKS ====================
 
 
-func _on_fade_in_complete(duration: float) -> void:
+func _on_fade_in_complete(duration: float, emoticon_type: String) -> void:
+	# Emit shown signal after fade-in completes
+	emoticon_shown.emit(emoticon_type)
+
 	# Wait for duration, then fade out
 	_tween = create_tween()
 	_tween.tween_interval(duration - fade_duration)  # Subtract fade time from total
