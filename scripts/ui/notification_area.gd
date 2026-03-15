@@ -29,6 +29,12 @@ func _ready() -> void:
 
 ## Show a notification with the given parameters
 func show_notification(title: String, desc: String, icon: Texture2D, priority: int = 0) -> void:
+	# Ensure @onready vars are initialized (for testing)
+	if not is_inside_tree():
+		await tree_entered
+	if vbox_container == null:
+		vbox_container = $VBoxContainer
+
 	var notification_data := {
 		"title": title, "description": desc, "icon": icon, "priority": priority
 	}
