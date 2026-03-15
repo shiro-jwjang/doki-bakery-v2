@@ -64,16 +64,20 @@ func test_get_save_data_structure() -> void:
 
 	var data: Dictionary = SaveManager.get_save_data()
 
-	assert_true(data.has("gold"), "Save data should have gold")
-	assert_eq(data.get("gold"), 500, "Gold should be saved")
-	assert_true(data.has("legendary_bread"), "Save data should have legendary_bread")
-	assert_eq(data.get("legendary_bread"), 3, "Legendary bread should be saved")
-	assert_true(data.has("level"), "Save data should have level")
-	assert_eq(data.get("level"), 2, "Level should be saved")
-	assert_true(data.has("experience"), "Save data should have experience")
-	assert_eq(data.get("experience"), 50, "Experience should be saved")
-	assert_true(data.has("play_time"), "Save data should have play_time")
-	assert_eq(data.get("play_time"), 100.0, "Play time should be saved")
+	# SaveManager wraps game state in a "game" key
+	assert_true(data.has("game"), "Save data should have game key")
+	var game_data = data.get("game", {})
+
+	assert_true(game_data.has("gold"), "Game data should have gold")
+	assert_eq(game_data.get("gold"), 500, "Gold should be saved")
+	assert_true(game_data.has("legendary_bread"), "Game data should have legendary_bread")
+	assert_eq(game_data.get("legendary_bread"), 3, "Legendary bread should be saved")
+	assert_true(game_data.has("level"), "Game data should have level")
+	assert_eq(game_data.get("level"), 2, "Level should be saved")
+	assert_true(game_data.has("experience"), "Game data should have experience")
+	assert_eq(game_data.get("experience"), 50, "Experience should be saved")
+	assert_true(game_data.has("play_time"), "Game data should have play_time")
+	assert_eq(game_data.get("play_time"), 100.0, "Play time should be saved")
 
 
 ## Test apply_save_data correctly restores GameManager

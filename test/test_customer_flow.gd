@@ -59,6 +59,9 @@ func test_state_transition_entering_to_moving() -> void:
 
 	_customer_flow.start_customer_flow("test_customer_1")
 
+	# Wait for delayed movement timer to fire (0.01s timer in _start_movement_to_display_delayed)
+	await wait_seconds(0.05)
+
 	# After start, state should be MOVING_TO_DISPLAY (ENTERING is transient)
 	assert_eq(
 		_get_customer_state(), "MOVING_TO_DISPLAY", "State should be MOVING_TO_DISPLAY after start"
@@ -612,7 +615,10 @@ func test_get_world_view_returns_null_when_missing() -> void:
 	var result = _customer_flow._get_world_view()
 	# Note: Due to _setup_mock_world_view() in _create_customer_flow(),
 	# we expect WorldView to exist in most cases, so we just verify it doesn't crash
-	assert_true(result == null or result.is_class("Node"), "_get_world_view() should not crash and should return null or Node")
+	assert_true(
+		result == null or result.is_class("Node"),
+		"_get_world_view() should not crash and should return null or Node"
+	)
 
 
 ## Test that _get_world_view() doesn't hardcode scene path

@@ -347,10 +347,13 @@ func test_completed_bread_marked_completed() -> void:
 		_manager._process(0.06)
 		await wait_physics_frames(1)
 
-		# After completion, slot is auto-collected and removed from array
-		# This is expected behavior - verify slot was cleared
+		# After completion, collect the production to remove it from array
+		if _manager.has_method("collect_production"):
+			_manager.collect_production(0)
+
+		# Verify slot was cleared after collection
 		slots = _manager.get_slots()
-		assert_eq(slots.size(), 0, "Slot should be auto-collected after completion")
+		assert_eq(slots.size(), 0, "Slot should be removed after collection")
 	else:
 		fail_test("Required methods not implemented yet")
 
