@@ -1,27 +1,33 @@
 extends Node
 
+## Helper method for setters that emit (old, new) signal pattern
+## Used to reduce duplication in property setters
+func _emit_property_changed(old_value: int, new_value: int, changed_signal: Signal) -> void:
+	changed_signal.emit(old_value, new_value)
+
 var gold: int = 0:
 	set(value):
 		var old: int = gold
 		gold = value
-		EventBus.gold_changed.emit(old, gold)
+		_emit_property_changed(old, gold, EventBus.gold_changed)
 
 var legendary_bread: int = 0:
 	set(value):
 		var old: int = legendary_bread
 		legendary_bread = value
-		EventBus.premium_changed.emit(old, legendary_bread)
+		_emit_property_changed(old, legendary_bread, EventBus.premium_changed)
 
 var level: int = 1:
 	set(value):
+		var old: int = level
 		level = value
-		EventBus.level_changed.emit(level)
+		_emit_property_changed(old, level, EventBus.level_changed)
 
 var experience: int = 0:
 	set(value):
 		var old: int = experience
 		experience = value
-		EventBus.experience_changed.emit(old, experience)
+		_emit_property_changed(old, experience, EventBus.experience_changed)
 
 var experience_to_next_level: int = 100
 
