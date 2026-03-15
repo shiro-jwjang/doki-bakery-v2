@@ -4,6 +4,7 @@ extends Node
 ##
 ## Manages the complete customer lifecycle: spawn → move → buy → leave → despawn
 ## SNA-139: 손님 풀 플로우: 입장 → 진열대 → 구매 → 퇴장
+## SNA-179: Factory Pattern for Customer Creation
 ##
 ## This system orchestrates:
 ## - Customer state machine
@@ -11,6 +12,7 @@ extends Node
 ## - Purchase logic integration
 ## - EventBus signal emission
 ## - CustomerView lifecycle management
+## - CustomerFactory for extensible customer creation
 
 ## Customer state machine
 enum State {
@@ -57,6 +59,10 @@ var _purchase_timer: Timer = null
 ## Preferred breads for this customer
 var _preferred_breads: Array[String] = []
 
+## Customer factory for creating customer instances
+## SNA-179: Factory Pattern for extensibility
+var _customer_factory: Node = null
+
 
 func _ready() -> void:
 	# Create purchase timer
@@ -84,6 +90,20 @@ func start_customer_flow(id: String) -> void:
 
 	# Start moving to display
 	_start_movement_to_display()
+
+
+## Set the customer factory for creating customers
+## SNA-179: Dependency injection for factory pattern
+## @param factory: CustomerFactory instance
+func set_customer_factory(factory: Node) -> void:
+	_customer_factory = factory
+
+
+## Get the current customer factory
+## SNA-179: Get the current factory instance
+## Returns: CustomerFactory instance or null
+func get_customer_factory() -> Node:
+	return _customer_factory
 
 
 ## Get the current customer state
@@ -128,10 +148,34 @@ func set_preferred_breads(breads: Array[String]) -> void:
 
 
 ## Create customer view instance
+## SNA-179: Use factory if available, otherwise fall back to scene instantiation
 func _create_customer_view() -> void:
 	if _customer_view != null and is_instance_valid(_customer_view):
 		_customer_view.queue_free()
 
+	# SNA-179: Use factory if set (factory pattern for extensibility)
+	if _customer_factory != null and _customer_factory.has_method("create_customer"):
+		var customer = _customer_factory.create_customer(customer_id)
+		if customer != null:
+			# Factory creates the customer node
+			# Wrap in Node2D for compatibility with positioning logic
+			_customer_view = Node2D.new()
+			_customer_view.name = "CustomerView_" + customer_id
+			_customer_view.add_child(customer)
+			# Setup customer view if it has the method
+			if _customer_view.has_method("setup"):
+				_customer_view.setup(customer_id)
+		else:
+			# Fallback if factory returns null
+			_create_fallback_customer_view()
+	else:
+		# Original behavior: use scene or create basic Node2D
+		_create_fallback_customer_view()
+
+
+## Create fallback customer view (original behavior)
+## SNA-179: Fallback when factory is not set or not available
+func _create_fallback_customer_view() -> void:
 	# Try to instantiate customer view scene
 	if CUSTOMER_VIEW_SCENE != null:
 		_customer_view = CUSTOMER_VIEW_SCENE.instantiate()
