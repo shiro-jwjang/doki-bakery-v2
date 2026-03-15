@@ -76,12 +76,12 @@ func test_baking_requested_signal_exists() -> void:
 func test_baking_requested_params() -> void:
 	EventBus.baking_requested.connect(_on_baking_requested)
 
-	EventBus.baking_requested.emit(2, "bread_sweet")
+	EventBus.baking_requested.emit(2, "bread_001")
 
 	assert_true(_signal_emitted, "baking_requested should be emitted")
 	assert_eq(
 		_signal_params,
-		[2, "bread_sweet"],
+		[2, "bread_001"],
 		"baking_requested params should be slot_index and recipe_id"
 	)
 

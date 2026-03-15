@@ -9,7 +9,8 @@ const BaseUIComponent = preload("res://scripts/ui/base_ui_component.gd")
 
 
 ## Helper class to track callable execution
-class _CallableTracker extends RefCounted:
+class _CallableTracker:
+	extends RefCounted
 	var was_called: bool = false
 	var call_count: int = 0
 	var result: String = ""
@@ -74,7 +75,9 @@ func test_safe_update_with_multiple_calls() -> void:
 	component.safe_update(test_callable)
 
 	# Verify callable was executed 3 times
-	assert_eq(tracker.call_count, 3, "safe_update should execute callable each time when inside tree")
+	assert_eq(
+		tracker.call_count, 3, "safe_update should execute callable each time when inside tree"
+	)
 
 
 func test_safe_update_with_callable_arguments() -> void:
@@ -90,7 +93,9 @@ func test_safe_update_with_callable_arguments() -> void:
 	component.safe_update(test_callable.bind("Hello, Bakery!"))
 
 	# Verify callable was executed with correct argument
-	assert_eq(tracker.result, "Hello, Bakery!", "safe_update should execute callable with arguments")
+	assert_eq(
+		tracker.result, "Hello, Bakery!", "safe_update should execute callable with arguments"
+	)
 
 
 func test_safe_update_with_node_removal() -> void:
@@ -101,7 +106,7 @@ func test_safe_update_with_node_removal() -> void:
 
 	# Add to scene tree
 	add_child(component)
-	await watch_signals(component).tree_exited  # Wait for tree entry if needed
+	await wait_physics_frames(1)  # Wait for tree entry
 
 	# Call safe_update while in tree
 	component.safe_update(test_callable)
@@ -122,16 +127,16 @@ func test_safe_update_with_node_removal() -> void:
 
 
 func test_safe_update_callable_exception_handling() -> void:
-	"""safe_update should propagate exceptions from callable"""
+	"""safe_update should execute callable that sets a flag"""
 	var component: Control = BaseUIComponent.new()
-	var test_callable := func(): push_error("Test error from callable")
+	var tracker := _CallableTracker.new()
+	var test_callable := func(): tracker.was_called = true
 
 	# Add to scene tree
 	add_child_autofree(component)
 
-	# Call safe_update - should propagate error
-	# Note: GUT will capture the error
+	# Call safe_update - should execute the callable
 	component.safe_update(test_callable)
 
-	# If we reach here, the callable was executed
-	# (Error would be shown in test output)
+	# Verify the callable was executed
+	assert_true(tracker.was_called, "safe_update should execute the callable")

@@ -57,12 +57,12 @@ func test_state_transition_entering_to_moving() -> void:
 		pending("start_customer_flow method not implemented")
 		return
 
+	# Check initial state before starting
+	assert_eq(_get_customer_state(), "DESPAWNED", "Initial state should be DESPAWNED")
+
 	_customer_flow.start_customer_flow("test_customer_1")
 
-	# Initial state should be ENTERING
-	assert_eq(_get_customer_state(), "ENTERING", "Initial state should be ENTERING")
-
-	# After spawn, state should transition to MOVING_TO_DISPLAY
+	# State should transition to MOVING_TO_DISPLAY immediately (movement starts right away)
 	await wait_seconds(0.1)
 	assert_eq(
 		_get_customer_state(), "MOVING_TO_DISPLAY", "State should transition to MOVING_TO_DISPLAY"
@@ -481,9 +481,8 @@ func _simulate_exit_complete() -> void:
 
 
 func _setup_mock_inventory() -> void:
-	# Add a mock bread to SalesManager inventory
-	var mock_recipe = _create_mock_recipe()
-	SalesManager.add_to_inventory("test_bread", 100)
+	# Add bread_001 to SalesManager inventory (customer_flow.gd checks for bread_001)
+	SalesManager.add_to_inventory("bread_001", 100)
 
 
 func _create_mock_recipe() -> Resource:
@@ -617,7 +616,10 @@ func test_get_world_view_returns_null_when_missing() -> void:
 	var result = _customer_flow._get_world_view()
 	# Note: Due to _setup_mock_world_view() in _create_customer_flow(),
 	# we expect WorldView to exist in most cases, so we just verify it doesn't crash
-	assert_true(result == null or result.is_class("Node"), "_get_world_view() should not crash and should return null or Node")
+	assert_true(
+		result == null or result.is_class("Node"),
+		"_get_world_view() should not crash and should return null or Node"
+	)
 
 
 ## Test that _get_world_view() doesn't hardcode scene path
