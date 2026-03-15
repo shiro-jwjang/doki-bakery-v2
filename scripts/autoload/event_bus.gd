@@ -14,7 +14,7 @@ extends Node
 signal gold_changed(old: int, new: int)
 
 ## Emitted when the player's level changes
-signal level_changed(new_level: int)
+signal level_changed(old: int, new: int)
 
 ## Emitted when the player's premium currency (legendary bread) changes
 signal premium_changed(old: int, new: int)

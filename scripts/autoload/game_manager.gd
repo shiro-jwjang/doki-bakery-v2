@@ -23,8 +23,9 @@ var legendary_bread: int = 0:
 
 var level: int = 1:
 	set(value):
+		var old: int = level
 		level = value
-		EventBus.level_changed.emit(level)
+		_emit_property_changed(old, level, EventBus.level_changed)
 
 var experience: int = 0:
 	set(value):
