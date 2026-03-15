@@ -10,16 +10,6 @@ var slot_index: int = -1
 @onready var _progress_bar: ProgressBar = %ProgressBar
 
 
-## Get the status label node (for testing)
-func get_status_label() -> Label:
-	return _status_label
-
-
-## Get the progress bar node (for testing)
-func get_progress_bar() -> ProgressBar:
-	return _progress_bar
-
-
 func setup(index: int) -> void:
 	slot_index = index
 	safe_update(

@@ -1,4 +1,5 @@
-extends Control
+class_name BreadMenu
+extends BaseUIComponent
 
 ## BreadMenu UI
 ##
