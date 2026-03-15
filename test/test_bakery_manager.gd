@@ -6,7 +6,6 @@ extends GutTest
 ## SNA-74: BakeryManager 슬롯 관리
 
 const BakeryManagerClass = preload("res://scripts/autoload/bakery_manager.gd")
-const ProductionSlotClass = preload("res://resources/data/production_slot.gd")
 const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
 
 var _manager: Node
@@ -333,7 +332,7 @@ func test_completed_bread_marked_completed() -> void:
 		var slots = _manager.get_slots()
 		var slot = slots[0]
 
-		assert_false(slot.is_completed, "Slot should not be completed initially")
+		assert_false(slot["is_completed"], "Slot should not be completed initially")
 
 		# Simulate time passing - process half the time
 		_manager._process(0.05)
@@ -341,7 +340,7 @@ func test_completed_bread_marked_completed() -> void:
 
 		slots = _manager.get_slots()
 		slot = slots[0]
-		assert_false(slot.is_completed, "Slot should not be completed at 50%")
+		assert_false(slot["is_completed"], "Slot should not be completed at 50%")
 
 		# Process remaining time + small buffer to trigger completion
 		_manager._process(0.06)
@@ -466,7 +465,7 @@ func test_progress_from_wall_clock() -> void:
 
 		# Progress should be approximately 50%
 		assert_true(
-			slot.progress >= 0.48 and slot.progress <= 0.52,
+			slot["progress"] >= 0.48 and slot["progress"] <= 0.52,
 			"Progress should be approximately 50% (±2%)"
 		)
 	else:
