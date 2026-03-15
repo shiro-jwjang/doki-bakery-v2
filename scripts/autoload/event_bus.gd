@@ -118,13 +118,12 @@ func _setup_connections() -> void:
 ## Note: GameManager directly emits EventBus signals in its setters, so we don't
 ## need to forward from GameManager. This approach avoids circular dependencies
 ## and works correctly with the Autoload loading order.
+## SNA-182: Removed has_signal() checks - connections are established once at _ready
 func _connect_manager_forwarding() -> void:
 	# BakeryManager → EventBus forwarding
 	# BakeryManager has its own signals that we forward to EventBus
-	if BakeryManager.has_signal("production_started"):
-		BakeryManager.production_started.connect(_forward_production_started)
-	if BakeryManager.has_signal("production_completed"):
-		BakeryManager.production_completed.connect(_forward_production_completed)
+	BakeryManager.production_started.connect(_forward_production_started)
+	BakeryManager.production_completed.connect(_forward_production_completed)
 
 
 ## Connect request signals to manager methods

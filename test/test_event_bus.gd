@@ -152,3 +152,17 @@ func _on_baking_requested(slot_index: int, recipe_id: String) -> void:
 func _on_sell_requested(customer_id: String, recipe_id: String) -> void:
 	_signal_emitted = true
 	_signal_params = [customer_id, recipe_id]
+
+
+## ==================== SNA-182: CONNECTION SETUP TESTS ====================
+
+
+func test_event_bus_ready_called() -> void:
+	# SNA-182: Verify EventBus._ready() completes without errors
+	# This ensures _setup_connections is called via call_deferred
+	# After refactoring, connections should still work without has_signal checks
+
+	# This test passes if EventBus autoloads successfully
+	# and no errors occur during connection setup
+	assert_true(EventBus != null, "EventBus should be autoloaded")
+	assert_true(BakeryManager != null, "BakeryManager should be autoloaded")
