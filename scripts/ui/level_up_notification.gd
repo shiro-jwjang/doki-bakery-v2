@@ -10,13 +10,13 @@ extends Control
 var _unlocked_items: Array = []
 
 ## Auto-close timer (3 seconds)
-@onready var auto_close_timer: Timer = $AutoCloseTimer
+@onready var auto_close_timer: Timer = get_node_or_null("AutoCloseTimer")
 
 ## Level label
-@onready var level_label: Label = $Panel/VBoxContainer/LevelLabel
+@onready var level_label: Label = get_node_or_null("Panel/VBoxContainer/LevelLabel")
 
 ## Items label
-@onready var items_label: Label = $Panel/VBoxContainer/ItemsLabel
+@onready var items_label: Label = get_node_or_null("Panel/VBoxContainer/ItemsLabel")
 
 
 func _ready() -> void:

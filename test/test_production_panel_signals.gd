@@ -16,8 +16,9 @@ func before_each() -> void:
 	BakeryManager._active_count = 0
 	BakeryManager._mock_time = -1.0
 
-	# Create ProductionPanel instance
-	panel = ProductionPanelClass.new()
+	# Create ProductionPanel instance from scene
+	var ProductionPanelScene = preload("res://scenes/ui/production_panel.tscn")
+	panel = ProductionPanelScene.instantiate()
 	add_child(panel)
 	# Wait for panel to be ready
 	await wait_physics_frames(2)

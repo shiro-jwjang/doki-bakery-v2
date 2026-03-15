@@ -1,5 +1,5 @@
-class_name BaseUIComponent
 extends Control
+class_name BaseUIComponent
 
 ## BaseUIComponent
 ##

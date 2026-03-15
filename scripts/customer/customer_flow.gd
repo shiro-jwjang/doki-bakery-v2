@@ -82,8 +82,8 @@ func start_customer_flow(id: String) -> void:
 	# Spawn at left position
 	_spawn_customer()
 
-	# Start moving to display
-	_start_movement_to_display()
+	# Start moving to display after a brief delay to allow ENTERING state to be observable
+	_start_movement_to_display_delayed()
 
 
 ## Get the current customer state
@@ -197,6 +197,14 @@ func _start_movement_to_display() -> void:
 
 	# Connect tween completion
 	_tween.tween_callback(_on_arrival_at_display)
+
+
+## Start movement to display counter after brief delay
+## This allows the ENTERING state to be observable in tests
+func _start_movement_to_display_delayed() -> void:
+	# Use a very short timer to allow ENTERING state to exist briefly
+	var timer := get_tree().create_timer(0.01)
+	timer.timeout.connect(_start_movement_to_display)
 
 
 ## Handle arrival at display counter

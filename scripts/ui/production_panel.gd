@@ -19,7 +19,9 @@ var _slot_data: Dictionary = {}
 
 func _ready() -> void:
 	# Initialize slots from BakeryManager count
-	_initialize_slots()
+	# Only initialize if container exists (requires scene file)
+	if _container != null:
+		_initialize_slots()
 
 
 func _initialize_slots() -> void:
@@ -70,6 +72,10 @@ func on_production_completed(slot_index: int, recipe_id: String) -> void:
 func _get_or_create_slot(slot_index: int) -> Node:
 	if _slot_data.has(slot_index):
 		return _slot_data[slot_index]
+
+	if _container == null:
+		push_error("ProductionPanel: _container is null, cannot create slot")
+		return null
 
 	var slot = slot_scene.instantiate()
 	_container.add_child(slot)

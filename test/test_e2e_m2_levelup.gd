@@ -52,8 +52,6 @@ func _reset_game_manager() -> void:
 	GameManager.experience = 0
 	GameManager.play_time = 0.0
 	GameManager.set_game_state("menu")
-	# Clear cached level data
-	GameManager._level_data_cache.clear()
 
 
 func _load_world_view() -> bool:
