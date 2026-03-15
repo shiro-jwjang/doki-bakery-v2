@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cn2v315abbot" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" uid="uid://c8eftm1urtac8" path="res://assets/placeholders/bread_white.png" id="2_hqnrr"]
+[ext_resource type="PackedScene" uid="uid://notification_area" path="res://scenes/ui/notification_area.tscn" id="3_notification_area"]
 
 [node name="HUD" type="Control" unique_id=1531281403]
 script = ExtResource("1_hud")
@@ -71,3 +72,5 @@ stretch_mode = 5
 [node name="Label" type="Label" parent="Control/GoldenBreadBox" unique_id=1013814041]
 layout_mode = 2
 text = "0"
+
+[node name="NotificationArea" parent="Control" instance=ExtResource("3_notification_area")]

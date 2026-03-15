@@ -13,7 +13,12 @@ extends Node
 ## - CustomerView lifecycle management
 
 ## Customer state machine
-enum State { ENTERING, MOVING_TO_DISPLAY, BUYING, LEAVING, DESPAWNED }  ## Customer is entering from left  ## Customer is moving to display counter  ## Customer is selecting/purchasing bread  ## Customer is leaving to right  ## Customer has been despawned
+## - ENTERING: Customer is entering from left
+## - MOVING_TO_DISPLAY: Customer is moving to display counter
+## - BUYING: Customer is selecting/purchasing bread
+## - LEAVING: Customer is leaving to right
+## - DESPAWNED: Customer has been despawned
+enum State { ENTERING, MOVING_TO_DISPLAY, BUYING, LEAVING, DESPAWNED }
 
 ## Customer scene for view
 const CUSTOMER_VIEW_SCENE = preload("res://scenes/world/customer_view.tscn")
@@ -56,7 +61,8 @@ func _ready() -> void:
 	# Create purchase timer
 	_purchase_timer = Timer.new()
 	_purchase_timer.one_shot = true
-	_purchase_timer.timeout.connect(_on_purchase_timer_timeout)
+	if not _purchase_timer.timeout.is_connected(_on_purchase_timer_timeout):
+		_purchase_timer.timeout.connect(_on_purchase_timer_timeout)
 	add_child(_purchase_timer)
 
 
@@ -125,8 +131,16 @@ func _create_customer_view() -> void:
 	if _customer_view != null and is_instance_valid(_customer_view):
 		_customer_view.queue_free()
 
-	_customer_view = CUSTOMER_VIEW_SCENE.instantiate()
-	_customer_view.setup(customer_id)
+	# Try to instantiate customer view scene
+	if CUSTOMER_VIEW_SCENE != null:
+		_customer_view = CUSTOMER_VIEW_SCENE.instantiate()
+		# Setup customer view if it has the method
+		if _customer_view.has_method("setup"):
+			_customer_view.setup(customer_id)
+	else:
+		# Fallback: Create a basic Node2D for test environments
+		_customer_view = Node2D.new()
+		_customer_view.name = "Customer_" + customer_id
 
 	# Add to world scene
 	var world_view = _get_world_view()
@@ -141,8 +155,12 @@ func _create_customer_view() -> void:
 		else:
 			world_view.add_child(_customer_view)
 	else:
-		# Fallback: add to current scene
-		get_tree().current_scene.add_child(_customer_view)
+		# Fallback 1: Try to add to current scene (runtime environment)
+		if get_tree() != null and get_tree().current_scene != null:
+			get_tree().current_scene.add_child(_customer_view)
+		# Fallback 2: Add to self (test environment or edge cases)
+		else:
+			add_child(_customer_view)
 
 
 ## Spawn customer at left side
@@ -261,9 +279,9 @@ func _get_available_inventory() -> Array:
 	# Get all inventory from SalesManager
 	# For now, we'll check if there's any bread in inventory
 	if SalesManager.has_method("get_inventory_count"):
-		var croissant_count = SalesManager.get_inventory_count("croissant")
-		if croissant_count > 0:
-			var recipe = DataManager.get_recipe("croissant")
+		var bread_count = SalesManager.get_inventory_count("bread_001")
+		if bread_count > 0:
+			var recipe = DataManager.get_recipe("bread_001")
 			if recipe != null:
 				available.append(recipe)
 
@@ -315,16 +333,23 @@ func _despawn_customer() -> void:
 
 
 ## Get world view node
-## Returns: WorldView node or null
+## Searches for WorldView in the scene tree without hardcoding paths
+## Returns: WorldView node or null if not found
 func _get_world_view() -> Node:
-	var world_view_scene = load("res://scenes/world/world_view.tscn")
-	if world_view_scene == null:
+	if get_tree() == null:
 		return null
 
-	# Try to find existing world view in scene tree
-	var world_view = get_tree().current_scene.find_child("WorldView", true, false)
-	if world_view != null:
-		return world_view
+	# Try to find in current_scene first (runtime environment)
+	if get_tree().current_scene != null:
+		var result = get_tree().current_scene.find_child("WorldView", true, false)
+		if result != null:
+			return result
+
+	# Fallback: Search in entire scene tree (test environment)
+	# This allows tests to add WorldView anywhere in the tree
+	var root = get_tree().root
+	if root != null:
+		return root.find_child("WorldView", true, false)
 
 	return null
 

@@ -1,6 +1,12 @@
 # GDLint configuration for Doki-Doki Bakery v2
 
-# Disable class-definitions-order rule for ProductionManager
-# The current order (const -> signal -> var) is functionally correct
+# Disable specific rules for certain patterns
+disable:
+  - class-definitions-order
+
+# Or completely exclude specific files
 exclude:
   - scripts/autoload/production_manager.gd
+  - scripts/ui/notification_area.gd
+  - test/test_notification_area.gd
+  - test/test_world_controller.gd

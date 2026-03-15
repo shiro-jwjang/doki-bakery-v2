@@ -67,6 +67,10 @@ signal customer_purchased(customer_id: String, recipe_id: String, price: int)
 ## Emitted when a customer leaves the bakery
 signal customer_left(customer_id: String)
 
+## Emitted when a character displays an emoticon
+## SNA-140: EmoticonView integration
+signal emotion_triggered(character_id: String, emotion_type: String)
+
 ## Emitted when a recipe is unlocked
 signal recipe_unlocked(recipe_id: String)
 
@@ -92,6 +96,10 @@ signal sell_requested(customer_id: String, recipe_id: String)
 
 ## Emitted to request an upgrade
 signal upgrade_requested(upgrade_type: String)
+
+## Emitted to request showing a notification
+## SNA-141: NotificationArea 연동
+signal notification_requested(title: String, description: String, icon: Texture2D, priority: int)
 
 
 func _ready() -> void:

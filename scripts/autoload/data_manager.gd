@@ -29,94 +29,92 @@ func _load_all_data() -> void:
 
 
 func _load_recipes() -> void:
-	var recipe_files := []
 	## SNA-155: Use predefined list for web, DirAccess for desktop
-	if OS.has_feature("web"):
-		recipe_files = ["bread_croissant.tres"]
-	else:
-		if not DirAccess.dir_exists_absolute(RECIPES_PATH):
-			push_error("DataManager: Recipes directory NOT FOUND at " + RECIPES_PATH)
-			return
-
-		var dir := DirAccess.open(RECIPES_PATH)
-		if dir:
-			dir.list_dir_begin()
-			var file_name := dir.get_next()
-			while file_name != "":
-				if not dir.current_is_dir() and file_name.ends_with(".tres"):
-					recipe_files.append(file_name)
-				file_name = dir.get_next()
-			dir.list_dir_end()
-		else:
-			push_error("DataManager: Failed to open recipes directory: " + RECIPES_PATH)
-
-	for file_name in recipe_files:
-		var full_path = RECIPES_PATH + file_name
-		var resource = load(full_path)
-		# Use property check instead of 'is' for better reliability with resources
-		if resource and resource.get("id") != null and resource.get("display_name") != null:
-			_recipes[resource.id] = resource
-		else:
-			push_warning("DataManager: File %s is not a valid RecipeData" % file_name)
+	var web_files := ["bread_croissant.tres"] if OS.has_feature("web") else []
+	_load_resources(RECIPES_PATH, "id", _recipes, "display_name", web_files)
 	print("DataManager: Loaded %d recipes" % _recipes.size())
 
 
 func _load_levels() -> void:
-	var level_files := []
 	## SNA-155: Use predefined list for web, DirAccess for desktop
+	var web_files := []
 	if OS.has_feature("web"):
 		for i in range(1, 11):
-			level_files.append("level_%02d.tres" % i)
-	else:
-		var dir := DirAccess.open(LEVELS_PATH)
-		if dir == null:
-			push_warning("Levels directory not found: " + LEVELS_PATH)
-			return
-
-		dir.list_dir_begin()
-		var file_name := dir.get_next()
-		while file_name != "":
-			if file_name.ends_with(".tres"):
-				level_files.append(file_name)
-			file_name = dir.get_next()
-		dir.list_dir_end()
-
-	for file_name in level_files:
-		var resource = load(LEVELS_PATH + file_name)
-		if resource and resource.get("level") != null:
-			_levels[resource.level] = resource
-		else:
-			push_warning("DataManager: File %s is not a valid LevelData" % file_name)
+			web_files.append("level_%02d.tres" % i)
+	_load_resources(LEVELS_PATH, "level", _levels, "", web_files)
 	print("DataManager: Loaded %d levels" % _levels.size())
 
 
 func _load_shops() -> void:
-	var shop_files := []
 	## SNA-155: Use predefined list for web, DirAccess for desktop
+	var web_files := []
 	if OS.has_feature("web"):
 		for i in range(1, 6):
-			shop_files.append("shop_level_%d.tres" % i)
+			web_files.append("shop_level_%d.tres" % i)
+	_load_resources(SHOPS_PATH, "shop_level", _shop_stages, "", web_files)
+	print("DataManager: Loaded %d shop stages" % _shop_stages.size())
+
+
+## Generic resource loader - SNA-172 + SNA-155 web support
+## Loads all .tres files from a directory and stores them in a dictionary
+## path: Directory path to load from
+## id_prop: Property name to use as dictionary key (e.g., "id", "level", "shop_level")
+## target_dict: Dictionary to store loaded resources in
+## required_prop: Optional additional property to validate (e.g., "display_name" for recipes)
+## web_files: Optional list of files for web platform (DirAccess doesn't work reliably on web)
+func _load_resources(
+	path: String,
+	id_prop: String,
+	target_dict: Dictionary,
+	required_prop: String = "",
+	web_files: Array = []
+) -> void:
+	var files_to_load: Array = []
+
+	# SNA-155: Use predefined list for web, DirAccess for desktop
+	if OS.has_feature("web") and not web_files.is_empty():
+		files_to_load = web_files
 	else:
-		var dir := DirAccess.open(SHOPS_PATH)
+		# Check if directory exists
+		if not DirAccess.dir_exists_absolute(path):
+			push_warning("DataManager: Directory not found: " + path)
+			return
+
+		var dir := DirAccess.open(path)
 		if dir == null:
-			push_warning("Shops directory not found: " + SHOPS_PATH)
+			push_warning("DataManager: Failed to open directory: " + path)
 			return
 
 		dir.list_dir_begin()
 		var file_name := dir.get_next()
 		while file_name != "":
-			if file_name.ends_with(".tres"):
-				shop_files.append(file_name)
+			# Skip directories and non-.tres files
+			if not dir.current_is_dir() and file_name.ends_with(".tres"):
+				files_to_load.append(file_name)
 			file_name = dir.get_next()
 		dir.list_dir_end()
 
-	for file_name in shop_files:
-		var resource = load(SHOPS_PATH + file_name)
-		if resource and resource.get("shop_level") != null:
-			_shop_stages[resource.shop_level] = resource
+	# Load the files
+	for file_name in files_to_load:
+		var full_path = path + file_name
+		var resource = load(full_path)
+
+		# Validate resource
+		if resource and resource.get(id_prop) != null:
+			# Check for additional required property if specified
+			if required_prop == "" or resource.get(required_prop) != null:
+				target_dict[resource.get(id_prop)] = resource
+			else:
+				push_warning(
+					(
+						"DataManager: File %s missing required property '%s'"
+						% [file_name, required_prop]
+					)
+				)
 		else:
-			push_warning("DataManager: File %s is not a valid ShopData" % file_name)
-	print("DataManager: Loaded %d shop stages" % _shop_stages.size())
+			push_warning(
+				"DataManager: File %s is not a valid resource (missing '%s')" % [file_name, id_prop]
+			)
 
 
 ## 레시피 조회
@@ -155,3 +153,11 @@ func get_unlocks_for_level(level: int) -> Array:
 	if level_data:
 		return level_data.unlock_recipes
 	return []
+
+
+## SNA-166: 레벨별 필요 경험치 반환
+func get_xp_required_for_level(level: int) -> int:
+	var level_data = get_level(level)
+	if level_data:
+		return level_data.required_xp
+	return 0
