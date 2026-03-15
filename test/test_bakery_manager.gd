@@ -11,7 +11,6 @@ const MockTimeProviderClass = preload("res://scripts/utils/mock_time_provider.gd
 const MockRecipeProviderClass = preload("res://scripts/utils/mock_recipe_provider.gd")
 
 var _manager: Node
-var _mock_recipe: Resource
 var _mock_time_provider: MockTimeProvider
 var _mock_recipe_provider: MockRecipeProvider
 
@@ -25,17 +24,19 @@ func before_each() -> void:
 	# Create BakeryManager instance for testing
 	_manager = BakeryManagerClass.new()
 
-	# Create mock recipe for testing
-	_mock_recipe = RecipeDataClass.new()
-	_mock_recipe.id = "bread_001"
-	_mock_recipe.production_time = 10.0
-
 	# Create mock providers for testing
 	_mock_time_provider = MockTimeProviderClass.new()
 	_mock_time_provider.reset_time()
 
 	_mock_recipe_provider = MockRecipeProviderClass.new()
-	_mock_recipe_provider.set_recipe(_mock_recipe)
+
+	# Create and register mock recipes for testing
+	var recipes := ["bread_001", "croissant", "baguette", "muffin"]
+	for recipe_id in recipes:
+		var recipe = RecipeDataClass.new()
+		recipe.id = recipe_id
+		recipe.production_time = 10.0
+		_mock_recipe_provider.add_recipe(recipe)
 
 	# Set up manager state
 	_manager._max_slots = 3
