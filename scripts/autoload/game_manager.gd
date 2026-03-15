@@ -1,9 +1,11 @@
 extends Node
 
+
 ## Helper method for setters that emit (old, new) signal pattern
 ## Used to reduce duplication in property setters
 func _emit_property_changed(old_value: int, new_value: int, changed_signal: Signal) -> void:
 	changed_signal.emit(old_value, new_value)
+
 
 var gold: int = 0:
 	set(value):
