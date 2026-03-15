@@ -164,3 +164,36 @@ func _on_gold_changed(old: int, new: int) -> void:
 	_gold_changed_received = true
 	_gold_changed_old = old
 	_gold_changed_new = new
+
+
+## Test award_production_xp grants XP from recipe xp_reward
+func test_award_production_xp_grants_xp() -> void:
+	EventBus.experience_changed.connect(_on_experience_changed)
+
+	var recipe := RecipeData.new()
+	recipe.id = "test_bread"
+	recipe.display_name = "Test Bread"
+	recipe.base_price = 50
+	recipe.xp_reward = 25
+
+	EconomyManager.award_production_xp(recipe)
+
+	assert_eq(GameManager.experience, 25, "Experience should be 25")
+	assert_true(_experience_changed_received, "experience_changed signal should be emitted")
+	assert_eq(_experience_changed_new, 25, "Signal should carry correct XP amount")
+
+
+## Test award_production_xp does not grant gold
+func test_award_production_xp_no_gold() -> void:
+	EventBus.gold_changed.connect(_on_gold_changed)
+
+	var recipe := RecipeData.new()
+	recipe.id = "test_bread"
+	recipe.display_name = "Test Bread"
+	recipe.base_price = 50
+	recipe.xp_reward = 25
+
+	EconomyManager.award_production_xp(recipe)
+
+	assert_eq(GameManager.gold, 0, "Gold should remain 0 (no gold for production)")
+	assert_false(_gold_changed_received, "gold_changed signal should not be emitted")
