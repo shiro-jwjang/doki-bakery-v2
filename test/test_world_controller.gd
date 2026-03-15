@@ -1,4 +1,5 @@
 extends GutTest
+# gdlint: disable=max-public-methods
 
 ## Test Suite: SNA-98 WorldController Centralized Event Wiring
 ##
