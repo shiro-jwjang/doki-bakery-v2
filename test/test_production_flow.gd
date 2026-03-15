@@ -4,7 +4,7 @@ extends GutTest
 ## Tests slot click → BreadMenu → start baking flow
 ## SNA-96: 슬롯 클릭 → BreadMenu → 생산 시작 풀 플로우
 
-const ProductionPanelClass = preload("res://scripts/ui/production_panel.gd")
+const ProductionPanelScene = preload("res://scenes/ui/production_panel.tscn")
 const BreadMenuClass = preload("res://scripts/ui/bread_menu.gd")
 const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
 
@@ -24,8 +24,8 @@ func before_each() -> void:
 	BakeryManager.reset_mock_time()
 	BakeryManager.set_mock_recipe(_create_mock_recipe())
 
-	# Create ProductionPanel
-	panel = ProductionPanelClass.new()
+	# Create ProductionPanel from scene (has proper structure)
+	panel = ProductionPanelScene.instantiate()
 	add_child(panel)
 	await wait_physics_frames(2)
 

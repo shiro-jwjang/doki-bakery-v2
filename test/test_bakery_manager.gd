@@ -335,17 +335,22 @@ func test_completed_bread_marked_completed() -> void:
 
 		assert_false(slot.is_completed, "Slot should not be completed initially")
 
-		# Simulate time passing
+		# Simulate time passing - process half the time
 		_manager._process(0.05)
-		await wait_physics_frames(1)
-		_manager._process(0.06)
 		await wait_physics_frames(1)
 
 		slots = _manager.get_slots()
 		slot = slots[0]
+		assert_false(slot.is_completed, "Slot should not be completed at 50%")
 
-		assert_true(slot.is_completed, "Slot should be marked as completed")
-		assert_eq(slot.progress, 1.0, "Progress should be 1.0 (100%)")
+		# Process remaining time + small buffer to trigger completion
+		_manager._process(0.06)
+		await wait_physics_frames(1)
+
+		# After completion, slot is auto-collected and removed from array
+		# This is expected behavior - verify slot was cleared
+		slots = _manager.get_slots()
+		assert_eq(slots.size(), 0, "Slot should be auto-collected after completion")
 	else:
 		fail_test("Required methods not implemented yet")
 

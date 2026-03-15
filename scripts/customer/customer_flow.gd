@@ -280,9 +280,9 @@ func _get_available_inventory() -> Array:
 	# Get all inventory from SalesManager
 	# For now, we'll check if there's any bread in inventory
 	if SalesManager.has_method("get_inventory_count"):
-		var croissant_count = SalesManager.get_inventory_count("croissant")
-		if croissant_count > 0:
-			var recipe = DataManager.get_recipe("croissant")
+		var bread_count = SalesManager.get_inventory_count("bread_001")
+		if bread_count > 0:
+			var recipe = DataManager.get_recipe("bread_001")
 			if recipe != null:
 				available.append(recipe)
 
