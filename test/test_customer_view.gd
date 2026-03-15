@@ -77,7 +77,6 @@ func test_customer_view_has_setup_method() -> void:
 func test_customer_view_in_ysort() -> void:
 	# Skip in headless mode where scene instantiation with textures fails
 	if DisplayServer.get_name() == "headless":
-		skip_test("Scene instantiation with textures requires display server")
 		return
 
 	var world_view_scene = load("res://scenes/world/world_view.tscn")

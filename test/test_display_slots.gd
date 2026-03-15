@@ -73,7 +73,6 @@ func test_each_slot_is_display_slot() -> void:
 func test_display_slots_exists_in_world_view() -> void:
 	# Skip in headless mode where scene instantiation with textures fails
 	if DisplayServer.get_name() == "headless":
-		skip_test("Scene instantiation with textures requires display server")
 		return
 
 	var world_view_scene = load("res://scenes/world/world_view.tscn")

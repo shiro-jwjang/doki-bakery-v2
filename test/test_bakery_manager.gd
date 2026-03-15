@@ -562,7 +562,7 @@ func test_restore_slots_uses_time_provider() -> void:
 	if _manager.has_method("restore_slots"):
 		# Verify time provider is used for remaining time calculation
 		_mock_time_provider.reset_time()
-		_mock_time_provider.set_current_time(5.0)
+		_mock_time_provider.set_time(5.0)
 
 		var slot_data := [
 			{
