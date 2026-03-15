@@ -56,6 +56,7 @@ func test_hide_emoticon_hides_emoticon() -> void:
 	emoticon_view.show_emoticon("heart", 2.0)
 	await wait_for_signal(emoticon_view.emoticon_shown, 1.0)
 	emoticon_view.hide_emoticon()
+	await wait_for_signal(emoticon_view.emoticon_hidden, 1.0)
 	assert_false(emoticon_view.is_showing(), "Emoticon should be hidden")
 
 

@@ -481,16 +481,15 @@ func _simulate_exit_complete() -> void:
 
 
 func _setup_mock_inventory() -> void:
-	# Add a mock bread to SalesManager inventory
-	var mock_recipe = _create_mock_recipe()
-	SalesManager.add_to_inventory("test_bread", 100)
+	# Add bread to SalesManager inventory using existing recipe
+	SalesManager.add_to_inventory("bread_001", 100)
 
 
 func _create_mock_recipe() -> Resource:
 	var recipe = Resource.new()
 	if ResourceLoader.exists("res://resources/data/recipe_data.gd"):
 		recipe.set_script(load("res://resources/data/recipe_data.gd"))
-		recipe.id = "test_bread"
+		recipe.id = "bread_001"
 		recipe.base_price = 100
 		recipe.xp_reward = 10
 	return recipe

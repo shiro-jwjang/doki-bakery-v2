@@ -98,8 +98,13 @@ func show_emoticon(emoticon_type: String, duration: float = -1.0) -> void:
 	# Fade in animation
 	_tween = create_tween()
 	_tween.tween_property(_sprite, "modulate:a", 1.0, fade_duration)
+	# Emit signal after fade in completes
+	_tween.tween_callback(_emit_shown_signal.bind(emoticon_type))
 	_tween.tween_callback(_on_fade_in_complete.bind(duration))
 
+
+## Emit the shown signal (called after fade-in completes)
+func _emit_shown_signal(emoticon_type: String) -> void:
 	emoticon_shown.emit(emoticon_type)
 
 

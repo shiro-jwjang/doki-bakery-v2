@@ -101,7 +101,7 @@ func test_safe_update_with_node_removal() -> void:
 
 	# Add to scene tree
 	add_child(component)
-	await watch_signals(component).tree_exited  # Wait for tree entry if needed
+	await wait_physics_frames(1)  # Wait for tree entry
 
 	# Call safe_update while in tree
 	component.safe_update(test_callable)
@@ -130,8 +130,10 @@ func test_safe_update_callable_exception_handling() -> void:
 	add_child_autofree(component)
 
 	# Call safe_update - should propagate error
-	# Note: GUT will capture the error
+	# Use assert_push_error to tell GUT this error is expected
+	watch_signals(component)
 	component.safe_update(test_callable)
+	assert_push_error("Test error from callable")
 
-	# If we reach here, the callable was executed
-	# (Error would be shown in test output)
+	# If we reach here, the callable was executed successfully
+	# (Error was shown in test output as expected)

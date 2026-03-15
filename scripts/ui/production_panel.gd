@@ -18,6 +18,11 @@ var _slot_data: Dictionary = {}
 
 
 func _ready() -> void:
+	# Connect to EventBus signals for production updates
+	EventBus.production_started.connect(on_production_started)
+	EventBus.production_progressed.connect(on_production_progressed)
+	EventBus.production_completed.connect(on_production_completed)
+
 	# Initialize slots from BakeryManager count
 	# Only initialize if container exists (requires scene file)
 	if _container != null:
