@@ -42,9 +42,9 @@ func test_panel_updates_on_baking_started() -> void:
 	# Verify slot UI was updated
 	var slot_ui = panel.get_slot_ui(0)
 	assert_not_null(slot_ui, "Slot UI should exist")
-	assert_not_null(slot_ui.get("label"), "Slot should have a label")
+	assert_not_null(slot_ui.get("_status_label"), "Slot should have _status_label")
 
-	var label: Label = slot_ui.label
+	var label: Label = slot_ui._status_label
 	assert_true(label.text.contains("베이킹 중"), "Label should show baking status")
 	assert_true(label.text.contains("test_bread"), "Label should show recipe ID")
 
@@ -60,11 +60,11 @@ func test_panel_updates_on_baking_finished() -> void:
 	# Verify slot UI was updated
 	var slot_ui = panel.get_slot_ui(1)
 	assert_not_null(slot_ui, "Slot UI should exist")
-	assert_not_null(slot_ui.get("label"), "Slot should have a label")
+	assert_not_null(slot_ui.get("_status_label"), "Slot should have _status_label")
 
-	var label: Label = slot_ui.label
+	var label: Label = slot_ui._status_label
 	assert_true(label.text.contains("완료!"), "Label should show completion status")
-	assert_eq(slot_ui.progress_bar.value, 1.0, "Progress bar should be full")
+	assert_eq(slot_ui._progress_bar.value, 1.0, "Progress bar should be full")
 
 
 ## Test that panel updates progress bar on production_progressed signal
@@ -80,13 +80,13 @@ func test_panel_updates_on_baking_progressed() -> void:
 	# Verify progress bar was updated
 	var slot_ui = panel.get_slot_ui(0)
 	assert_not_null(slot_ui, "Slot UI should exist")
-	assert_eq(slot_ui.progress_bar.value, 0.5, "Progress bar should show 50%")
+	assert_eq(slot_ui._progress_bar.value, 0.5, "Progress bar should show 50%")
 
 	# Emit progress signal at 80%
 	EventBus.production_progressed.emit(0, 0.8)
 	await wait_physics_frames(2)
 
-	assert_eq(slot_ui.progress_bar.value, 0.8, "Progress bar should update to 80%")
+	assert_eq(slot_ui._progress_bar.value, 0.8, "Progress bar should update to 80%")
 
 
 ## Test that ProductionPanel does not poll BakeryManager in _process
@@ -104,4 +104,4 @@ func test_panel_no_process_polling() -> void:
 	# Verify slot UI was updated via signals alone
 	var slot_ui = panel.get_slot_ui(0)
 	assert_not_null(slot_ui, "Slot UI should exist")
-	assert_true(slot_ui.label.text.contains("완료"), "Slot should show completion without polling")
+	assert_true(slot_ui._status_label.text.contains("완료"), "Slot should show completion without polling")
