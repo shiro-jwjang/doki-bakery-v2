@@ -4,6 +4,8 @@ extends GutTest
 ## Tests that gold popups appear when gold changes
 ## SNA-94: HUD 골드 변동 팝업 애니메이션
 
+const HUD_SCENE := preload("res://scenes/ui/hud.tscn")
+
 var hud: Node
 
 
@@ -29,8 +31,7 @@ func test_gold_popup_spawns_on_gold_change() -> void:
 	#	pending("HUD tests require GUI mode")
 	#	return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 
@@ -49,8 +50,7 @@ func test_gold_popup_shows_positive_amount() -> void:
 	#	pending("HUD tests require GUI mode")
 	#	return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 
@@ -74,8 +74,7 @@ func test_gold_popup_shows_negative_amount() -> void:
 	#	pending("HUD tests require GUI mode")
 	#	return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 
@@ -98,8 +97,7 @@ func test_gold_popup_auto_disappears() -> void:
 	#	pending("HUD tests require GUI mode")
 	#	return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 

@@ -68,7 +68,9 @@ func test_notification_shows_unlocked_items_text() -> void:
 	notification.show_unlocks(5, unlocked_items)
 
 	# Check that item names are displayed
-	var items_text = notification.get_items_text() if notification.has_method("get_items_text") else ""
+	var items_text = (
+		notification.get_items_text() if notification.has_method("get_items_text") else ""
+	)
 	assert_true(items_text.length() > 0, "Should display unlocked items text")
 
 

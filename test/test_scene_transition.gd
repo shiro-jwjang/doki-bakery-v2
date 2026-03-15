@@ -41,23 +41,23 @@ func test_save_data_loaded_on_transition() -> void:
 	var original_gm = get_node_or_null("/root/GameManager")
 	if original_gm:
 		get_tree().root.remove_child(original_gm)
-	
+
 	# 2. Setup partial double
 	var game_manager_script = load("res://scripts/autoload/game_manager.gd")
 	var double_game_mgr = partial_double(game_manager_script).new()
 	double_game_mgr.name = "GameManager"
 	get_tree().root.add_child(double_game_mgr)
-	
+
 	# 3. Test transition
 	watch_signals(UIManager)
 	UIManager.change_screen("world_view")
-	
+
 	assert_called(double_game_mgr, "load_game")
 	assert_signal_emitted(UIManager, "screen_changed")
-	
+
 	# 4. Cleanup and restore
 	get_tree().root.remove_child(double_game_mgr)
 	double_game_mgr.queue_free()
-	
+
 	if original_gm:
 		get_tree().root.add_child(original_gm)

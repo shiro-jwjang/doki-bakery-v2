@@ -18,7 +18,7 @@ enum State {
 	MOVING_TO_DISPLAY,  ## Customer is moving to display counter
 	BUYING,  ## Customer is selecting/purchasing bread
 	LEAVING,  ## Customer is leaving to right
-	DESPAWNED  ## Customer has been despawned
+	DESPAWNED,  ## Customer has been despawned
 }
 
 ## Customer scene for view

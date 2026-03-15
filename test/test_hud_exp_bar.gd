@@ -6,6 +6,8 @@ extends GutTest
 ##
 ## NOTE: Scene tests require GUI mode. Run with DISPLAY=:99
 
+const HUD_SCENE := preload("res://scenes/ui/hud.tscn")
+
 var hud: Node
 var exp_bar: ProgressBar
 
@@ -29,8 +31,7 @@ func test_hud_scene_instantiation() -> void:
 		pending("HUD scene tests require GUI mode (DISPLAY=:99)")
 		return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	assert_not_null(hud, "HUD scene should instantiate")
 
 	add_child(hud)
@@ -46,8 +47,7 @@ func test_initial_state() -> void:
 		pending("HUD scene tests require GUI mode")
 		return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 
@@ -68,8 +68,7 @@ func test_xp_bar_updates_with_game_manager() -> void:
 		pending("HUD scene tests require GUI mode")
 		return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 
@@ -91,8 +90,7 @@ func test_level_up_via_game_manager() -> void:
 		pending("HUD scene tests require GUI mode")
 		return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 

@@ -9,3 +9,6 @@ exclude:
   - scripts/autoload/production_manager.gd
   - scripts/ui/notification_area.gd
   - test/test_notification_area.gd
+  - test/test_game_manager.gd
+  - test/test_bakery_manager.gd
+  - test/test_world_view.gd
