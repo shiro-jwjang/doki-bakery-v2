@@ -95,7 +95,12 @@ func load_game() -> Dictionary:
 ## Legacy method: Get the current game state as a dictionary
 ## Deprecated: Use GameManager.get_state() instead
 func get_save_data() -> Dictionary:
-	return GameManager.get_state()
+	var game_state := GameManager.get_state()
+	return {
+		"version": SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": game_state
+	}
 
 
 ## Legacy method: Apply loaded save data to GameManager

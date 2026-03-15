@@ -22,14 +22,34 @@ var _price: int = 0
 var _has_bread: bool = false
 
 ## UI Nodes
-@onready var _bread_icon: TextureRect = %BreadIcon
-@onready var _price_label: Label = %PriceLabel
-@onready var _sell_progress_bar: ProgressBar = %SellProgressBar
-@onready var _sell_timer: Timer = %SellTimer
+var _bread_icon: TextureRect = null
+var _price_label: Label = null
+var _sell_progress_bar: ProgressBar = null
+var _sell_timer: Timer = null
 
 
 func _ready() -> void:
-	# Configure the sell timer (if not already via scene)
+	# Try to get nodes from scene tree, or create them if instantiated via code
+	_bread_icon = get_node_or_null("%BreadIcon")
+	_price_label = get_node_or_null("%PriceLabel")
+	_sell_progress_bar = get_node_or_null("%SellProgressBar")
+	_sell_timer = get_node_or_null("%SellTimer")
+
+	# Create nodes if they don't exist (for code instantiation)
+	if _bread_icon == null:
+		_bread_icon = TextureRect.new()
+		add_child(_bread_icon)
+	if _price_label == null:
+		_price_label = Label.new()
+		add_child(_price_label)
+	if _sell_progress_bar == null:
+		_sell_progress_bar = ProgressBar.new()
+		add_child(_sell_progress_bar)
+	if _sell_timer == null:
+		_sell_timer = Timer.new()
+		add_child(_sell_timer)
+
+	# Configure the sell timer
 	_sell_timer.wait_time = SELL_TIME
 	# SNA-160: unified signal connection pattern
 	_connect_signal(_sell_timer.timeout, _on_sell_timer_timeout)

@@ -93,14 +93,12 @@ func show_emoticon(emoticon_type: String, duration: float = -1.0) -> void:
 	# Start visible but transparent for fade in
 	_sprite.modulate.a = 0.0
 	_sprite.show()
-	_is_showing = true
+	_current_type = emoticon_type
 
 	# Fade in animation
 	_tween = create_tween()
 	_tween.tween_property(_sprite, "modulate:a", 1.0, fade_duration)
-	_tween.tween_callback(_on_fade_in_complete.bind(duration))
-
-	emoticon_shown.emit(emoticon_type)
+	_tween.tween_callback(_on_fade_in_complete.bind(emoticon_type, duration))
 
 
 ## Hide the current emoticon
@@ -108,6 +106,7 @@ func hide_emoticon() -> void:
 	if not _is_showing:
 		return
 
+	_is_showing = false  # Mark as hidden immediately
 	_cleanup_tween()
 
 	# Fade out animation
@@ -179,7 +178,10 @@ func _create_placeholder_texture(emoticon_type: String) -> ImageTexture:
 ## ==================== CALLBACKS ====================
 
 
-func _on_fade_in_complete(duration: float) -> void:
+func _on_fade_in_complete(emoticon_type: String, duration: float) -> void:
+	_is_showing = true
+	emoticon_shown.emit(emoticon_type)
+
 	# Wait for duration, then fade out
 	_tween = create_tween()
 	_tween.tween_interval(duration - fade_duration)  # Subtract fade time from total
@@ -188,7 +190,6 @@ func _on_fade_in_complete(duration: float) -> void:
 
 func _on_fade_out_complete() -> void:
 	_sprite.hide()
-	_is_showing = false
 	emoticon_hidden.emit()
 
 

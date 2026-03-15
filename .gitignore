@@ -37,3 +37,15 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Agent workspace files (protected)
+MEMORY.md
+.learnings/
+memory/
+AGENT*.md
+SOUL.md
+USER.md
+IDENTITY.md
+HEARTBEAT.md
+TOOLS.md
+BOOTSTRAP.md

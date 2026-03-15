@@ -14,10 +14,24 @@ signal slot_clicked(slot_index: int)
 var _slot_data: Dictionary = {}
 
 @export var slot_scene: PackedScene = preload("res://scenes/ui/production_slot.tscn")
-@onready var _container: VBoxContainer = $MarginContainer/VBoxContainer
+var _container: VBoxContainer = null
 
 
 func _ready() -> void:
+	# Try to get container from scene tree, or create one if instantiated via code
+	_container = get_node_or_null("MarginContainer/VBoxContainer")
+	if _container == null:
+		_container = VBoxContainer.new()
+		add_child(_container)
+
+	# Connect to EventBus signals
+	if not EventBus.production_started.is_connected(on_production_started):
+		EventBus.production_started.connect(on_production_started)
+	if not EventBus.production_progressed.is_connected(on_production_progressed):
+		EventBus.production_progressed.connect(on_production_progressed)
+	if not EventBus.production_completed.is_connected(on_production_completed):
+		EventBus.production_completed.connect(on_production_completed)
+
 	# Initialize slots from BakeryManager count
 	_initialize_slots()
 
