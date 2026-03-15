@@ -29,68 +29,66 @@ func _load_all_data() -> void:
 
 
 func _load_recipes() -> void:
-	if not DirAccess.dir_exists_absolute(RECIPES_PATH):
-		push_error("DataManager: Recipes directory NOT FOUND at " + RECIPES_PATH)
-		return
-
-	var dir := DirAccess.open(RECIPES_PATH)
-	if dir:
-		dir.list_dir_begin()
-		var file_name := dir.get_next()
-		while file_name != "":
-			if not dir.current_is_dir() and file_name.ends_with(".tres"):
-				var full_path = RECIPES_PATH + file_name
-				var resource = load(full_path)
-				# Use property check instead of 'is' for better reliability with resources
-				if resource and resource.get("id") != null and resource.get("display_name") != null:
-					_recipes[resource.id] = resource
-				else:
-					push_warning("DataManager: File %s is not a valid RecipeData" % file_name)
-			file_name = dir.get_next()
-		dir.list_dir_end()
-		print("DataManager: Loaded %d recipes" % _recipes.size())
-	else:
-		push_error("DataManager: Failed to open recipes directory: " + RECIPES_PATH)
+	_load_resources(RECIPES_PATH, "id", _recipes, "display_name")
+	print("DataManager: Loaded %d recipes" % _recipes.size())
 
 
 func _load_levels() -> void:
-	var dir := DirAccess.open(LEVELS_PATH)
-	if dir == null:
-		push_warning("Levels directory not found: " + LEVELS_PATH)
-		return
-
-	dir.list_dir_begin()
-	var file_name := dir.get_next()
-	while file_name != "":
-		if file_name.ends_with(".tres"):
-			var resource = load(LEVELS_PATH + file_name)
-			if resource and resource.get("level") != null:
-				_levels[resource.level] = resource
-			else:
-				push_warning("DataManager: File %s is not a valid LevelData" % file_name)
-		file_name = dir.get_next()
-	dir.list_dir_end()
+	_load_resources(LEVELS_PATH, "level", _levels)
 	print("DataManager: Loaded %d levels" % _levels.size())
 
 
 func _load_shops() -> void:
-	var dir := DirAccess.open(SHOPS_PATH)
+	_load_resources(SHOPS_PATH, "shop_level", _shop_stages)
+	print("DataManager: Loaded %d shop stages" % _shop_stages.size())
+
+
+## Generic resource loader - SNA-172
+## Loads all .tres files from a directory and stores them in a dictionary
+## path: Directory path to load from
+## id_prop: Property name to use as dictionary key (e.g., "id", "level", "shop_level")
+## target_dict: Dictionary to store loaded resources in
+## required_prop: Optional additional property to validate (e.g., "display_name" for recipes)
+func _load_resources(
+	path: String, id_prop: String, target_dict: Dictionary, required_prop: String = ""
+) -> void:
+	# Check if directory exists
+	if not DirAccess.dir_exists_absolute(path):
+		push_warning("DataManager: Directory not found: " + path)
+		return
+
+	var dir := DirAccess.open(path)
 	if dir == null:
-		push_warning("Shops directory not found: " + SHOPS_PATH)
+		push_warning("DataManager: Failed to open directory: " + path)
 		return
 
 	dir.list_dir_begin()
 	var file_name := dir.get_next()
 	while file_name != "":
-		if file_name.ends_with(".tres"):
-			var resource = load(SHOPS_PATH + file_name)
-			if resource and resource.get("shop_level") != null:
-				_shop_stages[resource.shop_level] = resource
+		# Skip directories and non-.tres files
+		if not dir.current_is_dir() and file_name.ends_with(".tres"):
+			var full_path = path + file_name
+			var resource = load(full_path)
+			
+			# Validate resource
+			if resource and resource.get(id_prop) != null:
+				# Check for additional required property if specified
+				if required_prop == "" or resource.get(required_prop) != null:
+					target_dict[resource.get(id_prop)] = resource
+				else:
+					push_warning(
+						(
+							"DataManager: File %s missing required property '%s'"
+							% [file_name, required_prop]
+						)
+					)
 			else:
-				push_warning("DataManager: File %s is not a valid ShopData" % file_name)
+				push_warning(
+					"DataManager: File %s is not a valid resource (missing '%s')"
+					% [file_name, id_prop]
+				)
 		file_name = dir.get_next()
 	dir.list_dir_end()
-	print("DataManager: Loaded %d shop stages" % _shop_stages.size())
 
 
 ## 레시피 조회
