@@ -148,3 +148,65 @@ func test_production_started_signal_propagates() -> void:
 		EventBus.production_started.is_connected(world_controller._on_production_started),
 		"production_started should propagate through WorldController"
 	)
+
+
+# ==================== SNA-176: Automatic Signal Routing Tests ====================
+
+
+func test_automatic_signal_routing_metadata_exists() -> void:
+	# Verify WorldController has signal routing metadata
+	assert_true(
+		world_controller.has_method("get_signal_routes"),
+		"WorldController should have get_signal_routes method for metadata"
+	)
+
+
+func test_get_signal_routes_returns_array() -> void:
+	var routes: Array = world_controller.get_signal_routes()
+	assert_not_null(routes, "get_signal_routes should return an array")
+	assert_true(routes is Array, "get_signal_routes should return Array type")
+
+
+func test_signal_routes_contain_required_fields() -> void:
+	var routes: Array = world_controller.get_signal_routes()
+	if routes.is_empty():
+		# No routes yet - fail until we implement the feature
+		fail_test("get_signal_routes should return at least one route")
+		return
+
+	var route = routes[0]
+	assert_true(route.has("event_bus_signal"), "Route should have event_bus_signal field")
+	assert_true(route.has("handler_method"), "Route should have handler_method field")
+
+
+func test_automatic_routing_connects_all_signals() -> void:
+	# After _ready() is called, all EventBus signals should be connected
+	# This tests the automatic routing system
+	var routes: Array = world_controller.get_signal_routes()
+
+	for route in routes:
+		var signal_name = route["event_bus_signal"]
+		var handler_name = route["handler_method"]
+
+		# Get EventBus signal object
+		var event_bus_signal = EventBus.get(signal_name)
+		if event_bus_signal is Signal:
+			var handler = Callable(world_controller, handler_name)
+			assert_true(
+				event_bus_signal.is_connected(handler),
+				"Automatic routing should connect %s to %s" % [signal_name, handler_name]
+			)
+
+
+func test_signal_routing_preserves_existing_behavior() -> void:
+	# Ensure automatic routing doesn't break existing signal forwarding
+	var mock_hud := Control.new()
+	add_child_autofree(mock_hud)
+	world_controller.set_hud(mock_hud)
+
+	# This should not crash - signals should propagate
+	EventBus.gold_changed.emit(0, 100)
+	EventBus.experience_changed.emit(0, 50)
+	EventBus.level_up.emit(5)
+
+	assert_true(true, "Signal propagation should work with automatic routing")

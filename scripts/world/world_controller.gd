@@ -51,40 +51,22 @@ func _ready() -> void:
 
 
 ## Connect EventBus signals to this controller for forwarding to UI.
+## SNA-176: Uses automatic routing based on get_signal_routes() metadata.
 func _connect_event_bus_signals() -> void:
-	# Gold/XP changes → HUD
-	if not EventBus.gold_changed.is_connected(_on_gold_changed):
-		EventBus.gold_changed.connect(_on_gold_changed)
+	# Automatically connect all EventBus signals using metadata
+	var routes: Array = get_signal_routes()
+	for route in routes:
+		var signal_name: String = route["event_bus_signal"]
+		var handler_name: String = route["handler_method"]
 
-	if not EventBus.experience_changed.is_connected(_on_experience_changed):
-		EventBus.experience_changed.connect(_on_experience_changed)
-
-	if not EventBus.level_up.is_connected(_on_level_up):
-		EventBus.level_up.connect(_on_level_up)
-
-	# Premium currency changes → HUD
-	if not EventBus.premium_changed.is_connected(_on_premium_changed):
-		EventBus.premium_changed.connect(_on_premium_changed)
-
-	# Production events → ProductionPanel
-	if not EventBus.production_started.is_connected(_on_production_started):
-		EventBus.production_started.connect(_on_production_started)
-
-	if not EventBus.production_progressed.is_connected(_on_production_progressed):
-		EventBus.production_progressed.connect(_on_production_progressed)
-
-	if not EventBus.production_completed.is_connected(_on_production_completed):
-		EventBus.production_completed.connect(_on_production_completed)
-
-	# Baking finished → DisplaySlots
-	if not EventBus.baking_finished.is_connected(_on_baking_finished):
-		EventBus.baking_finished.connect(_on_baking_finished)
-
-	if not EventBus.production_cleared.is_connected(_on_production_cleared):
-		EventBus.production_cleared.connect(_on_production_cleared)
-
-	if not EventBus.bread_sold.is_connected(_on_bread_sold):
-		EventBus.bread_sold.connect(_on_bread_sold)
+		# Get signal object from EventBus
+		var event_bus_signal = EventBus.get(signal_name)
+		if event_bus_signal is Signal:
+			# Get handler callable
+			var handler = Callable(self, handler_name)
+			# Connect if not already connected
+			if not event_bus_signal.is_connected(handler):
+				event_bus_signal.connect(handler)
 
 	# Initialize UI components with current state
 	if hud and hud.has_method("_on_premium_changed"):
@@ -125,6 +107,26 @@ func find_ui_components() -> Dictionary:
 		components["bread_menu"] = bread_menu
 
 	return components
+
+
+## Get signal routing metadata for automatic EventBus connection.
+## SNA-176: Returns array of route dictionaries with event_bus_signal and handler_method.
+func get_signal_routes() -> Array:
+	return [
+		{"event_bus_signal": "gold_changed", "handler_method": "_on_gold_changed"},
+		{"event_bus_signal": "experience_changed", "handler_method": "_on_experience_changed"},
+		{"event_bus_signal": "level_up", "handler_method": "_on_level_up"},
+		{"event_bus_signal": "premium_changed", "handler_method": "_on_premium_changed"},
+		{"event_bus_signal": "production_started", "handler_method": "_on_production_started"},
+		{
+			"event_bus_signal": "production_progressed",
+			"handler_method": "_on_production_progressed"
+		},
+		{"event_bus_signal": "production_completed", "handler_method": "_on_production_completed"},
+		{"event_bus_signal": "baking_finished", "handler_method": "_on_baking_finished"},
+		{"event_bus_signal": "production_cleared", "handler_method": "_on_production_cleared"},
+		{"event_bus_signal": "bread_sold", "handler_method": "_on_bread_sold"},
+	]
 
 
 ## Validate that all required EventBus connections are established.
