@@ -15,8 +15,11 @@ extends Node
 ## Customer state machine
 enum State { ENTERING, MOVING_TO_DISPLAY, BUYING, LEAVING, DESPAWNED }  ## Customer is entering from left  ## Customer is moving to display counter  ## Customer is selecting/purchasing bread  ## Customer is leaving to right  ## Customer has been despawned
 
-## Customer scene for view
+## Customer scene for view (deprecated - use CustomerViewFactory)
 const CUSTOMER_VIEW_SCENE = preload("res://scenes/world/customer_view.tscn")
+
+## Customer view factory
+var _view_factory: Node = null
 
 ## Display position (center of screen, near display counter)
 const DISPLAY_POSITION = Vector2(400, 300)
@@ -59,6 +62,9 @@ func _ready() -> void:
 	if not _purchase_timer.timeout.is_connected(_on_purchase_timer_timeout):
 		_purchase_timer.timeout.connect(_on_purchase_timer_timeout)
 	add_child(_purchase_timer)
+
+	# Initialize customer view factory
+	_initialize_view_factory()
 
 
 ## ==================== PUBLIC API ====================
@@ -126,36 +132,12 @@ func _create_customer_view() -> void:
 	if _customer_view != null and is_instance_valid(_customer_view):
 		_customer_view.queue_free()
 
-	# Try to instantiate customer view scene
-	if CUSTOMER_VIEW_SCENE != null:
-		_customer_view = CUSTOMER_VIEW_SCENE.instantiate()
-		# Setup customer view if it has the method
-		if _customer_view.has_method("setup"):
-			_customer_view.setup(customer_id)
+	# Use factory to create customer view
+	if _view_factory != null and _view_factory.has_method("create_customer_view"):
+		_customer_view = _view_factory.create_customer_view(customer_id, self)
 	else:
-		# Fallback: Create a basic Node2D for test environments
-		_customer_view = Node2D.new()
-		_customer_view.name = "Customer_" + customer_id
-
-	# Add to world scene
-	var world_view = _get_world_view()
-	if world_view != null:
-		var entities = world_view.find_child("Entities", true, false)
-		if entities != null:
-			var y_sort = entities.find_child("YSort", true, false)
-			if y_sort != null:
-				y_sort.add_child(_customer_view)
-			else:
-				world_view.add_child(_customer_view)
-		else:
-			world_view.add_child(_customer_view)
-	else:
-		# Fallback 1: Try to add to current scene (runtime environment)
-		if get_tree() != null and get_tree().current_scene != null:
-			get_tree().current_scene.add_child(_customer_view)
-		# Fallback 2: Add to self (test environment or edge cases)
-		else:
-			add_child(_customer_view)
+		# Fallback: Direct instantiation for backward compatibility
+		_customer_view = _create_view_directly()
 
 
 ## Spawn customer at left side
@@ -356,6 +338,58 @@ func _get_world_view() -> Node:
 		return root.find_child("WorldView", true, false)
 
 	return null
+
+
+## Initialize customer view factory
+func _initialize_view_factory() -> void:
+	var factory_script = load("res://scripts/customer/customer_view_factory.gd")
+	if factory_script != null:
+		_view_factory = factory_script.new()
+		add_child(_view_factory)
+
+
+## Create customer view directly (fallback for backward compatibility)
+func _create_view_directly() -> Node2D:
+	var view: Node2D = null
+
+	# Try to instantiate customer view scene
+	if CUSTOMER_VIEW_SCENE != null:
+		view = CUSTOMER_VIEW_SCENE.instantiate()
+		# Setup customer view if it has the method
+		if view.has_method("setup"):
+			view.setup(customer_id)
+	else:
+		# Fallback: Create a basic Node2D for test environments
+		view = Node2D.new()
+		view.name = "Customer_" + customer_id
+
+	# Add to scene tree using factory logic
+	_add_view_to_scene_tree(view)
+
+	return view
+
+
+## Add view to scene tree (mirrors factory logic for fallback)
+func _add_view_to_scene_tree(view: Node2D) -> void:
+	# Add to world scene
+	var world_view = _get_world_view()
+	if world_view != null:
+		var entities = world_view.find_child("Entities", true, false)
+		if entities != null:
+			var y_sort = entities.find_child("YSort", true, false)
+			if y_sort != null:
+				y_sort.add_child(view)
+			else:
+				world_view.add_child(view)
+		else:
+			world_view.add_child(view)
+	else:
+		# Fallback 1: Try to add to current scene (runtime environment)
+		if get_tree() != null and get_tree().current_scene != null:
+			get_tree().current_scene.add_child(view)
+		# Fallback 2: Add to self (test environment or edge cases)
+		else:
+			add_child(view)
 
 
 ## ==================== CLEANUP ====================
