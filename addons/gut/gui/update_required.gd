@@ -6,7 +6,6 @@ var _check_for_update_ctrl = null
 
 signal closed
 
-
 func _ready():
 	add_cancel_button("Cancel Loading GUT")
 
