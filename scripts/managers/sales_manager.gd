@@ -104,3 +104,16 @@ func remove_from_inventory(recipe_id: String, amount: int = 1) -> bool:
 ## Returns: Array of recipe IDs
 func get_inventory_recipe_ids() -> Array:
 	return _inventory.keys()
+
+
+## Get all recipes with available inventory (stock > 0)
+## Returns: Array[RecipeData] of recipes with positive stock
+## SNA-173: SalesManager Inventory Query Extension
+func get_available_inventory() -> Array[RecipeData]:
+	var available: Array[RecipeData] = []
+	for recipe_id in _inventory.keys():
+		if _inventory[recipe_id] > 0:
+			var recipe = DataManager.get_recipe(recipe_id)
+			if recipe:
+				available.append(recipe)
+	return available
