@@ -347,6 +347,7 @@ func test_completed_bread_marked_completed() -> void:
 		_manager._process(0.05)
 		await wait_physics_frames(1)
 
+		# After completion, slot is removed from active slots
 		slots = _manager.get_slots()
 		slot = slots[0]
 		assert_false(slot["is_completed"], "Slot should not be completed at 50%")

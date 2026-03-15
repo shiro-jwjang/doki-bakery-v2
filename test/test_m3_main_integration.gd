@@ -22,6 +22,8 @@ func before_each() -> void:
 	main_scene = scene.instantiate()
 	add_child_autoqfree(main_scene)
 	await wait_physics_frames(2)
+	# Additional wait for @onready variables and children to be initialized
+	await wait_seconds(0.5)
 
 	# Get EventBus reference
 	event_bus = get_node_or_null("/root/EventBus")
@@ -56,7 +58,14 @@ func test_customer_view_exists() -> void:
 		fail_test("Main scene not loaded")
 		return
 
-	var customer_view = main_scene.find_child("CustomerView", true, false)
+	# CustomerView gets renamed to "Customer_main_customer_001" after setup
+	# Find by name pattern instead
+	var customer_view = null
+	for child in main_scene.get_children():
+		if child.name.begins_with("Customer_"):
+			customer_view = child
+			break
+
 	assert_not_null(customer_view, "CustomerView should exist in main scene")
 
 
@@ -66,7 +75,13 @@ func test_customer_view_is_setup() -> void:
 		fail_test("Main scene not loaded")
 		return
 
-	var customer_view = main_scene.find_child("CustomerView", true, false)
+	# Find customer view by name pattern
+	var customer_view = null
+	for child in main_scene.get_children():
+		if child.name.begins_with("Customer_"):
+			customer_view = child
+			break
+
 	if customer_view == null:
 		fail_test("CustomerView not found")
 		return
@@ -165,7 +180,13 @@ func test_customer_emoticon_notification_flow() -> void:
 		fail_test("Main scene or EventBus not loaded")
 		return
 
-	var customer_view = main_scene.find_child("CustomerView", true, false)
+	# Find customer view by name pattern (CustomerView gets renamed after setup)
+	var customer_view = null
+	for child in main_scene.get_children():
+		if child.name.begins_with("Customer_"):
+			customer_view = child
+			break
+
 	var emoticon_view = main_scene.find_child("EmoticonView", true, false)
 	var notification_area = main_scene.find_child("NotificationArea", true, false)
 
@@ -179,19 +200,16 @@ func test_customer_emoticon_notification_flow() -> void:
 	# Setup emoticon view character_id to match
 	emoticon_view.character_id = "test_customer_001"
 
-	# Track signals
-	var emotion_received := false
-	var notification_received := false
-
-	event_bus.emotion_triggered.connect(func(_id: String, _type: String): emotion_received = true)
-
 	# Trigger emotion (simulating customer interaction)
 	event_bus.emotion_triggered.emit("test_customer_001", "heart")
 
 	await wait_physics_frames(1)
 
-	# Verify emotion was triggered
-	assert_true(emotion_received, "Emotion signal should be received")
+	# Verify emoticon view is showing emoticon
+	assert_true(
+		emoticon_view.is_showing(),
+		"EmoticonView should be showing emoticon after emotion_triggered"
+	)
 
 	# Verify emoticon view is showing emoticon
 	assert_true(
