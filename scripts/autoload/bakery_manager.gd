@@ -223,7 +223,7 @@ func restore_slots(slots_data: Array) -> void:
 		if recipe_id.is_empty():
 			continue
 
-		var recipe: Resource = DataManager.get_recipe(recipe_id)
+		var recipe: Resource = _recipe_provider.get_recipe(recipe_id)
 		if not recipe:
 			continue
 
@@ -238,7 +238,7 @@ func restore_slots(slots_data: Array) -> void:
 		}
 
 		# Recalculate remaining time based on current time
-		var current_time: float = Time.get_unix_time_from_system()
+		var current_time: float = _time_provider.get_current_time()
 		var elapsed: float = current_time - slot["start_time"]
 		slot["remaining_time"] = maxf(0.0, recipe.production_time - elapsed)
 		if recipe.production_time > 0:
