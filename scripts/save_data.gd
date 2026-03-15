@@ -76,7 +76,7 @@ static func from_json(json_string: String):
 	if data.has("legendary_bread"):
 		save_data.legendary_bread = data["legendary_bread"]
 	if data.has("level"):
-		save_data.level = clamp(data["level"], 1, 10)  # Ensure valid level range
+		save_data.level = clamp(data["level"], 1, GameConstants.MAX_LEVEL)  # Ensure valid level range
 	if data.has("experience"):
 		save_data.experience = data["experience"]
 	if data.has("play_time"):

@@ -10,7 +10,6 @@ extends Node
 ## Use GameManager.get_state() and GameManager.set_state() for state access.
 
 ## Save data version for compatibility
-const SAVE_VERSION: int = 1
 
 ## Path to the save file
 var save_path: String = "user://save.json"
@@ -79,7 +78,7 @@ func load_from_disk(path: String = "") -> Dictionary:
 func save_game() -> bool:
 	var game_state := GameManager.get_state()
 	var save_data := {
-		"version": SAVE_VERSION,
+		"version": GameConstants.SAVE_VERSION,
 		"timestamp": Time.get_datetime_string_from_system(true, true),
 		"game": game_state
 	}
@@ -96,7 +95,7 @@ func load_game() -> Dictionary:
 ## Deprecated: Use GameManager.get_state() instead
 func get_save_data() -> Dictionary:
 	return {
-		"version": SAVE_VERSION,
+		"version": GameConstants.SAVE_VERSION,
 		"timestamp": Time.get_datetime_string_from_system(),
 		"game": GameManager.get_state()
 	}

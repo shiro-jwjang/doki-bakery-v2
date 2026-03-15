@@ -6,9 +6,6 @@ extends Control
 ## Manages slot creation and provides helpers for finding empty slots.
 ## SNA-117: DisplaySlots 씬 생성 및 WorldView 배치
 
-## Number of display slots
-const SLOT_COUNT: int = 4
-
 ## Array of DisplaySlot nodes
 var _slots: Array[Node] = []
 

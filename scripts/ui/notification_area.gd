@@ -1,7 +1,6 @@
 extends Control
 class_name NotificationArea
 
-const MAX_NOTIFICATIONS: int = 3
 const NOTIFICATION_DURATION: float = 3.0  # seconds
 const NotificationItemScene = preload("res://scenes/ui/notification_item.tscn")
 
@@ -39,7 +38,7 @@ func show_notification(title: String, desc: String, icon: Texture2D, priority: i
 	}
 
 	# Check if we should add to pending or active queue
-	if _active_notifications.size() < MAX_NOTIFICATIONS:
+	if _active_notifications.size() < GameConstants.MAX_NOTIFICATIONS:
 		_add_notification_to_active(notification_data)
 	else:
 		_add_to_pending_queue(notification_data)
@@ -91,7 +90,7 @@ func _add_to_pending_queue(data: Dictionary) -> void:
 	_pending_notifications.sort_custom(func(a, b): return a.priority > b.priority)
 
 	# Check if we should replace a low-priority active notification
-	if _active_notifications.size() >= MAX_NOTIFICATIONS:
+	if _active_notifications.size() >= GameConstants.MAX_NOTIFICATIONS:
 		_try_replace_low_priority_notification()
 
 
@@ -169,7 +168,8 @@ func _on_notification_timer(item: Control) -> void:
 ## Process pending notifications queue
 func _process_pending_queue() -> void:
 	while (
-		not _pending_notifications.is_empty() and _active_notifications.size() < MAX_NOTIFICATIONS
+		not _pending_notifications.is_empty()
+		and _active_notifications.size() < GameConstants.MAX_NOTIFICATIONS
 	):
 		var data = _pending_notifications.pop_front()
 		_add_notification_to_active(data)
