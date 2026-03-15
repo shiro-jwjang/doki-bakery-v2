@@ -47,7 +47,7 @@ func test_hide_emoticon_api_exists() -> void:
 func test_show_emoticon_displays_emoticon() -> void:
 	watch_signals(emoticon_view)
 	emoticon_view.show_emoticon("heart", 2.0)
-	await wait_physics_frames(1)  # Wait for signal to be processed
+	await wait_for_signal(emoticon_view.emoticon_shown, 1.0)  # Wait for fade-in to complete
 	assert_true(emoticon_view.is_showing(), "Emoticon should be showing")
 	assert_signal_emitted(emoticon_view, "emoticon_shown", "emoticon_shown should be emitted")
 
