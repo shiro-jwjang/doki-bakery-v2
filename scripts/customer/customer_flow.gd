@@ -2,23 +2,23 @@ extends Node
 
 ## CustomerFlow
 ##
-## Manages the complete customer lifecycle: spawn → move → buy → leave → despawn
+## Orchestrates the complete customer lifecycle: spawn → move → buy → leave → despawn
 ## SNA-139: 손님 풀 플로우: 입장 → 진열대 → 구매 → 퇴장
+## SNA-199: Refactored to use dedicated components for state, movement, and purchase logic.
 ##
 ## This system orchestrates:
-## - Customer state machine
-## - Customer movement and positioning
-## - Purchase logic integration
+## - CustomerStateMachine for state transitions
+## - CustomerMovement for movement/positioning
+## - CustomerPurchase for purchase logic
 ## - EventBus signal emission
 ## - CustomerView lifecycle management
 
-## Customer state machine
-## ENTERING: Customer is entering from left
-## MOVING_TO_DISPLAY: Customer is moving to display counter
-## BUYING: Customer is selecting/purchasing bread
-## LEAVING: Customer is leaving to right
-## DESPAWNED: Customer has been despawned
-enum State { ENTERING, MOVING_TO_DISPLAY, BUYING, LEAVING, DESPAWNED }
+# Preload component scripts
+const CustomerStateMachine = preload("res://scripts/customer/customer_state_machine.gd")
+const CustomerMovement = preload("res://scripts/customer/customer_movement.gd")
+const CustomerPurchase = preload("res://scripts/customer/customer_purchase.gd")
+
+# State enum is available via CustomerStateMachine.State
 
 ## Customer scene for view (deprecated - use CustomerViewFactory)
 const CUSTOMER_VIEW_SCENE = preload("res://scenes/world/customer_view.tscn")
@@ -26,23 +26,14 @@ const CUSTOMER_VIEW_SCENE = preload("res://scenes/world/customer_view.tscn")
 ## Customer view factory
 var _view_factory: Node = null
 
-## Display position (Near target counter/table)
-const DISPLAY_POSITION = Vector2(450, 550)
+## Customer state machine component
+var _state_machine: CustomerStateMachine = null
 
-## Spawn position (Bottom-left off-screen)
-const SPAWN_POSITION = Vector2(-200, 1100)
+## Customer movement component
+var _movement: CustomerMovement = null
 
-## Exit position (Bottom-right off-screen)
-const EXIT_POSITION = Vector2(1400, 1100)
-
-## Movement duration (seconds)
-const MOVEMENT_DURATION = 2.5
-
-## Purchase duration (seconds)
-const PURCHASE_DURATION = 1.5
-
-## Current customer state
-var state: State = State.DESPAWNED
+## Customer purchase component
+var _purchase: CustomerPurchase = null
 
 ## Current customer ID
 var customer_id: String = ""
@@ -50,23 +41,21 @@ var customer_id: String = ""
 ## Customer view instance
 var _customer_view: Node2D = null
 
-## Movement tween
-var _tween: Tween = null
-
-## Purchase timer
-var _purchase_timer: Timer = null
-
-## Preferred breads for this customer
-var _preferred_breads: Array[String] = []
-
 
 func _ready() -> void:
-	# Create purchase timer
-	_purchase_timer = Timer.new()
-	_purchase_timer.one_shot = true
-	if not _purchase_timer.timeout.is_connected(_on_purchase_timer_timeout):
-		_purchase_timer.timeout.connect(_on_purchase_timer_timeout)
-	add_child(_purchase_timer)
+	# Initialize components
+	_state_machine = CustomerStateMachine.new()
+	_movement = CustomerMovement.new()
+	_purchase = CustomerPurchase.new()
+
+	add_child(_state_machine)
+	add_child(_movement)
+	add_child(_purchase)
+
+	# Connect to component signals
+	_state_machine.state_changed.connect(_on_state_changed)
+	_movement.movement_completed.connect(_on_movement_completed)
+	_purchase.purchase_completed.connect(_on_purchase_component_completed)
 
 	# Initialize customer view factory
 	_initialize_view_factory()
@@ -79,7 +68,6 @@ func _ready() -> void:
 ## @param id: Unique customer identifier
 func start_customer_flow(id: String) -> void:
 	customer_id = id
-	state = State.ENTERING
 
 	# Create customer view
 	_create_customer_view()
@@ -94,27 +82,33 @@ func start_customer_flow(id: String) -> void:
 ## Get the current customer state
 ## Returns: Current State enum value
 func get_state() -> State:
-	return state
+	if _state_machine != null:
+		return _state_machine.get_state()
+	return CustomerStateMachine.State.DESPAWNED
 
 
 ## Get the current customer position
 ## Returns: Vector2 position of customer view
 func get_customer_position() -> Vector2:
-	if _customer_view != null and is_instance_valid(_customer_view):
-		return _customer_view.position
+	if _movement != null and _customer_view != null:
+		return _movement.get_customer_position(_customer_view)
 	return Vector2.ZERO
 
 
 ## Get spawn position
 ## Returns: Vector2 position for spawning
 func get_spawn_position() -> Vector2:
-	return SPAWN_POSITION
+	if _movement != null:
+		return _movement.get_spawn_position()
+	return CustomerMovement.SPAWN_POSITION
 
 
 ## Get exit position
 ## Returns: Vector2 position for exiting
 func get_exit_position() -> Vector2:
-	return EXIT_POSITION
+	if _movement != null:
+		return _movement.get_exit_position()
+	return CustomerMovement.EXIT_POSITION
 
 
 ## Get customer view instance
@@ -126,7 +120,8 @@ func get_customer_view() -> Node2D:
 ## Set preferred breads for this customer
 ## @param breads: Array of recipe IDs
 func set_preferred_breads(breads: Array[String]) -> void:
-	_preferred_breads = breads
+	if _purchase != null:
+		_purchase.set_preferred_breads(breads)
 
 
 ## ==================== INTERNAL METHODS ====================
@@ -153,8 +148,14 @@ func _spawn_customer() -> void:
 	if _customer_view == null:
 		return
 
-	_customer_view.position = SPAWN_POSITION
-	state = State.ENTERING
+	var spawn_pos = (
+		_movement.get_spawn_position() if _movement != null else CustomerMovement.SPAWN_POSITION
+	)
+	_customer_view.position = spawn_pos
+
+	# Transition to ENTERING state
+	if _state_machine != null:
+		_state_machine.transition_to(CustomerStateMachine.State.ENTERING)
 
 	# Emit spawn signal
 	EventBusAutoload.customer_spawned.emit(customer_id)
@@ -162,25 +163,14 @@ func _spawn_customer() -> void:
 
 ## Start movement to display counter
 func _start_movement_to_display() -> void:
-	if _customer_view == null:
+	if _customer_view == null or _movement == null:
 		return
 
-	state = State.MOVING_TO_DISPLAY
+	# Transition to MOVING_TO_DISPLAY state
+	_state_machine.transition_to(CustomerStateMachine.State.MOVING_TO_DISPLAY)
 
-	# Create movement tween
-	if _tween != null and is_instance_valid(_tween):
-		_tween.kill()
-
-	_tween = create_tween()
-	_tween.set_parallel(false)
-	_tween.set_ease(Tween.EASE_IN_OUT)
-	_tween.set_trans(Tween.TRANS_QUAD)
-
-	# Move to display position
-	_tween.tween_property(_customer_view, "position", DISPLAY_POSITION, MOVEMENT_DURATION)
-
-	# Connect tween completion
-	_tween.tween_callback(_on_arrival_at_display)
+	# Start movement
+	_movement.move_to_display(_customer_view)
 
 
 ## Start movement to display counter after brief delay
@@ -193,10 +183,14 @@ func _start_movement_to_display_delayed() -> void:
 
 ## Handle arrival at display counter
 func _on_arrival_at_display() -> void:
-	if state != State.MOVING_TO_DISPLAY:
+	if (
+		_state_machine == null
+		or _state_machine.get_state() != CustomerStateMachine.State.MOVING_TO_DISPLAY
+	):
 		return
 
-	state = State.BUYING
+	# Transition to BUYING state
+	_state_machine.transition_to(CustomerStateMachine.State.BUYING)
 
 	# Emit arrival signal
 	EventBusAutoload.customer_arrived_at_display.emit(customer_id)
@@ -205,7 +199,8 @@ func _on_arrival_at_display() -> void:
 	EventBusAutoload.emotion_triggered.emit(customer_id, "thinking")
 
 	# Start purchase timer
-	_purchase_timer.start(PURCHASE_DURATION)
+	if _purchase != null:
+		_purchase.start_purchase_timer()
 
 
 ## Handle purchase timer completion
@@ -215,11 +210,13 @@ func _on_purchase_timer_timeout() -> void:
 
 ## Process purchase logic
 func _process_purchase() -> void:
-	if state != State.BUYING:
+	if _state_machine == null or _state_machine.get_state() != CustomerStateMachine.State.BUYING:
 		return
 
 	# Get displayed breads from SalesManager
-	var inventory = _get_available_inventory()
+	var inventory = []
+	if _purchase != null:
+		inventory = _purchase.get_available_inventory()
 
 	if inventory.is_empty():
 		# No bread available, leave without purchasing
@@ -227,96 +224,51 @@ func _process_purchase() -> void:
 		return
 
 	# Select bread (use preferences if available)
-	var selected_bread = _select_bread(inventory)
+	var selected_bread = null
+	if _purchase != null:
+		selected_bread = _purchase.select_bread(inventory)
+
 	if selected_bread == null:
 		_start_leaving()
 		return
 
-	# Process sale
-	var price = selected_bread.base_price
-	var recipe_id = selected_bread.id
+	# Process sale through purchase component
+	var success = false
+	if _purchase != null:
+		success = _purchase.process_purchase(customer_id, selected_bread)
 
-	# Remove from inventory
-	SalesManager.remove_from_inventory(recipe_id, 1)
-
-	# Add gold to player
-	GameManager.gold += price
-
-	# Emit purchase signal
-	EventBusAutoload.customer_purchased.emit(customer_id, recipe_id, price)
-
-	# Emit emotion: customer is happy with purchase
-	EventBusAutoload.emotion_triggered.emit(customer_id, "heart")
-
-	# Start leaving
-	_start_leaving()
-
-
-## Select a bread from inventory based on preferences
-## @param inventory: Array of available bread recipes
-## Returns: Selected recipe or null
-func _select_bread(inventory: Array) -> Resource:
-	if inventory.is_empty():
-		return null
-
-	# If customer has preferences, try to find preferred bread
-	if not _preferred_breads.is_empty():
-		for bread in inventory:
-			if bread.id in _preferred_breads:
-				return bread
-
-	# Otherwise, select random bread
-	var random_index = randi() % inventory.size()
-	return inventory[random_index]
-
-
-## Get available inventory from SalesManager
-## Returns: Array of available bread recipes
-func _get_available_inventory() -> Array:
-	var available = []
-
-	# Get all inventory from SalesManager
-	if SalesManager.has_method("get_inventory_recipe_ids"):
-		var recipe_ids = SalesManager.get_inventory_recipe_ids()
-		for recipe_id in recipe_ids:
-			var count = SalesManager.get_inventory_count(recipe_id)
-			if count > 0:
-				var recipe = DataManager.get_recipe(recipe_id)
-				if recipe != null:
-					available.append(recipe)
-
-	return available
+	if success:
+		# Start leaving after successful purchase
+		_start_leaving()
+	else:
+		# Purchase failed, leave anyway
+		_start_leaving()
 
 
 ## Start leaving to right side
 func _start_leaving() -> void:
-	if _customer_view == null:
+	if _customer_view == null or _movement == null:
 		return
 
-	state = State.LEAVING
+	# Stop purchase timer
+	if _purchase != null:
+		_purchase.stop_purchase_timer()
 
-	# Create exit tween
-	if _tween != null and is_instance_valid(_tween):
-		_tween.kill()
+	# Transition to LEAVING state
+	if _state_machine != null:
+		_state_machine.transition_to(CustomerStateMachine.State.LEAVING)
 
-	_tween = create_tween()
-	_tween.set_parallel(false)
-	_tween.set_ease(Tween.EASE_IN_OUT)
-	_tween.set_trans(Tween.TRANS_QUAD)
-
-	# Move to exit position
-	_tween.tween_property(_customer_view, "position", EXIT_POSITION, MOVEMENT_DURATION)
-
-	# Connect tween completion
-	_tween.tween_callback(_on_exit_complete)
+	# Start exit movement
+	_movement.move_to_exit(_customer_view)
 
 
 ## Handle exit completion
 func _on_exit_complete() -> void:
-	if state != State.LEAVING:
+	if _state_machine == null or _state_machine.get_state() != CustomerStateMachine.State.LEAVING:
 		return
 
-	state = State.DESPAWNED
+	# Transition to DESPAWNED state
+	_state_machine.transition_to(CustomerStateMachine.State.DESPAWNED)
 
 	# Emit left signal
 	EventBusAutoload.customer_left.emit(customer_id)
@@ -413,11 +365,45 @@ func _add_view_to_scene_tree(view: Node2D) -> void:
 
 
 func _exit_tree() -> void:
-	if _tween != null and is_instance_valid(_tween):
-		_tween.kill()
+	if _movement != null:
+		_movement.cleanup()
 
-	if _purchase_timer != null and is_instance_valid(_purchase_timer):
-		_purchase_timer.timeout.disconnect(_on_purchase_timer_timeout)
+	if _purchase != null:
+		_purchase.cleanup()
 
 	if _customer_view != null and is_instance_valid(_customer_view):
 		_customer_view.queue_free()
+
+
+## ==================== COMPONENT SIGNAL HANDLERS ====================
+
+
+## Handle state changed from state machine
+func _on_state_changed(_old_state: int, _new_state: int) -> void:
+	# This can be used for debugging or additional logic when state changes
+	pass
+
+
+## Handle movement completed from movement component
+func _on_movement_completed() -> void:
+	# Check current state to determine what action to take
+	if _state_machine == null:
+		return
+
+	var current_state = _state_machine.get_state()
+
+	if current_state == CustomerStateMachine.State.MOVING_TO_DISPLAY:
+		# Just arrived at display
+		_on_arrival_at_display()
+	elif current_state == CustomerStateMachine.State.LEAVING:
+		# Just exited the bakery
+		_on_exit_complete()
+
+
+## Handle purchase completed from purchase component
+func _on_purchase_component_completed(
+	_customer_id: String, _recipe_id: String, _price: int
+) -> void:
+	# Purchase was successfully processed
+	# Now start leaving
+	_start_leaving()
