@@ -21,7 +21,8 @@ var _mock_recipe_provider: MockRecipeProvider
 func create_manager(max_slots: int = 3) -> Node:
 	_manager = BakeryManagerClass.new()
 	_manager._max_slots = max_slots
-	_manager._slots = []
+	_manager._slots = {}
+	_manager._active_slots = {}
 	_manager._active_count = 0
 	return _manager
 
