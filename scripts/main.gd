@@ -27,6 +27,9 @@ func _setup_m3_components() -> void:
 	if emoticon_view.has_signal("emoticon_shown"):
 		emoticon_view.emoticon_shown.connect(_on_emoticon_shown)
 
+	# Start customer spawning (SNA-196)
+	CustomerSpawner.start_spawning()
+
 	print("✓ M3 components initialized and connected")
 
 
