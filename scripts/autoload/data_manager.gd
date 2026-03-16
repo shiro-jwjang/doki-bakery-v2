@@ -14,6 +14,38 @@ const RECIPES_PATH := "res://resources/data/recipes/"
 const LEVELS_PATH := "res://resources/config/levels/"
 const SHOPS_PATH := "res://resources/config/shops/"
 
+# SNA-194: 웹 빌드 호환성을 위해 리소스 파일들을 명시적으로 나열
+# 웹 빌드에서 DirAccess.list_dir_begin()이 제대로 작동하지 않는 문제 해결
+const RECIPE_FILES := [
+	"bread_002.tres",
+	"bread_003.tres",
+	"bread_004.tres",
+	"bread_005.tres",
+	"bread_006.tres",
+	"bread_croissant.tres"
+]
+
+const LEVEL_FILES := [
+	"level_01.tres",
+	"level_02.tres",
+	"level_03.tres",
+	"level_04.tres",
+	"level_05.tres",
+	"level_06.tres",
+	"level_07.tres",
+	"level_08.tres",
+	"level_09.tres",
+	"level_10.tres"
+]
+
+const SHOP_FILES := [
+	"shop_level_1.tres",
+	"shop_level_2.tres",
+	"shop_level_3.tres",
+	"shop_level_4.tres",
+	"shop_level_5.tres"
+]
+
 var _recipes: Dictionary = {}  # id -> RecipeData
 var _levels: Dictionary = {}  # level -> LevelData
 var _shop_stages: Dictionary = {}  # stage -> ShopData
@@ -51,18 +83,54 @@ func _ensure_shops_loaded() -> void:
 
 
 func _load_recipes() -> void:
-	_load_resources(RECIPES_PATH, "id", _recipes, "display_name")
+	_load_resources_from_list(RECIPES_PATH, RECIPE_FILES, "id", _recipes, "display_name")
 	print("DataManager: Loaded %d recipes" % _recipes.size())
 
 
 func _load_levels() -> void:
-	_load_resources(LEVELS_PATH, "level", _levels)
+	_load_resources_from_list(LEVELS_PATH, LEVEL_FILES, "level", _levels)
 	print("DataManager: Loaded %d levels" % _levels.size())
 
 
 func _load_shops() -> void:
-	_load_resources(SHOPS_PATH, "shop_level", _shop_stages)
+	_load_resources_from_list(SHOPS_PATH, SHOP_FILES, "shop_level", _shop_stages)
 	print("DataManager: Loaded %d shop stages" % _shop_stages.size())
+
+
+## SNA-194: 리소스 로더 - 명시적 파일 목록 사용 (웹 빌드 호환)
+## Loads .tres files from an explicit list of filenames
+## path: Directory path to load from
+## file_list: Array of filenames to load
+## id_prop: Property name to use as dictionary key (e.g., "id", "level", "shop_level")
+## target_dict: Dictionary to store loaded resources in
+## required_prop: Optional additional property to validate (e.g., "display_name" for recipes)
+func _load_resources_from_list(
+	path: String,
+	file_list: Array,
+	id_prop: String,
+	target_dict: Dictionary,
+	required_prop: String = ""
+) -> void:
+	for file_name in file_list:
+		var full_path = path + file_name
+		var resource = load(full_path)
+
+		# Validate resource
+		if resource and resource.get(id_prop) != null:
+			# Check for additional required property if specified
+			if required_prop == "" or resource.get(required_prop) != null:
+				target_dict[resource.get(id_prop)] = resource
+			else:
+				push_warning(
+					(
+						"DataManager: File %s missing required property '%s'"
+						% [file_name, required_prop]
+					)
+				)
+		else:
+			push_warning(
+				"DataManager: File %s is not a valid resource (missing '%s')" % [file_name, id_prop]
+			)
 
 
 ## Generic resource loader - SNA-172
