@@ -40,7 +40,8 @@ func before_each() -> void:
 
 	# Set up manager state
 	_manager._max_slots = 3
-	_manager._slots = []
+	_manager._slots = {}
+	_manager._active_slots = {}
 	_manager._active_count = 0
 
 	# Inject mock providers using DI
