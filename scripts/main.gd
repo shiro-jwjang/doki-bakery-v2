@@ -8,6 +8,8 @@ extends Node2D
 @onready var customer_view: Node2D = $CustomerView
 @onready var emoticon_view: Node2D = $EmoticonView
 @onready var notification_area: Control = $UILayer/NotificationArea
+@onready var production_panel: Control = $UILayer/ProductionPanel
+@onready var bread_menu: Control = $UILayer/BreadMenu
 
 
 func _ready() -> void:
@@ -30,6 +32,10 @@ func _setup_m3_components() -> void:
 	# Start customer spawning (SNA-196)
 	CustomerSpawner.start_spawning()
 
+	# Setup production panel and bread menu interaction (SNA-197)
+	if production_panel.has_signal("slot_clicked"):
+		production_panel.slot_clicked.connect(_on_production_slot_clicked)
+
 	print("✓ M3 components initialized and connected")
 
 
@@ -40,3 +46,11 @@ func _on_emoticon_shown(emoticon_type: String) -> void:
 	EventBusAutoload.notification_requested.emit(
 		"Customer Emotion", "Customer is feeling: %s" % emoticon_type, null, 0
 	)
+
+
+## Handle production slot clicked - show bread menu
+func _on_production_slot_clicked(slot_index: int) -> void:
+	print("Production slot clicked: %d" % slot_index)
+	# Show bread menu for the clicked slot
+	if bread_menu.has_method("show_for_slot"):
+		bread_menu.show_for_slot(slot_index)

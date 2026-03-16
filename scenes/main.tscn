@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://main_scene_v2"]
+[gd_scene load_steps=7 format=3 uid="uid://main_scene_v2"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" uid="uid://customer_view_001" path="res://scenes/world/customer_view.tscn" id="2_customer_view"]
 [ext_resource type="PackedScene" uid="uid://emoticon_view_scene" path="res://scenes/ui/emoticon_view.tscn" id="3_emoticon_view"]
 [ext_resource type="PackedScene" uid="uid://notification_area" path="res://scenes/ui/notification_area.tscn" id="4_notification_area"]
+[ext_resource type="PackedScene" uid="uid://production_panel" path="res://scenes/ui/production_panel.tscn" id="5_production_panel"]
+[ext_resource type="PackedScene" uid="uid://bread_menu" path="res://scenes/ui/bread_menu.tscn" id="6_bread_menu"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -17,3 +19,7 @@ position = Vector2(100, 60)
 [node name="UILayer" type="CanvasLayer" parent="."]
 
 [node name="NotificationArea" parent="UILayer" instance=ExtResource("4_notification_area")]
+
+[node name="ProductionPanel" parent="UILayer" instance=ExtResource("5_production_panel")]
+
+[node name="BreadMenu" parent="UILayer" instance=ExtResource("6_bread_menu")]

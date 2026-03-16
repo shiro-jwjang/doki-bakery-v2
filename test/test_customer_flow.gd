@@ -320,10 +320,12 @@ func test_customer_view_despawned() -> void:
 	_simulate_purchase_complete()
 	await wait_seconds(0.1)
 	_simulate_exit_complete()
-	await wait_seconds(0.2) # Give it time to queue_free
+	await wait_seconds(0.2)  # Give it time to queue_free
 
 	# Customer flow should be removed (it calls queue_free() internally after exit)
-	assert_true(not is_instance_valid(_customer_flow), "Customer flow should be freed after despawn")
+	assert_true(
+		not is_instance_valid(_customer_flow), "Customer flow should be freed after despawn"
+	)
 
 
 ## ==================== EVENT BUS SIGNAL TESTS ====================
