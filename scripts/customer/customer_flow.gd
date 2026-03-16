@@ -18,7 +18,14 @@ const CustomerStateMachine = preload("res://scripts/customer/customer_state_mach
 const CustomerMovement = preload("res://scripts/customer/customer_movement.gd")
 const CustomerPurchase = preload("res://scripts/customer/customer_purchase.gd")
 
-# State enum is available via CustomerStateMachine.State
+# State enum - expose for backward compatibility and test access
+enum State {
+	ENTERING,
+	MOVING_TO_DISPLAY,
+	BUYING,
+	LEAVING,
+	DESPAWNED,
+}
 
 ## Customer scene for view (deprecated - use CustomerViewFactory)
 const CUSTOMER_VIEW_SCENE = preload("res://scenes/world/customer_view.tscn")
@@ -81,7 +88,7 @@ func start_customer_flow(id: String) -> void:
 
 ## Get the current customer state
 ## Returns: Current State enum value
-func get_state() -> State:
+func get_state() -> CustomerStateMachine.State:
 	if _state_machine != null:
 		return _state_machine.get_state()
 	return CustomerStateMachine.State.DESPAWNED
