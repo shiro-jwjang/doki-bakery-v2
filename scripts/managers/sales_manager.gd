@@ -106,6 +106,13 @@ func get_inventory_recipe_ids() -> Array:
 	return _inventory.keys()
 
 
+## Clear all inventory (mainly for testing)
+## SNA-199: Added for unit test isolation
+func clear_inventory() -> void:
+	_inventory.clear()
+	_inventory_items.clear()
+
+
 ## Get all recipes with available inventory (stock > 0)
 ## Returns: Array[RecipeData] of recipes with positive stock
 ## SNA-173: SalesManager Inventory Query Extension
