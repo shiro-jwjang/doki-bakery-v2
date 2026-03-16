@@ -35,10 +35,6 @@ CustomerSpawner="*res://scripts/autoload/customer_spawner.gd"
 CustomerFlow="*res://scripts/customer/customer_flow.gd"
 UIManager="*res://scenes/autoload/ui_manager.tscn"
 
-[gui]
-
-theme/custom="res://themes/default_theme.tres"
-
 [display]
 
 window/size/viewport_width=1200
@@ -53,6 +49,10 @@ window/stretch/mode="canvas_items"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/godotsteam/plugin.cfg")
+
+[gui]
+
+theme/custom="res://themes/default_theme.tres"
 
 [rendering]
 

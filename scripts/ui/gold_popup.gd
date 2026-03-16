@@ -38,5 +38,6 @@ func _ready() -> void:
 	tween.chain().tween_callback(queue_free)
 
 
-func setup(change_amount: int) -> void:
+func setup(change_amount: int, p_lifetime: float = 1.5) -> void:
 	amount = change_amount
+	lifetime = p_lifetime

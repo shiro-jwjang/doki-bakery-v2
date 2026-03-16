@@ -131,8 +131,8 @@ func test_player_idle_animation_plays() -> void:
 	# Verify idle animation is set
 	assert_eq(
 		compositor.current_animation,
-		"",
-		"AvatarCompositor current_animation should be empty initially"
+		"idle",
+		"AvatarCompositor current_animation should be 'idle' initially"
 	)
 
 

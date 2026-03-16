@@ -1,68 +1,258 @@
-[gd_scene load_steps=7 format=3 uid="uid://avatar_compositor_scene"]
+[gd_scene format=3 uid="uid://3o47foejhbko"]
 
-[ext_resource type="Script" path="res://scripts/components/avatar_compositor.gd" id="1_compositor"]
+[ext_resource type="Script" uid="uid://ntx24usnl6rv" path="res://scripts/components/avatar_compositor.gd" id="1_compositor"]
+[ext_resource type="Texture2D" uid="uid://db56rcdd08uoy" path="res://assets/sprites/characters/player/hairdn.png" id="2_hairdn"]
+[ext_resource type="Texture2D" uid="uid://duufx6wtqkglm" path="res://assets/sprites/characters/player/body.png" id="3_body"]
+[ext_resource type="Texture2D" uid="uid://bypki3ne8la21" path="res://assets/sprites/characters/player/eye.png" id="4_eye"]
+[ext_resource type="Texture2D" uid="uid://8kkyqgc0b1yi" path="res://assets/sprites/characters/player/hairup.png" id="5_hairup"]
+[ext_resource type="Texture2D" uid="uid://dgghkgps8g1k3" path="res://assets/sprites/characters/player/hat.png" id="6_hat"]
+
+[sub_resource type="AtlasTexture" id="hairdn_0"]
+atlas = ExtResource("2_hairdn")
+region = Rect2(0, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hairdn_1"]
+atlas = ExtResource("2_hairdn")
+region = Rect2(50, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hairdn_2"]
+atlas = ExtResource("2_hairdn")
+region = Rect2(100, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hairdn_3"]
+atlas = ExtResource("2_hairdn")
+region = Rect2(150, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hairdn_4"]
+atlas = ExtResource("2_hairdn")
+region = Rect2(200, 0, 50, 60)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_hairdn"]
-animations/frame_0/tags = {}
-animations/frame_1/tags = {}
-animations/frame_2/tags = {}
-animations/frame_3/tags = {}
-animations/frame_4/tags = {}
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("hairdn_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("hairdn_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("hairdn_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("hairdn_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("hairdn_4")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="body_0"]
+atlas = ExtResource("3_body")
+region = Rect2(0, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="body_1"]
+atlas = ExtResource("3_body")
+region = Rect2(50, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="body_2"]
+atlas = ExtResource("3_body")
+region = Rect2(100, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="body_3"]
+atlas = ExtResource("3_body")
+region = Rect2(150, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="body_4"]
+atlas = ExtResource("3_body")
+region = Rect2(200, 0, 50, 60)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_body"]
-animations/frame_0/tags = {}
-animations/frame_1/tags = {}
-animations/frame_2/tags = {}
-animations/frame_3/tags = {}
-animations/frame_4/tags = {}
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("body_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("body_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("body_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("body_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("body_4")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="eye_0"]
+atlas = ExtResource("4_eye")
+region = Rect2(0, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="eye_1"]
+atlas = ExtResource("4_eye")
+region = Rect2(50, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="eye_2"]
+atlas = ExtResource("4_eye")
+region = Rect2(100, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="eye_3"]
+atlas = ExtResource("4_eye")
+region = Rect2(150, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="eye_4"]
+atlas = ExtResource("4_eye")
+region = Rect2(200, 0, 50, 60)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_eye"]
-animations/frame_0/tags = {}
-animations/frame_1/tags = {}
-animations/frame_2/tags = {}
-animations/frame_3/tags = {}
-animations/frame_4/tags = {}
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("eye_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("eye_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("eye_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("eye_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("eye_4")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="hairup_0"]
+atlas = ExtResource("5_hairup")
+region = Rect2(0, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hairup_1"]
+atlas = ExtResource("5_hairup")
+region = Rect2(50, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hairup_2"]
+atlas = ExtResource("5_hairup")
+region = Rect2(100, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hairup_3"]
+atlas = ExtResource("5_hairup")
+region = Rect2(150, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hairup_4"]
+atlas = ExtResource("5_hairup")
+region = Rect2(200, 0, 50, 60)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_hairup"]
-animations/frame_0/tags = {}
-animations/frame_1/tags = {}
-animations/frame_2/tags = {}
-animations/frame_3/tags = {}
-animations/frame_4/tags = {}
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("hairup_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("hairup_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("hairup_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("hairup_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("hairup_4")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="hat_0"]
+atlas = ExtResource("6_hat")
+region = Rect2(0, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hat_1"]
+atlas = ExtResource("6_hat")
+region = Rect2(50, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hat_2"]
+atlas = ExtResource("6_hat")
+region = Rect2(100, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hat_3"]
+atlas = ExtResource("6_hat")
+region = Rect2(150, 0, 50, 60)
+
+[sub_resource type="AtlasTexture" id="hat_4"]
+atlas = ExtResource("6_hat")
+region = Rect2(200, 0, 50, 60)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_hat"]
-animations/frame_0/tags = {}
-animations/frame_1/tags = {}
-animations/frame_2/tags = {}
-animations/frame_3/tags = {}
-animations/frame_4/tags = {}
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("hat_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("hat_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("hat_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("hat_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("hat_4")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}]
 
-[node name="AvatarCompositor" type="Node2D"]
+[node name="AvatarCompositor" type="Node2D" unique_id=1237682232]
 script = ExtResource("1_compositor")
 
-[node name="Layers" type="Node2D" parent="."]
+[node name="Layers" type="Node2D" parent="." unique_id=1631661429]
 
-[node name="HairDn" type="AnimatedSprite2D" parent="Layers"]
-z_index = 0
+[node name="HairDn" type="AnimatedSprite2D" parent="Layers" unique_id=1081531623]
 sprite_frames = SubResource("SpriteFrames_hairdn")
 animation = &"idle"
+autoplay = "idle"
 
-[node name="Body" type="AnimatedSprite2D" parent="Layers"]
+[node name="Body" type="AnimatedSprite2D" parent="Layers" unique_id=1210409187]
 z_index = 1
 sprite_frames = SubResource("SpriteFrames_body")
 animation = &"idle"
+autoplay = "idle"
 
-[node name="Eye" type="AnimatedSprite2D" parent="Layers"]
+[node name="Eye" type="AnimatedSprite2D" parent="Layers" unique_id=374805832]
 z_index = 2
+position = Vector2(0, -1)
 sprite_frames = SubResource("SpriteFrames_eye")
 animation = &"idle"
+autoplay = "idle"
 
-[node name="HairUp" type="AnimatedSprite2D" parent="Layers"]
+[node name="HairUp" type="AnimatedSprite2D" parent="Layers" unique_id=1413906657]
 z_index = 3
 sprite_frames = SubResource("SpriteFrames_hairup")
 animation = &"idle"
+autoplay = "idle"
 
-[node name="Hat" type="AnimatedSprite2D" parent="Layers"]
+[node name="Hat" type="AnimatedSprite2D" parent="Layers" unique_id=345505073]
 z_index = 4
 sprite_frames = SubResource("SpriteFrames_hat")
 animation = &"idle"
+autoplay = "idle"

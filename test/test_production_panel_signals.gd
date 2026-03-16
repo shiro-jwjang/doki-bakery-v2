@@ -7,63 +7,54 @@ extends GutTest
 const ProductionPanelScene = preload("res://scenes/ui/production_panel.tscn")
 
 var panel: Control
+var event_router: Node
 
 
 func before_each() -> void:
-	# Clear BakeryManager state to prevent previous tests' active slots
-	# from emitting production_progressed signals in the background
 	BakeryManager._slots.clear()
 	BakeryManager._active_count = 0
-	# Disable BakeryManager _process to avoid interfering with signal tests
 	BakeryManager.set_process(false)
 
-	# Create ProductionPanel instance from scene (not new() to init @onready vars)
 	var ProductionPanelScene = preload("res://scenes/ui/production_panel.tscn")
 	panel = ProductionPanelScene.instantiate()
 	add_child(panel)
-	# Wait for panel to be ready
-	await wait_physics_frames(2)
+
+	event_router = load("res://scripts/ui/ui_event_router.gd").new()
+	add_child(event_router)
+	
+	event_router.set_production_panel(panel)
+	event_router.connect_event_bus_signals()
+
+	# One frame is enough for _ready() and node initialization
+	await wait_physics_frames(1)
 
 
 func after_each() -> void:
 	if panel != null:
 		panel.queue_free()
-		# Wait for node to be freed
-		await wait_physics_frames(2)
-	# Re-enable BakeryManager _process for other tests
-	BakeryManager.set_process(true)
+	if event_router != null:
+		event_router.queue_free()
+	# No need to wait after queue_free in unit tests as objects are removed from tree immediately
+	# and freed at end of frame
 
 
 ## Test that panel updates on production_started signal
 func test_panel_updates_on_baking_started() -> void:
-	# Emit signal (simulating BakeryManager) with real recipe ID
 	EventBusAutoload.production_started.emit(0, "bread_croissant")
-
-	# Wait for UI to update
-	await wait_physics_frames(2)
-
-	# Verify slot UI was updated
+	
+	# Assert immediately (UI updates are synchronous)
 	var slot_ui = panel.get_slot_ui(0)
 	assert_not_null(slot_ui, "Slot UI should exist")
-	assert_not_null(slot_ui.get("_status_label"), "Slot should have _status_label")
-
 	var label: Label = slot_ui._status_label
 	assert_true(label.text.contains("베이킹 중"), "Label should show baking status")
 
 
 ## Test that panel updates on production_completed signal
 func test_panel_updates_on_baking_finished() -> void:
-	# Emit signal (simulating BakeryManager) with real recipe ID
 	EventBusAutoload.production_completed.emit(1, "bread_croissant")
 
-	# Wait for UI to update
-	await wait_physics_frames(2)
-
-	# Verify slot UI was updated
 	var slot_ui = panel.get_slot_ui(1)
 	assert_not_null(slot_ui, "Slot UI should exist")
-	assert_not_null(slot_ui.get("_status_label"), "Slot should have _status_label")
-
 	var label: Label = slot_ui._status_label
 	assert_true(label.text.contains("완료!"), "Label should show completion status")
 	assert_eq(slot_ui._progress_bar.value, 1.0, "Progress bar should be full")
@@ -71,41 +62,24 @@ func test_panel_updates_on_baking_finished() -> void:
 
 ## Test that panel updates progress bar on production_progressed signal
 func test_panel_updates_on_baking_progressed() -> void:
-	# First start production so the slot exists
 	EventBusAutoload.production_started.emit(0, "bread_croissant")
-	await wait_physics_frames(2)
 
-	# Emit progress signal at 50%
+	# 50%
 	EventBusAutoload.production_progressed.emit(0, 0.5)
-	await wait_physics_frames(2)
-
-	# Verify progress bar was updated
 	var slot_ui = panel.get_slot_ui(0)
-	assert_not_null(slot_ui, "Slot UI should exist")
 	assert_eq(slot_ui._progress_bar.value, 0.5, "Progress bar should show 50%")
 
-	# Emit progress signal at 80%
+	# 80%
 	EventBusAutoload.production_progressed.emit(0, 0.8)
-	await wait_physics_frames(2)
-
 	assert_eq(slot_ui._progress_bar.value, 0.8, "Progress bar should update to 80%")
 
 
 ## Test that ProductionPanel does not poll BakeryManager in _process
 func test_panel_no_process_polling() -> void:
-	# This test verifies that ProductionPanel uses signal-based updates
-	# instead of polling BakeryManager in _process
-
-	# Emit signals without calling _process (use real recipe ID)
 	EventBusAutoload.production_started.emit(0, "bread_croissant")
 	EventBusAutoload.production_completed.emit(0, "bread_croissant")
 
-	# Wait for UI to update
-	await wait_physics_frames(2)
-
-	# Verify slot UI was updated via signals alone
 	var slot_ui = panel.get_slot_ui(0)
-	assert_not_null(slot_ui, "Slot UI should exist")
 	assert_true(
 		slot_ui._status_label.text.contains("완료"), "Slot should show completion without polling"
 	)

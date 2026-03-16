@@ -53,6 +53,7 @@ var character_id: String = ""
 ## ==================== PRIVATE VARIABLES ====================
 
 var _sprite: Sprite2D
+var _area: Area2D
 var _tween: Tween
 var _is_showing: bool = false
 var _current_type: String = ""
@@ -61,7 +62,7 @@ var _current_type: String = ""
 
 
 func _ready() -> void:
-	_setup_sprite()
+	_setup_nodes()
 	_connect_event_bus()
 	hide_emoticon()
 
@@ -137,21 +138,46 @@ func _get_emoticon_texture(emoticon_type: String) -> Texture2D:
 ## ==================== PRIVATE METHODS ====================
 
 
-func _setup_sprite() -> void:
-	# Check if sprite already exists in scene (from scene file)
+func _setup_nodes() -> void:
+	# Setup Sprite2D
 	_sprite = get_node_or_null("Sprite2D")
 	if _sprite == null:
-		# Create new sprite if not in scene
 		_sprite = Sprite2D.new()
 		_sprite.name = "Sprite2D"
-		_sprite.centered = true
-		_sprite.scale = Vector2(3.0, 3.0)  # 16x16 -> 48x48
-		_sprite.hide()
 		add_child(_sprite)
-	else:
-		# Ensure existing sprite has correct scale
-		_sprite.centered = true
-		_sprite.scale = Vector2(3.0, 3.0)  # 16x16 -> 48x48
+
+	_sprite.centered = true
+	_sprite.scale = Vector2(3.0, 3.0)  # 16x16 -> 48x48
+	_sprite.hide()
+
+	# Setup Area2D
+	_area = get_node_or_null("Area2D")
+	if _area:
+		if not _area.input_event.is_connected(_on_input_event):
+			_area.input_event.connect(_on_input_event)
+
+
+func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
+	if not _is_showing:
+		return
+
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_on_emoticon_clicked()
+
+
+func _on_emoticon_clicked() -> void:
+	# Send notification via EventBus
+	var title := "감정 표현"
+	var desc := (
+		"캐릭터(%s)가 %s 상태입니다!"
+		% [character_id if not character_id.is_empty() else "이름없음", _current_type]
+	)
+
+	if EventBusAutoload.has_signal("notification_requested"):
+		EventBusAutoload.notification_requested.emit(title, desc, _sprite.texture, 0)
+
+	# Optional: Hide after click or show feedback
+	hide_emoticon()
 
 
 func _connect_event_bus() -> void:

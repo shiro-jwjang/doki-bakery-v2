@@ -8,6 +8,8 @@ extends Node2D
 ## SNA-90: PlayerView — 주인공 배치 + idle 애니메이션
 ## SNA-122: PlayerView — 아바타 외형 적용
 
+const DEFAULT_AVATAR_PATH = "res://resources/config/avatars/avatar_01.tres"
+
 @onready var avatar_compositor: AvatarCompositor = $AvatarCompositor
 
 
@@ -26,8 +28,12 @@ func _ready() -> void:
 
 func _apply_current_avatar() -> void:
 	var avatar_data = GameManager.get_avatar_data()
+
+	# Fallback: 기본 아바타 로드
+	if avatar_data == null and ResourceLoader.exists(DEFAULT_AVATAR_PATH):
+		avatar_data = load(DEFAULT_AVATAR_PATH) as AvatarData
+
 	if avatar_data != null and avatar_compositor != null:
-		# Only apply if avatar_compositor is ready
 		if avatar_compositor.has_method("apply_avatar_data"):
 			avatar_compositor.apply_avatar_data(avatar_data)
 

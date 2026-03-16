@@ -135,7 +135,9 @@ func test_state_transition_leaving_to_despawned() -> void:
 	_simulate_exit_complete()
 
 	await wait_seconds(0.1)
-	assert_eq(_get_customer_state(), "DESPAWNED", "State should transition to DESPAWNED after exit")
+	# SNA-186: CustomerFlow now deletes itself after exit.
+	# Check that the flow node is no longer valid or has completed its job.
+	assert_true(not is_instance_valid(_customer_flow), "Flow node should be freed after exit")
 
 
 ## ==================== SPAWN POSITION TESTS ====================
@@ -318,15 +320,10 @@ func test_customer_view_despawned() -> void:
 	_simulate_purchase_complete()
 	await wait_seconds(0.1)
 	_simulate_exit_complete()
-	await wait_seconds(0.1)
+	await wait_seconds(0.2) # Give it time to queue_free
 
-	# Customer view should be queued for deletion or removed
-	if _customer_flow.has_method("get_customer_view"):
-		var view = _customer_flow.get_customer_view()
-		assert_true(
-			view == null or not is_instance_valid(view),
-			"Customer view should be null or invalid after despawn"
-		)
+	# Customer flow should be removed (it calls queue_free() internally after exit)
+	assert_true(not is_instance_valid(_customer_flow), "Customer flow should be freed after despawn")
 
 
 ## ==================== EVENT BUS SIGNAL TESTS ====================

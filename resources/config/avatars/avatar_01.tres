@@ -1,16 +1,16 @@
-[gd_resource type="Resource" script_class="AvatarData" load_steps=6 format=3 uid="uid://avatar_01"]
+[gd_resource type="Resource" script_class="AvatarData" load_steps=7 format=3 uid="uid://avatar_01"]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/characters/player/body.png" id="1_body"]
-[ext_resource type="Texture2D" path="res://assets/sprites/characters/player/eye.png" id="2_eye"]
-[ext_resource type="Texture2D" path="res://assets/sprites/characters/player/hairup.png" id="3_hairup"]
-[ext_resource type="Texture2D" path="res://assets/sprites/characters/player/hairdn.png" id="4_hairdn"]
-[ext_resource type="Texture2D" path="res://assets/sprites/characters/player/hat.png" id="5_hat"]
+[ext_resource type="Script" path="res://resources/avatar_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/characters/player/body.png" id="2_body"]
+[ext_resource type="Texture2D" path="res://assets/sprites/characters/player/eye.png" id="3_eye"]
+[ext_resource type="Texture2D" path="res://assets/sprites/characters/player/hairup.png" id="4_hairup"]
+[ext_resource type="Texture2D" path="res://assets/sprites/characters/player/hairdn.png" id="5_hairdn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/characters/player/hat.png" id="6_hat"]
 
 [resource]
-script = ExtResource("1_body")
-
-body_texture = ExtResource("1_body")
-eye_texture = ExtResource("2_eye")
-hairup_texture = ExtResource("3_hairup")
-hairdn_texture = ExtResource("4_hairdn")
-hat_texture = ExtResource("5_hat")
+script = ExtResource("1_script")
+body_texture = ExtResource("2_body")
+eye_texture = ExtResource("3_eye")
+hairup_texture = ExtResource("4_hairup")
+hairdn_texture = ExtResource("5_hairdn")
+hat_texture = ExtResource("6_hat")

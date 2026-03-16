@@ -11,6 +11,8 @@ var test_icon: Texture2D
 
 
 func before_each() -> void:
+	# Reset static duration
+	NotificationArea.notification_duration = 3.0
 	# Load a real texture for testing
 	test_icon = preload("res://assets/placeholders/bread_white.png")
 
@@ -186,6 +188,7 @@ func test_clear_all_removes_notifications() -> void:
 ## Test: NotificationItem auto-removes after delay (animation duration)
 func test_notification_auto_removes_after_delay() -> void:
 	_create_notification_area()
+	NotificationArea.notification_duration = 0.1
 
 	notification_area.show_notification("Title", "Desc", test_icon, 0)
 	await wait_physics_frames(2)
@@ -194,8 +197,8 @@ func test_notification_auto_removes_after_delay() -> void:
 	var initial_count = vbox.get_child_count()
 	assert_eq(initial_count, 1, "Should have one notification initially")
 
-	# Wait for animation duration (3 seconds) + buffer
-	await wait_seconds(3.5)
+	# Wait for animation duration (0.1 seconds) + buffer
+	await wait_seconds(0.5)
 
 	assert_eq(vbox.get_child_count(), 0, "Notification should be removed after animation")
 
