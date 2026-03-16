@@ -2,11 +2,9 @@ extends Node
 
 ## EventBus Autoload
 ##
-## Centralized signal hub for global game events.
-## Forwards manager signals to UI and routes UI requests to managers.
+## Pure signal hub for global game events.
 ## SNA-66: EventBus 시그널 정의 (상태변경 + 액션요청)
-##
-## Note: Uses deferred connection because managers load after EventBus.
+## SNA-188: Removed forwarders - now a pure signal hub
 
 ## ==================== STATE CHANGE SIGNALS (Logic → UI) ====================
 
@@ -103,27 +101,8 @@ signal notification_requested(title: String, description: String, icon: Texture2
 
 
 func _ready() -> void:
-	# Use call_deferred to connect after all autoloads are ready
-	_setup_connections.call_deferred()
-
-
-func _setup_connections() -> void:
-	_connect_manager_forwarding()
+	# Connect request routers
 	_connect_request_handlers()
-
-
-## Forward manager signals to EventBus signals
-## This allows UI to subscribe only to EventBus, not individual managers
-##
-## Note: GameManager directly emits EventBus signals in its setters, so we don't
-## need to forward from GameManager. This approach avoids circular dependencies
-## and works correctly with the Autoload loading order.
-## SNA-182: Removed has_signal() checks - connections are established once at _ready
-func _connect_manager_forwarding() -> void:
-	# BakeryManager → EventBus forwarding
-	# BakeryManager has its own signals that we forward to EventBus
-	BakeryManager.production_started.connect(_forward_production_started)
-	BakeryManager.production_completed.connect(_forward_production_completed)
 
 
 ## Connect request signals to manager methods
@@ -131,17 +110,6 @@ func _connect_request_handlers() -> void:
 	baking_requested.connect(_route_baking_requested)
 	sell_requested.connect(_route_sell_requested)
 	upgrade_requested.connect(_route_upgrade_requested)
-
-
-## ==================== SIGNAL FORWARDERS ====================
-
-
-func _forward_production_started(slot_index: int, recipe_id: String) -> void:
-	production_started.emit(slot_index, recipe_id)
-
-
-func _forward_production_completed(slot_index: int, recipe_id: String) -> void:
-	production_completed.emit(slot_index, recipe_id)
 
 
 ## ==================== REQUEST ROUTERS ====================
