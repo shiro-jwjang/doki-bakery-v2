@@ -17,8 +17,9 @@ signal emoticon_hidden
 
 # Emoticon type to texture path mapping
 const EMOTICON_PATHS := {
-	"heart": "res://assets/sprites/ui/emoticons/heart.png",
-	"star": "res://assets/sprites/ui/emoticons/star.png",
+	"heart": "res://assets/placeholders/emoticon_heart.png",
+	"star": "res://assets/placeholders/emoticon_star.png",
+	"idea": "res://assets/placeholders/emoticon_idea.png",
 	"yummy": "res://assets/sprites/ui/emoticons/yummy.png",
 	"thinking": "res://assets/sprites/ui/emoticons/thinking.png",
 	"question": "res://assets/sprites/ui/emoticons/question.png",
@@ -147,6 +148,10 @@ func _setup_sprite() -> void:
 		_sprite.scale = Vector2(3.0, 3.0)  # 16x16 -> 48x48
 		_sprite.hide()
 		add_child(_sprite)
+	else:
+		# Ensure existing sprite has correct scale
+		_sprite.centered = true
+		_sprite.scale = Vector2(3.0, 3.0)  # 16x16 -> 48x48
 
 
 func _connect_event_bus() -> void:

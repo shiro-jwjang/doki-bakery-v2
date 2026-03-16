@@ -198,6 +198,9 @@ func _on_arrival_at_display() -> void:
 	# Emit arrival signal
 	EventBusAutoload.customer_arrived_at_display.emit(customer_id)
 
+	# Emit emotion: customer is thinking about what to buy
+	EventBusAutoload.emotion_triggered.emit(customer_id, "thinking")
+
 	# Start purchase timer
 	_purchase_timer.start(PURCHASE_DURATION)
 
@@ -238,6 +241,9 @@ func _process_purchase() -> void:
 
 	# Emit purchase signal
 	EventBusAutoload.customer_purchased.emit(customer_id, recipe_id, price)
+
+	# Emit emotion: customer is happy with purchase
+	EventBusAutoload.emotion_triggered.emit(customer_id, "heart")
 
 	# Start leaving
 	_start_leaving()
