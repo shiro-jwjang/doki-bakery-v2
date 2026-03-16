@@ -161,7 +161,7 @@ func test_level_up_on_xp_threshold() -> void:
 
 	# Add XP to trigger level up
 	# Level 2 requires 100 XP
-	GameManager.add_xp(100)
+	GameManager.add_experience(100)
 
 	# Verify level up
 	assert_true(_level_up_received, "level_up signal should be emitted")

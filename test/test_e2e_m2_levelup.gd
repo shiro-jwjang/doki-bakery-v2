@@ -143,7 +143,7 @@ func test_e2e_hud_exp_bar_updates() -> void:
 	var initial_value := exp_bar.value
 
 	# Add XP
-	GameManager.add_xp(30)
+	GameManager.add_experience(30)
 	await wait_physics_frames(2)
 
 	# Verify exp bar updated
@@ -164,7 +164,7 @@ func test_e2e_hud_level_display_updates_on_level_up() -> void:
 	assert_not_null(hud, "HUD should exist in WorldView")
 
 	# Add enough XP to level up
-	GameManager.add_xp(LEVEL_2_XP)
+	GameManager.add_experience(LEVEL_2_XP)
 	await wait_for_signal(EventBusAutoload.level_up, 2.0)
 
 	# Verify level changed
@@ -203,7 +203,7 @@ func test_e2e_level_up_notification_shows() -> void:
 	assert_false(notification.visible, "Notification should start hidden")
 
 	# Trigger level up
-	GameManager.add_xp(LEVEL_2_XP)
+	GameManager.add_experience(LEVEL_2_XP)
 	await wait_for_signal(EventBusAutoload.level_up, 2.0)
 
 	# Check if notification becomes visible

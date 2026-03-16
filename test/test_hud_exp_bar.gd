@@ -62,7 +62,7 @@ func test_initial_state() -> void:
 	assert_eq(exp_bar.max_value, expected_max, "Initial max XP should match level 2 requirement")
 
 
-## Test that XP bar updates when GameManager.add_xp is called
+## Test that XP bar updates when GameManager.add_experience is called
 func test_xp_bar_updates_with_game_manager() -> void:
 	if not _can_load_scenes():
 		pending("HUD scene tests require GUI mode")
@@ -79,7 +79,7 @@ func test_xp_bar_updates_with_game_manager() -> void:
 		return
 
 	# Add XP through GameManager
-	GameManager.add_xp(30)
+	GameManager.add_experience(30)
 	await wait_physics_frames(3)
 
 	assert_eq(exp_bar.value, 30.0, "XP bar should show 30")
@@ -106,7 +106,7 @@ func test_level_up_via_game_manager() -> void:
 	GameManager.experience = 0
 
 	# Add enough XP to level up (100 XP)
-	GameManager.add_xp(100)
+	GameManager.add_experience(100)
 	await wait_physics_frames(3)
 
 	# After level up:
