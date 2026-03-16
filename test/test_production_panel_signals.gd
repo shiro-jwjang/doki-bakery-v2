@@ -14,6 +14,8 @@ func before_each() -> void:
 	# from emitting production_progressed signals in the background
 	BakeryManager._slots.clear()
 	BakeryManager._active_count = 0
+	# Disable BakeryManager _process to avoid interfering with signal tests
+	BakeryManager.set_process(false)
 
 	# Create ProductionPanel instance from scene (not new() to init @onready vars)
 	var ProductionPanelScene = preload("res://scenes/ui/production_panel.tscn")
@@ -28,6 +30,8 @@ func after_each() -> void:
 		panel.queue_free()
 		# Wait for node to be freed
 		await wait_physics_frames(2)
+	# Re-enable BakeryManager _process for other tests
+	BakeryManager.set_process(true)
 
 
 ## Test that panel updates on production_started signal
