@@ -61,6 +61,11 @@ func _ready() -> void:
 	# Initialize UI state
 	_init_ui_state()
 
+	# Start customer spawning (SNA-77)
+	if CustomerSpawner.has_method("start_spawning"):
+		CustomerSpawner.set_spawn_interval(3.0)
+		CustomerSpawner.start_spawning()
+
 
 ## Initialize UI Component Registry
 func _init_component_registry() -> void:
@@ -101,6 +106,10 @@ func _connect_event_bus_signals() -> void:
 
 	# Connect local UI signals
 	_connect_ui_signals()
+
+	# Connect customer signals
+	if not EventBusAutoload.customer_arrived.is_connected(_on_customer_arrived):
+		EventBusAutoload.customer_arrived.connect(_on_customer_arrived)
 
 
 ## Initialize UI state
@@ -225,3 +234,15 @@ func get_component_registry() -> Node:
 ## Get event router (for testing/external access)
 func get_event_router() -> Node:
 	return _event_router
+
+
+# ==================== Customer Events ====================
+
+const CustomerFlowScript = preload("res://scripts/customer/customer_flow.gd")
+
+
+func _on_customer_arrived(p_customer_id: String) -> void:
+	var flow = CustomerFlowScript.new()
+	flow.name = "CustomerFlow_" + p_customer_id
+	add_child(flow)
+	flow.start_customer_flow(p_customer_id)

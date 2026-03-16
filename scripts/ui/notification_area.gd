@@ -1,7 +1,7 @@
 extends Control
 class_name NotificationArea
 
-const NOTIFICATION_DURATION: float = 3.0  # seconds
+static var notification_duration: float = 3.0  # seconds (lower in tests)
 const NotificationItemScene = preload("res://scenes/ui/notification_item.tscn")
 
 ## NotificationArea - HUD 우측 상단 알림 팝업 시스템
@@ -70,7 +70,7 @@ func _add_notification_to_active(data: Dictionary) -> void:
 	vbox_container.add_child(notification_item)
 
 	# Create timer for auto-removal
-	var timer := get_tree().create_timer(NOTIFICATION_DURATION)
+	var timer := get_tree().create_timer(notification_duration)
 	timer.timeout.connect(_on_notification_timer.bind(notification_item))
 
 	# Track active notification

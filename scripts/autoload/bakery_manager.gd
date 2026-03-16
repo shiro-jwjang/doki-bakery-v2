@@ -100,12 +100,12 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 		"remaining_time": recipe.production_time
 	}
 
-	# Add to both dictionaries (O(1) insertion)
 	_slots[slot_index] = slot
 	_active_slots[slot_index] = slot
 	_active_count += 1
 
 	production_started.emit(slot_index, recipe_id)
+	EventBusAutoload.production_started.emit(slot_index, recipe_id)
 	return true
 
 
@@ -139,6 +139,7 @@ func complete_production(slot_index: int) -> void:
 	if recipe:
 		var recipe_id: String = recipe.id
 		production_completed.emit(slot_index, recipe_id)
+		EventBusAutoload.production_completed.emit(slot_index, recipe_id)
 
 		# AUTO-COLLECT: Automatically clear the slot when finished
 		collect_production(slot_index)

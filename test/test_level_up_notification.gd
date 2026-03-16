@@ -91,23 +91,39 @@ func test_notification_auto_closes_after_delay() -> void:
 	notification.show_unlocks(1, ["bread_001"])
 	assert_true(notification.visible, "Notification should be visible initially")
 
-	# Wait for auto-close (3 seconds + small buffer)
-	await wait_seconds(3.5)
+	# Set short direct timer for testing
+	if notification.auto_close_timer:
+		notification.auto_close_timer.stop()
+		notification.auto_close_timer.wait_time = 0.1
+		notification.auto_close_timer.start()
 
-	assert_false(notification.visible, "Notification should auto-close after 3 seconds")
+	# Wait for auto-close (0.1 seconds + buffer)
+	await wait_seconds(0.2)
+
+	assert_false(notification.visible, "Notification should auto-close after delay")
 
 
 func test_notification_show_multiple_times() -> void:
 	# First show
 	notification.show_unlocks(1, ["bread_001"])
+	if notification.auto_close_timer:
+		notification.auto_close_timer.stop()
+		notification.auto_close_timer.wait_time = 0.1
+		notification.auto_close_timer.start()
+
 	assert_true(notification.visible, "Should be visible first time")
 
-	await wait_seconds(3.5)
+	await wait_seconds(0.2)
 	assert_false(notification.visible, "Should be hidden after auto-close")
 
 	# Second show
 	notification.show_unlocks(2, ["bread_002"])
+	if notification.auto_close_timer:
+		notification.auto_close_timer.stop()
+		notification.auto_close_timer.wait_time = 0.1
+		notification.auto_close_timer.start()
+
 	assert_true(notification.visible, "Should be visible second time")
 
-	await wait_seconds(3.5)
+	await wait_seconds(0.2)
 	assert_false(notification.visible, "Should be hidden after second auto-close")

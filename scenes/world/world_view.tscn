@@ -11,8 +11,8 @@
 [ext_resource type="Texture2D" uid="uid://c3nl54amckwk1" path="res://assets/sprites/backgrounds/back_floor.png" id="9_floor"]
 [ext_resource type="Texture2D" uid="uid://0semko6v6h0d" path="res://assets/sprites/backgrounds/back_wall01.png" id="10_wall1"]
 [ext_resource type="Texture2D" uid="uid://dykowd488k5iw" path="res://assets/sprites/backgrounds/back_wall02.png" id="11_wall2"]
-[ext_resource type="Texture2D" uid="uid://c3nl54amckwk2" path="res://assets/sprites/furniture/obj_oven.png" id="12_oven"]
-[ext_resource type="Texture2D" uid="uid://cf2ycqhcymweu" path="res://assets/sprites/furniture/obj_table.png" id="13_table"]
+[ext_resource type="Texture2D" uid="uid://b535b1hxyysmr" path="res://assets/sprites/furniture/obj_oven.png" id="12_oven"]
+[ext_resource type="Texture2D" uid="uid://cf2ychcymweu" path="res://assets/sprites/furniture/obj_table.png" id="13_table"]
 [ext_resource type="Texture2D" uid="uid://bwohdi2vc8wtu" path="res://assets/sprites/furniture/obj_window.png" id="14_window"]
 
 [node name="WorldView" type="Node2D" unique_id=42957385]
@@ -51,21 +51,18 @@ texture = ExtResource("11_wall2")
 
 [node name="StallMap" parent="Background" unique_id=1183379370 instance=ExtResource("5_stall")]
 
-[node name="Oven" type="Sprite2D" parent="Background"]
-z_index = 0
-position = Vector2(500, 450)
+[node name="Oven" type="Sprite2D" parent="Background" unique_id=590488963]
+position = Vector2(640, 316)
 scale = Vector2(2, 2)
 texture = ExtResource("12_oven")
 
-[node name="Table" type="Sprite2D" parent="Background"]
-z_index = 0
-position = Vector2(700, 480)
+[node name="Table" type="Sprite2D" parent="Background" unique_id=413779191]
+position = Vector2(727, 407)
 scale = Vector2(2, 2)
 texture = ExtResource("13_table")
 
-[node name="Window" type="Sprite2D" parent="Background"]
-z_index = 0
-position = Vector2(850, 300)
+[node name="Window" type="Sprite2D" parent="Background" unique_id=256932092]
+position = Vector2(519, 321)
 scale = Vector2(2, 2)
 texture = ExtResource("14_window")
 
@@ -85,8 +82,18 @@ layer = 2
 
 [node name="ProductionPanel" parent="UI" unique_id=270107751 instance=ExtResource("6_panel")]
 
-[node name="BreadMenu" parent="UI" unique_id=1198517018 instance=ExtResource("7_menu")]
-
 [node name="DisplaySlots" parent="UI" unique_id=2052868361 instance=ExtResource("8_display")]
-offset_top = -50.0
-offset_bottom = 50.0
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -120.0
+offset_right = 200.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="BreadMenu" parent="UI" unique_id=1198517018 instance=ExtResource("7_menu")]
+visible = false

@@ -26,14 +26,14 @@ const CUSTOMER_VIEW_SCENE = preload("res://scenes/world/customer_view.tscn")
 ## Customer view factory
 var _view_factory: Node = null
 
-## Display position (center of screen, near display counter)
-const DISPLAY_POSITION = Vector2(400, 300)
+## Display position (Near target counter/table)
+const DISPLAY_POSITION = Vector2(450, 550)
 
-## Spawn position (left side of screen)
-const SPAWN_POSITION = Vector2(-50, 300)
+## Spawn position (Bottom-left off-screen)
+const SPAWN_POSITION = Vector2(-200, 1100)
 
-## Exit position (right side of screen)
-const EXIT_POSITION = Vector2(850, 300)
+## Exit position (Bottom-right off-screen)
+const EXIT_POSITION = Vector2(1400, 1100)
 
 ## Movement duration (seconds)
 const MOVEMENT_DURATION = 2.5
@@ -143,6 +143,9 @@ func _create_customer_view() -> void:
 	else:
 		# Fallback: Direct instantiation for backward compatibility
 		_customer_view = _create_view_directly()
+
+	if _customer_view:
+		_customer_view.scale = Vector2(2, 2)
 
 
 ## Spawn customer at left side
@@ -320,6 +323,9 @@ func _on_exit_complete() -> void:
 
 	# Despawn customer view
 	_despawn_customer()
+
+	# Remove self (the flow logic node) from scene tree
+	queue_free()
 
 
 ## Despawn customer view
