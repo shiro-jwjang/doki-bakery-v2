@@ -21,7 +21,7 @@ func before_each() -> void:
 
 	event_router = load("res://scripts/ui/ui_event_router.gd").new()
 	add_child(event_router)
-	
+
 	event_router.set_production_panel(panel)
 	event_router.connect_event_bus_signals()
 
@@ -41,7 +41,7 @@ func after_each() -> void:
 ## Test that panel updates on production_started signal
 func test_panel_updates_on_baking_started() -> void:
 	EventBusAutoload.production_started.emit(0, "bread_croissant")
-	
+
 	# Assert immediately (UI updates are synchronous)
 	var slot_ui = panel.get_slot_ui(0)
 	assert_not_null(slot_ui, "Slot UI should exist")

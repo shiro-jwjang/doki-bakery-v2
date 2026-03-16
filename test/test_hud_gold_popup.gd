@@ -101,7 +101,7 @@ func test_gold_popup_auto_disappears() -> void:
 
 	# Set short lifetime for testing before triggering
 	hud.gold_popup_lifetime = 0.5
-	
+
 	GameManager.add_gold(10)
 	# Wait enough frames for signal propagation and node creation
 	await wait_physics_frames(10)
