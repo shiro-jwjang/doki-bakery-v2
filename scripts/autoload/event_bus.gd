@@ -1,5 +1,7 @@
 extends Node
 
+class_name EventBus
+
 ## EventBus Autoload
 ##
 ## Centralized signal hub for global game events.
