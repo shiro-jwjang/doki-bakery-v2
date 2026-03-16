@@ -4,15 +4,12 @@ extends GutTest
 ## Tests slot management functionality including starting production,
 ## retrieving slot information, and managing active slot limits.
 ## SNA-74: BakeryManager 슬롯 관리
+## SNA-190: BakeryManager 테스트 헬퍼 클래스 도입
 
-const BakeryManagerClass = preload("res://scripts/autoload/bakery_manager.gd")
-const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
-const MockTimeProviderClass = preload("res://scripts/utils/mock_time_provider.gd")
-const MockRecipeProviderClass = preload("res://scripts/utils/mock_recipe_provider.gd")
+const BakeryManagerTestHelper = preload("res://test/helpers/bakery_manager_test_helper.gd")
 
+var _helper: BakeryManagerTestHelper
 var _manager: Node
-var _mock_time_provider: MockTimeProvider
-var _mock_recipe_provider: MockRecipeProvider
 
 # Signal tracking variables
 var _signal_received := false
@@ -21,31 +18,11 @@ var _received_recipe_id := ""
 
 
 func before_each() -> void:
-	# Create BakeryManager instance for testing
-	_manager = BakeryManagerClass.new()
+	# Create helper instance
+	_helper = BakeryManagerTestHelper.new()
 
-	# Create mock providers for testing
-	_mock_time_provider = MockTimeProviderClass.new()
-	_mock_time_provider.reset_time()
-
-	_mock_recipe_provider = MockRecipeProviderClass.new()
-
-	# Create and register mock recipes for testing
-	var recipes := ["bread_001", "croissant", "baguette", "muffin"]
-	for recipe_id in recipes:
-		var recipe = RecipeDataClass.new()
-		recipe.id = recipe_id
-		recipe.production_time = 10.0
-		_mock_recipe_provider.add_recipe(recipe)
-
-	# Set up manager state
-	_manager._max_slots = 3
-	_manager._slots = []
-	_manager._active_count = 0
-
-	# Inject mock providers using DI
-	_manager.set_time_provider(_mock_time_provider)
-	_manager.set_recipe_provider(_mock_recipe_provider)
+	# Use helper to set up complete test environment
+	_manager = _helper.setup_complete(3)
 
 	add_child_autofree(_manager)
 
@@ -281,7 +258,7 @@ func _on_production_completed(slot_index: int, recipe_id: String) -> void:
 func test_production_completed_signal_emitted() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("_process"):
 		# Start production with a recipe that has 0.1 second production time
-		_mock_recipe_provider.get_recipe("bread_001").production_time = 0.1
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
 		_manager.start_production(0, "bread_001")
 
 		# Reset signal tracking
@@ -312,7 +289,7 @@ func test_production_completed_signal_emitted() -> void:
 ## Test that slot is released after production completes
 func test_slot_released_after_completion() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("_process"):
-		_mock_recipe_provider.get_recipe("bread_001").production_time = 0.1
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
 		_manager.start_production(0, "bread_001")
 
 		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
@@ -335,7 +312,7 @@ func test_slot_released_after_completion() -> void:
 ## Test that completed bread is marked as completed
 func test_completed_bread_marked_completed() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("_process"):
-		_mock_recipe_provider.get_recipe("bread_001").production_time = 0.1
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
 		_manager.start_production(0, "bread_001")
 
 		var slots = _manager.get_slots()
@@ -374,9 +351,9 @@ func test_production_timer_decreases() -> void:
 		and _manager.has_method("_process")
 		and _manager.has_method("get_remaining_time")
 	):
-		_mock_recipe_provider.get_recipe("bread_001").production_time = 1.0
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_mock_time_provider.reset_time()
+		_helper.get_mock_time_provider().reset_time()
 		_manager.start_production(0, "bread_001")
 
 		var time_before = _manager.get_remaining_time(0)
@@ -404,9 +381,9 @@ func test_remaining_time_wall_clock_based() -> void:
 		and _manager.has_method("_process")
 		and _manager.has_method("get_remaining_time")
 	):
-		_mock_recipe_provider.get_recipe("bread_001").production_time = 1.0
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_mock_time_provider.reset_time()
+		_helper.get_mock_time_provider().reset_time()
 		_manager.start_production(0, "bread_001")
 
 		# Get initial remaining time
@@ -431,9 +408,9 @@ func test_wall_clock_variable_delta() -> void:
 		and _manager.has_method("_process")
 		and _manager.has_method("get_remaining_time")
 	):
-		_mock_recipe_provider.get_recipe("bread_001").production_time = 1.0
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_mock_time_provider.reset_time()
+		_helper.get_mock_time_provider().reset_time()
 		_manager.start_production(0, "bread_001")
 
 		# Process with variable delta times (simulating frame rate fluctuations)
@@ -462,9 +439,9 @@ func test_progress_from_wall_clock() -> void:
 		and _manager.has_method("_process")
 		and _manager.has_method("get_slots")
 	):
-		_mock_recipe_provider.get_recipe("bread_001").production_time = 1.0
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_mock_time_provider.reset_time()
+		_helper.get_mock_time_provider().reset_time()
 		_manager.start_production(0, "bread_001")
 
 		# Process half the time
@@ -501,7 +478,7 @@ func test_restore_slots_empty_data() -> void:
 func test_restore_slots_valid_data() -> void:
 	if _manager.has_method("restore_slots"):
 		# Prepare slot data with DI-compliant providers
-		_mock_time_provider.reset_time()
+		_helper.get_mock_time_provider().reset_time()
 
 		var slot_data := [
 			{
@@ -531,7 +508,7 @@ func test_restore_slots_valid_data() -> void:
 func test_restore_slots_uses_recipe_provider() -> void:
 	if _manager.has_method("restore_slots"):
 		# Verify recipe provider is used, not DataManager singleton
-		_mock_time_provider.reset_time()
+		_helper.get_mock_time_provider().reset_time()
 
 		var slot_data := [
 			{
@@ -561,8 +538,8 @@ func test_restore_slots_uses_recipe_provider() -> void:
 func test_restore_slots_uses_time_provider() -> void:
 	if _manager.has_method("restore_slots"):
 		# Verify time provider is used for remaining time calculation
-		_mock_time_provider.reset_time()
-		_mock_time_provider.set_time(5.0)
+		_helper.get_mock_time_provider().reset_time()
+		_helper.get_mock_time_provider().set_time(5.0)
 
 		var slot_data := [
 			{
@@ -595,7 +572,7 @@ func test_restore_slots_uses_time_provider() -> void:
 ## Test restore_slots with invalid data
 func test_restore_slots_invalid_data() -> void:
 	if _manager.has_method("restore_slots"):
-		_mock_time_provider.reset_time()
+		_helper.get_mock_time_provider().reset_time()
 
 		var slot_data := [
 			"invalid_string_data",  # Invalid: not a dictionary
@@ -626,7 +603,7 @@ func test_restore_slots_clears_existing() -> void:
 		assert_eq(_manager.get_slots().size(), 2, "Should have 2 slots before restore")
 
 		# Restore should clear existing slots
-		_mock_time_provider.reset_time()
+		_helper.get_mock_time_provider().reset_time()
 		var slot_data := [
 			{
 				"slot_index": 2,
