@@ -23,12 +23,12 @@ func _ready() -> void:
 	var progressed_callback := on_production_progressed
 	var completed_callback := on_production_completed
 
-	if not EventBus.production_started.is_connected(started_callback):
-		EventBus.production_started.connect(started_callback)
-	if not EventBus.production_progressed.is_connected(progressed_callback):
-		EventBus.production_progressed.connect(progressed_callback)
-	if not EventBus.production_completed.is_connected(completed_callback):
-		EventBus.production_completed.connect(completed_callback)
+	if not EventBusAutoload.production_started.is_connected(started_callback):
+		EventBusAutoload.production_started.connect(started_callback)
+	if not EventBusAutoload.production_progressed.is_connected(progressed_callback):
+		EventBusAutoload.production_progressed.connect(progressed_callback)
+	if not EventBusAutoload.production_completed.is_connected(completed_callback):
+		EventBusAutoload.production_completed.connect(completed_callback)
 
 	# Initialize slots from BakeryManager count
 	# Only initialize if container exists (requires scene file)

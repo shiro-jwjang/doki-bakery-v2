@@ -268,7 +268,7 @@ func test_get_slots_reflects_current_state() -> void:
 
 
 ## ==================== PRODUCTION COMPLETION TESTS ====================
-## SNA-76: BakeryManager 생산 완료 → EventBus 시그널
+## SNA-76: BakeryManager 생산 완료 → EventBusAutoload 시그널
 
 
 ## Signal handler for production_completed
@@ -646,5 +646,162 @@ func test_restore_slots_clears_existing() -> void:
 
 		var slots = _manager.get_slots()
 		assert_eq(slots[0]["slot_index"], 2, "Should have restored slot with index 2")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## ==================== O(1) SLOT LOOKUP TESTS ====================
+## SNA-187: O(1) 슬롯 검색 최적화
+
+
+## Test that slot lookup works correctly with dictionary implementation
+func test_dictionary_slot_lookup_is_active() -> void:
+	if _manager.has_method("start_production"):
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(2, "croissant")
+
+		# Both slots should be active
+		assert_eq(_manager.get_active_count(), 2, "Should have 2 active slots")
+
+		# Slot 1 should not be active
+		_manager.start_production(1, "baguette")
+		assert_eq(_manager.get_active_count(), 3, "Should have 3 active slots")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that get_remaining_time uses O(1) lookup
+func test_dictionary_get_remaining_time() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("get_remaining_time"):
+		_mock_recipe_provider.get_recipe("bread_001").production_time = 5.0
+		_mock_recipe_provider.get_recipe("croissant").production_time = 3.0
+		_mock_recipe_provider.get_recipe("baguette").production_time = 7.0
+
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(1, "croissant")
+		_manager.start_production(2, "baguette")
+
+		# Each slot should have correct remaining time
+		var time0 = _manager.get_remaining_time(0)
+		var time1 = _manager.get_remaining_time(1)
+		var time2 = _manager.get_remaining_time(2)
+
+		assert_eq(time0, 5.0, "Slot 0 should have 5.0s remaining")
+		assert_eq(time1, 3.0, "Slot 1 should have 3.0s remaining")
+		assert_eq(time2, 7.0, "Slot 2 should have 7.0s remaining")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that complete_production uses O(1) lookup
+func test_dictionary_complete_production() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("complete_production"):
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(1, "croissant")
+		_manager.start_production(2, "baguette")
+
+		assert_eq(_manager.get_active_count(), 3, "Should have 3 active slots")
+
+		# Complete middle slot
+		_manager.complete_production(1)
+		assert_eq(_manager.get_active_count(), 2, "Should have 2 active slots")
+
+		# Complete first slot
+		_manager.complete_production(0)
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active slot")
+
+		# Complete last slot
+		_manager.complete_production(2)
+		assert_eq(_manager.get_active_count(), 0, "Should have 0 active slots")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that collect_production uses O(1) lookup
+func test_dictionary_collect_production() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("collect_production"):
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(1, "croissant")
+		_manager.start_production(2, "baguette")
+
+		assert_eq(_manager.get_slots().size(), 3, "Should have 3 slots")
+
+		# Complete middle slot (auto-collects)
+		_manager.complete_production(1)
+
+		# Slot should be removed after auto-collection
+		assert_eq(_manager.get_slots().size(), 2, "Should have 2 slots after collection")
+
+		# Verify remaining slots
+		var slots = _manager.get_slots()
+		assert_eq(slots[0]["slot_index"], 0, "Slot 0 should still exist")
+		assert_eq(slots[1]["slot_index"], 2, "Slot 2 should still exist")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test slot lookup with non-sequential indices
+func test_dictionary_non_sequential_indices() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("get_remaining_time"):
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(2, "baguette")
+
+		# Should correctly identify both slots
+		assert_eq(_manager.get_active_count(), 2, "Should have 2 active slots")
+
+		# get_remaining_time should work for both
+		var time0 = _manager.get_remaining_time(0)
+		var time2 = _manager.get_remaining_time(2)
+
+		assert_true(time0 > 0, "Slot 0 should have remaining time")
+		assert_true(time2 > 0, "Slot 2 should have remaining time")
+
+		# Slot 1 should not exist
+		var time1 = _manager.get_remaining_time(1)
+		assert_eq(time1, 0.0, "Slot 1 should have 0.0 remaining time (not active)")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that get_slots returns array in slot_index order
+func test_get_slots_ordered_by_index() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("get_slots"):
+		# Start productions in non-sequential order
+		_manager.start_production(2, "baguette")
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(1, "croissant")
+
+		var slots = _manager.get_slots()
+
+		# Slots should be ordered by slot_index
+		assert_eq(slots.size(), 3, "Should have 3 slots")
+		assert_eq(slots[0]["slot_index"], 0, "First slot should have index 0")
+		assert_eq(slots[1]["slot_index"], 1, "Second slot should have index 1")
+		assert_eq(slots[2]["slot_index"], 2, "Third slot should have index 2")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test rapid slot activation and deactivation
+func test_rapid_slot_operations() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("complete_production")
+		and _manager.has_method("collect_production")
+	):
+		# Rapidly start and complete productions
+		_manager.start_production(0, "bread_001")
+		_manager.complete_production(0)
+		_manager.collect_production(0)
+
+		_manager.start_production(0, "croissant")
+		_manager.complete_production(0)
+		_manager.collect_production(0)
+
+		_manager.start_production(0, "baguette")
+
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active slot")
+		assert_eq(_manager.get_slots().size(), 1, "Should have 1 slot")
+		assert_eq(_manager.get_slots()[0]["slot_index"], 0, "Should be slot 0")
 	else:
 		fail_test("Required methods not implemented yet")

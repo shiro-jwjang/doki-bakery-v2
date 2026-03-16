@@ -30,7 +30,7 @@ func _ready() -> void:
 	visible = false
 
 	# Connect to EventBus for production requests (SNA-160: unified pattern)
-	_connect_signal(EventBus.baking_requested, _on_baking_requested)
+	_connect_signal(EventBusAutoload.baking_requested, _on_baking_requested)
 
 	# Load recipes from DataManager
 	_load_recipes()

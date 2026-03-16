@@ -200,16 +200,16 @@ func test_notification_auto_removes_after_delay() -> void:
 	assert_eq(vbox.get_child_count(), 0, "Notification should be removed after animation")
 
 
-## Test: EventBus notification_requested signal triggers notification
+## Test: EventBusAutoload notification_requested signal triggers notification
 func test_eventbus_signal_triggers_notification() -> void:
 	_create_notification_area()
 
-	# Emit EventBus signal
-	EventBus.notification_requested.emit("Event Title", "Event Description", test_icon, 0)
+	# Emit EventBusAutoload signal
+	EventBusAutoload.notification_requested.emit("Event Title", "Event Description", test_icon, 0)
 	await wait_physics_frames(2)
 
 	var vbox = notification_area.get_node("VBoxContainer")
-	assert_eq(vbox.get_child_count(), 1, "Should have one notification from EventBus")
+	assert_eq(vbox.get_child_count(), 1, "Should have one notification from EventBusAutoload")
 
 
 ## Test: NotificationArea has AnimationPlayer

@@ -33,12 +33,12 @@ func before_each() -> void:
 
 func after_each() -> void:
 	# Disconnect all signals
-	if EventBus.experience_changed.is_connected(_on_experience_changed):
-		EventBus.experience_changed.disconnect(_on_experience_changed)
-	if EventBus.level_up.is_connected(_on_level_up):
-		EventBus.level_up.disconnect(_on_level_up)
-	if EventBus.gold_changed.is_connected(_on_gold_changed):
-		EventBus.gold_changed.disconnect(_on_gold_changed)
+	if EventBusAutoload.experience_changed.is_connected(_on_experience_changed):
+		EventBusAutoload.experience_changed.disconnect(_on_experience_changed)
+	if EventBusAutoload.level_up.is_connected(_on_level_up):
+		EventBusAutoload.level_up.disconnect(_on_level_up)
+	if EventBusAutoload.gold_changed.is_connected(_on_gold_changed):
+		EventBusAutoload.gold_changed.disconnect(_on_gold_changed)
 
 
 ## Test that EconomyManager singleton exists
@@ -48,7 +48,7 @@ func test_economy_engine_singleton_exists() -> void:
 
 ## Test sell_bread grants correct XP from recipe xp_reward
 func test_sell_bread_grants_xp() -> void:
-	EventBus.experience_changed.connect(_on_experience_changed)
+	EventBusAutoload.experience_changed.connect(_on_experience_changed)
 
 	var recipe := RecipeData.new()
 	recipe.id = "test_bread"
@@ -65,7 +65,7 @@ func test_sell_bread_grants_xp() -> void:
 
 ## Test sell_bread adds gold from recipe base_price
 func test_sell_bread_adds_gold() -> void:
-	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBusAutoload.gold_changed.connect(_on_gold_changed)
 
 	var recipe := RecipeData.new()
 	recipe.id = "test_bread"
@@ -98,7 +98,7 @@ func test_sell_bread_accumulates_xp() -> void:
 
 ## Test sell_bread triggers level up when enough XP accumulates
 func test_sell_bread_triggers_level_up() -> void:
-	EventBus.level_up.connect(_on_level_up)
+	EventBusAutoload.level_up.connect(_on_level_up)
 
 	var recipe := RecipeData.new()
 	recipe.id = "valuable_bread"
@@ -131,7 +131,7 @@ func test_sell_bread_zero_xp() -> void:
 
 ## Test sell_bread with high XP triggers multiple level ups
 func test_sell_bread_multiple_level_ups() -> void:
-	EventBus.level_up.connect(_on_level_up)
+	EventBusAutoload.level_up.connect(_on_level_up)
 
 	var recipe := RecipeData.new()
 	recipe.id = "legendary_bread"
@@ -168,7 +168,7 @@ func _on_gold_changed(old: int, new: int) -> void:
 
 ## Test award_production_xp grants XP from recipe xp_reward
 func test_award_production_xp_grants_xp() -> void:
-	EventBus.experience_changed.connect(_on_experience_changed)
+	EventBusAutoload.experience_changed.connect(_on_experience_changed)
 
 	var recipe := RecipeData.new()
 	recipe.id = "test_bread"
@@ -185,7 +185,7 @@ func test_award_production_xp_grants_xp() -> void:
 
 ## Test award_production_xp does not grant gold
 func test_award_production_xp_no_gold() -> void:
-	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBusAutoload.gold_changed.connect(_on_gold_changed)
 
 	var recipe := RecipeData.new()
 	recipe.id = "test_bread"

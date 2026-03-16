@@ -35,38 +35,38 @@ func connect_ui_signals() -> void:
 ## Connect all EventBus signals to UI component handlers.
 func connect_event_bus_signals() -> void:
 	# Gold/XP changes → HUD
-	if not EventBus.gold_changed.is_connected(_on_gold_changed):
-		EventBus.gold_changed.connect(_on_gold_changed)
+	if not EventBusAutoload.gold_changed.is_connected(_on_gold_changed):
+		EventBusAutoload.gold_changed.connect(_on_gold_changed)
 
-	if not EventBus.experience_changed.is_connected(_on_experience_changed):
-		EventBus.experience_changed.connect(_on_experience_changed)
+	if not EventBusAutoload.experience_changed.is_connected(_on_experience_changed):
+		EventBusAutoload.experience_changed.connect(_on_experience_changed)
 
-	if not EventBus.level_up.is_connected(_on_level_up):
-		EventBus.level_up.connect(_on_level_up)
+	if not EventBusAutoload.level_up.is_connected(_on_level_up):
+		EventBusAutoload.level_up.connect(_on_level_up)
 
 	# Premium currency changes → HUD
-	if not EventBus.premium_changed.is_connected(_on_premium_changed):
-		EventBus.premium_changed.connect(_on_premium_changed)
+	if not EventBusAutoload.premium_changed.is_connected(_on_premium_changed):
+		EventBusAutoload.premium_changed.connect(_on_premium_changed)
 
 	# Production events → ProductionPanel
-	if not EventBus.production_started.is_connected(_on_production_started):
-		EventBus.production_started.connect(_on_production_started)
+	if not EventBusAutoload.production_started.is_connected(_on_production_started):
+		EventBusAutoload.production_started.connect(_on_production_started)
 
-	if not EventBus.production_progressed.is_connected(_on_production_progressed):
-		EventBus.production_progressed.connect(_on_production_progressed)
+	if not EventBusAutoload.production_progressed.is_connected(_on_production_progressed):
+		EventBusAutoload.production_progressed.connect(_on_production_progressed)
 
-	if not EventBus.production_completed.is_connected(_on_production_completed):
-		EventBus.production_completed.connect(_on_production_completed)
+	if not EventBusAutoload.production_completed.is_connected(_on_production_completed):
+		EventBusAutoload.production_completed.connect(_on_production_completed)
 
 	# Baking finished → DisplaySlots
-	if not EventBus.baking_finished.is_connected(_on_baking_finished):
-		EventBus.baking_finished.connect(_on_baking_finished)
+	if not EventBusAutoload.baking_finished.is_connected(_on_baking_finished):
+		EventBusAutoload.baking_finished.connect(_on_baking_finished)
 
-	if not EventBus.production_cleared.is_connected(_on_production_cleared):
-		EventBus.production_cleared.connect(_on_production_cleared)
+	if not EventBusAutoload.production_cleared.is_connected(_on_production_cleared):
+		EventBusAutoload.production_cleared.connect(_on_production_cleared)
 
-	if not EventBus.bread_sold.is_connected(_on_bread_sold):
-		EventBus.bread_sold.connect(_on_bread_sold)
+	if not EventBusAutoload.bread_sold.is_connected(_on_bread_sold):
+		EventBusAutoload.bread_sold.connect(_on_bread_sold)
 
 	_connections_established = true
 
@@ -77,17 +77,17 @@ func validate_connections() -> Dictionary:
 	var results: Dictionary = {}
 
 	# Check EventBus signal connections
-	results["gold_changed_connected"] = EventBus.gold_changed.is_connected(_on_gold_changed)
-	results["premium_changed_connected"] = EventBus.premium_changed.is_connected(
+	results["gold_changed_connected"] = EventBusAutoload.gold_changed.is_connected(_on_gold_changed)
+	results["premium_changed_connected"] = EventBusAutoload.premium_changed.is_connected(
 		_on_premium_changed
 	)
-	results["experience_changed_connected"] = EventBus.experience_changed.is_connected(
+	results["experience_changed_connected"] = EventBusAutoload.experience_changed.is_connected(
 		_on_experience_changed
 	)
-	results["production_started_connected"] = EventBus.production_started.is_connected(
+	results["production_started_connected"] = EventBusAutoload.production_started.is_connected(
 		_on_production_started
 	)
-	results["production_completed_connected"] = EventBus.production_completed.is_connected(
+	results["production_completed_connected"] = EventBusAutoload.production_completed.is_connected(
 		_on_production_completed
 	)
 

@@ -154,7 +154,7 @@ func _spawn_customer() -> void:
 	state = State.ENTERING
 
 	# Emit spawn signal
-	EventBus.customer_spawned.emit(customer_id)
+	EventBusAutoload.customer_spawned.emit(customer_id)
 
 
 ## Start movement to display counter
@@ -196,7 +196,7 @@ func _on_arrival_at_display() -> void:
 	state = State.BUYING
 
 	# Emit arrival signal
-	EventBus.customer_arrived_at_display.emit(customer_id)
+	EventBusAutoload.customer_arrived_at_display.emit(customer_id)
 
 	# Start purchase timer
 	_purchase_timer.start(PURCHASE_DURATION)
@@ -237,7 +237,7 @@ func _process_purchase() -> void:
 	GameManager.gold += price
 
 	# Emit purchase signal
-	EventBus.customer_purchased.emit(customer_id, recipe_id, price)
+	EventBusAutoload.customer_purchased.emit(customer_id, recipe_id, price)
 
 	# Start leaving
 	_start_leaving()
@@ -310,7 +310,7 @@ func _on_exit_complete() -> void:
 	state = State.DESPAWNED
 
 	# Emit left signal
-	EventBus.customer_left.emit(customer_id)
+	EventBusAutoload.customer_left.emit(customer_id)
 
 	# Despawn customer view
 	_despawn_customer()

@@ -4,7 +4,7 @@ extends GutTest
 ## Tests the complete customer lifecycle: spawn → move → buy → leave → despawn
 ## SNA-139: 손님 풀 플로우: 입장 → 진열대 → 구매 → 퇴장
 
-## Signal tracking for EventBus signals
+## Signal tracking for EventBusAutoload signals
 var _signals_received := {}
 var _customer_flow: Node = null
 var _mock_customer_view: Node2D = null
@@ -12,7 +12,7 @@ var _mock_customer_view: Node2D = null
 
 func before_each() -> void:
 	_signals_received.clear()
-	# Connect to EventBus signals
+	# Connect to EventBusAutoload signals
 	_connect_event_bus_signals()
 
 
@@ -214,7 +214,7 @@ func test_customer_purchase_success() -> void:
 	assert_true(GameManager.gold > initial_gold, "Gold should increase after purchase")
 
 
-## Test that purchase emits correct EventBus signals
+## Test that purchase emits correct EventBusAutoload signals
 func test_customer_purchase_emits_signals() -> void:
 	if _create_customer_flow() == null:
 		pending("CustomerFlow not implemented yet")
@@ -358,22 +358,23 @@ func test_customer_spawned_signal() -> void:
 	)
 
 
-## Test all EventBus signals are defined
+## Test all EventBusAutoload signals are defined
 func test_event_bus_signals_defined() -> void:
 	assert_true(
-		EventBus.has_signal("customer_spawned"),
-		"customer_spawned signal must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_spawned"),
+		"customer_spawned signal must be defined in EventBusAutoload"
 	)
 	assert_true(
-		EventBus.has_signal("customer_arrived_at_display"),
-		"customer_arrived_at_display signal must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_arrived_at_display"),
+		"customer_arrived_at_display signal must be defined in EventBusAutoload"
 	)
 	assert_true(
-		EventBus.has_signal("customer_purchased"),
-		"customer_purchased signal must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_purchased"),
+		"customer_purchased signal must be defined in EventBusAutoload"
 	)
 	assert_true(
-		EventBus.has_signal("customer_left"), "customer_left signal must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_left"),
+		"customer_left signal must be defined in EventBusAutoload"
 	)
 
 
@@ -495,25 +496,27 @@ func _create_mock_recipe() -> Resource:
 
 
 func _connect_event_bus_signals() -> void:
-	if not EventBus.customer_spawned.is_connected(_on_customer_spawned):
-		EventBus.customer_spawned.connect(_on_customer_spawned)
-	if not EventBus.customer_arrived_at_display.is_connected(_on_customer_arrived_at_display):
-		EventBus.customer_arrived_at_display.connect(_on_customer_arrived_at_display)
-	if not EventBus.customer_purchased.is_connected(_on_customer_purchased):
-		EventBus.customer_purchased.connect(_on_customer_purchased)
-	if not EventBus.customer_left.is_connected(_on_customer_left):
-		EventBus.customer_left.connect(_on_customer_left)
+	if not EventBusAutoload.customer_spawned.is_connected(_on_customer_spawned):
+		EventBusAutoload.customer_spawned.connect(_on_customer_spawned)
+	if not EventBusAutoload.customer_arrived_at_display.is_connected(
+		_on_customer_arrived_at_display
+	):
+		EventBusAutoload.customer_arrived_at_display.connect(_on_customer_arrived_at_display)
+	if not EventBusAutoload.customer_purchased.is_connected(_on_customer_purchased):
+		EventBusAutoload.customer_purchased.connect(_on_customer_purchased)
+	if not EventBusAutoload.customer_left.is_connected(_on_customer_left):
+		EventBusAutoload.customer_left.connect(_on_customer_left)
 
 
 func _disconnect_event_bus_signals() -> void:
-	if EventBus.customer_spawned.is_connected(_on_customer_spawned):
-		EventBus.customer_spawned.disconnect(_on_customer_spawned)
-	if EventBus.customer_arrived_at_display.is_connected(_on_customer_arrived_at_display):
-		EventBus.customer_arrived_at_display.disconnect(_on_customer_arrived_at_display)
-	if EventBus.customer_purchased.is_connected(_on_customer_purchased):
-		EventBus.customer_purchased.disconnect(_on_customer_purchased)
-	if EventBus.customer_left.is_connected(_on_customer_left):
-		EventBus.customer_left.disconnect(_on_customer_left)
+	if EventBusAutoload.customer_spawned.is_connected(_on_customer_spawned):
+		EventBusAutoload.customer_spawned.disconnect(_on_customer_spawned)
+	if EventBusAutoload.customer_arrived_at_display.is_connected(_on_customer_arrived_at_display):
+		EventBusAutoload.customer_arrived_at_display.disconnect(_on_customer_arrived_at_display)
+	if EventBusAutoload.customer_purchased.is_connected(_on_customer_purchased):
+		EventBusAutoload.customer_purchased.disconnect(_on_customer_purchased)
+	if EventBusAutoload.customer_left.is_connected(_on_customer_left):
+		EventBusAutoload.customer_left.disconnect(_on_customer_left)
 
 
 func _on_customer_spawned(customer_id: String) -> void:

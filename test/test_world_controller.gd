@@ -4,8 +4,8 @@ extends GutTest
 ##
 ## Tests the WorldController which:
 ## 1. Manages UI components within WorldView hierarchy
-## 2. Connects EventBus signals for forwarding to UI
-## 3. Validates EventBus signal connections
+## 2. Connects EventBusAutoload signals for forwarding to UI
+## 3. Validates EventBusAutoload signal connections
 
 const WorldControllerScript = preload("res://scripts/world/world_controller.gd")
 
@@ -50,48 +50,52 @@ func test_get_display_slots_returns_null_when_no_slots() -> void:
 	assert_null(slots, "get_display_slots should return null when no slots")
 
 
-# ==================== EventBus Connection Tests ====================
+# ==================== EventBusAutoload Connection Tests ====================
 
 
 func test_event_bus_gold_changed_connected() -> void:
 	assert_true(
-		EventBus.gold_changed.is_connected(world_controller._on_gold_changed),
+		EventBusAutoload.gold_changed.is_connected(world_controller._on_gold_changed),
 		"WorldController should be connected to gold_changed"
 	)
 
 
 func test_event_bus_experience_changed_connected() -> void:
 	assert_true(
-		EventBus.experience_changed.is_connected(world_controller._on_experience_changed),
+		EventBusAutoload.experience_changed.is_connected(world_controller._on_experience_changed),
 		"WorldController should be connected to experience_changed"
 	)
 
 
 func test_event_bus_production_signals_connected() -> void:
 	assert_true(
-		EventBus.production_started.is_connected(world_controller._on_production_started),
+		EventBusAutoload.production_started.is_connected(world_controller._on_production_started),
 		"WorldController should be connected to production_started"
 	)
 	assert_true(
-		EventBus.production_progressed.is_connected(world_controller._on_production_progressed),
+		EventBusAutoload.production_progressed.is_connected(
+			world_controller._on_production_progressed
+		),
 		"WorldController should be connected to production_progressed"
 	)
 	assert_true(
-		EventBus.production_completed.is_connected(world_controller._on_production_completed),
+		EventBusAutoload.production_completed.is_connected(
+			world_controller._on_production_completed
+		),
 		"WorldController should be connected to production_completed"
 	)
 
 
 func test_event_bus_baking_finished_connected() -> void:
 	assert_true(
-		EventBus.baking_finished.is_connected(world_controller._on_baking_finished),
+		EventBusAutoload.baking_finished.is_connected(world_controller._on_baking_finished),
 		"WorldController should be connected to baking_finished"
 	)
 
 
 func test_event_bus_bread_sold_connected() -> void:
 	assert_true(
-		EventBus.bread_sold.is_connected(world_controller._on_bread_sold),
+		EventBusAutoload.bread_sold.is_connected(world_controller._on_bread_sold),
 		"WorldController should be connected to bread_sold"
 	)
 
@@ -117,16 +121,16 @@ func test_validate_connections_reports_connection_status() -> void:
 
 func test_validate_connections_all_connected_true_after_init() -> void:
 	var result: Dictionary = world_controller.validate_connections()
-	assert_true(result["all_connected"], "All EventBus connections should be established")
+	assert_true(result["all_connected"], "All EventBusAutoload connections should be established")
 
 
 # ==================== Signal Propagation Tests ====================
 
 
 func test_gold_change_signal_propagates() -> void:
-	# Verify WorldController receives gold_changed via EventBus
+	# Verify WorldController receives gold_changed via EventBusAutoload
 	assert_true(
-		EventBus.gold_changed.is_connected(world_controller._on_gold_changed),
+		EventBusAutoload.gold_changed.is_connected(world_controller._on_gold_changed),
 		"Signal should be wired through WorldController"
 	)
 
@@ -136,7 +140,7 @@ func test_gold_change_signal_propagates() -> void:
 	world_controller.set_hud(mock_hud)
 
 	# Emit signal — WorldController._on_gold_changed will run without error
-	EventBus.gold_changed.emit(0, 100)
+	EventBusAutoload.gold_changed.emit(0, 100)
 
 	# If we get here without crash/hang, signal propagation works
 	assert_true(true, "gold_changed signal propagated without error")
@@ -145,7 +149,7 @@ func test_gold_change_signal_propagates() -> void:
 func test_production_started_signal_propagates() -> void:
 	# Verify WorldController is listening
 	assert_true(
-		EventBus.production_started.is_connected(world_controller._on_production_started),
+		EventBusAutoload.production_started.is_connected(world_controller._on_production_started),
 		"production_started should propagate through WorldController"
 	)
 

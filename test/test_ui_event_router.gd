@@ -111,8 +111,7 @@ func test_connect_event_bus_connects_baking_signals() -> void:
 		"Should connect baking_finished signal"
 	)
 	assert_true(
-		EventBus.bread_sold.is_connected(router._on_bread_sold),
-		"Should connect bread_sold signal"
+		EventBus.bread_sold.is_connected(router._on_bread_sold), "Should connect bread_sold signal"
 	)
 
 

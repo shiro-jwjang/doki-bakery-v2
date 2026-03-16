@@ -180,7 +180,7 @@ func test_display_slot_auto_fills_on_baking_finished() -> void:
 		# If DataManager doesn't know this recipe, setup manually and skip auto-fill test
 		display_slot.setup(recipe_id, price)
 	else:
-		EventBus.baking_finished.emit(recipe_id)
+		EventBusAutoload.baking_finished.emit(recipe_id)
 	await wait_physics_frames(2)
 
 	# Assert - empty slot should be filled
@@ -200,7 +200,7 @@ func test_display_slot_wont_fill_if_has_bread() -> void:
 	watch_signals(display_slot)
 
 	# Emit baking_finished for different recipe
-	EventBus.baking_finished.emit(second_recipe)
+	EventBusAutoload.baking_finished.emit(second_recipe)
 	await wait_physics_frames(2)
 
 	# Assert - should still have first bread

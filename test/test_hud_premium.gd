@@ -33,7 +33,7 @@ func test_premium_currency_updates():
 	var premium_label = hud.get_node("Control/GoldenBreadBox/Label")
 
 	# Change premium currency using GameManager setter
-	# This should trigger EventBus.premium_changed which routes to HUD via WorldController
+	# This should trigger EventBusAutoload.premium_changed which routes to HUD via WorldController
 	GameManager.legendary_bread = 100
 
 	assert_eq(

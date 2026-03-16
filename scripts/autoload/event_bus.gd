@@ -5,6 +5,8 @@ extends Node
 ## Pure signal hub for global game events.
 ## SNA-66: EventBus 시그널 정의 (상태변경 + 액션요청)
 ## SNA-188: Removed forwarders - now a pure signal hub
+##
+## Note: Uses deferred connection because managers load after EventBusAutoload.
 
 ## ==================== STATE CHANGE SIGNALS (Logic → UI) ====================
 

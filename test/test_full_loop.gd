@@ -156,8 +156,8 @@ func test_level_up_on_xp_threshold() -> void:
 	var current_level = GameManager.get_level()
 	assert_eq(current_level, 1, "Starting level should be 1")
 
-	# Connect to level_up signal via EventBus
-	EventBus.level_up.connect(_on_level_up)
+	# Connect to level_up signal via EventBusAutoload
+	EventBusAutoload.level_up.connect(_on_level_up)
 
 	# Add XP to trigger level up
 	# Level 2 requires 100 XP
@@ -168,7 +168,7 @@ func test_level_up_on_xp_threshold() -> void:
 	assert_eq(_level_up_value, current_level + 1, "Level should increase by 1")
 	assert_eq(GameManager.get_level(), current_level + 1, "Level should be updated")
 
-	EventBus.level_up.disconnect(_on_level_up)
+	EventBusAutoload.level_up.disconnect(_on_level_up)
 
 
 ## Test full production-to-purchase loop
@@ -235,7 +235,7 @@ func test_purchase_fails_no_breads() -> void:
 	assert_eq(GameManager.get_xp(), xp_before, "XP should not change")
 
 
-## Test EventBus signals are emitted throughout loop
+## Test EventBusAutoload signals are emitted throughout loop
 func test_eventbus_signals_emitted() -> void:
 	# Track signal emissions
 	var signals_received := {
@@ -245,11 +245,11 @@ func test_eventbus_signals_emitted() -> void:
 	}
 
 	# Connect to signals
-	EventBus.production_completed.connect(
+	EventBusAutoload.production_completed.connect(
 		func(_slot, _recipe): signals_received["production_completed"] = true
 	)
-	EventBus.gold_changed.connect(func(_old, _new): signals_received["gold_changed"] = true)
-	EventBus.experience_changed.connect(
+	EventBusAutoload.gold_changed.connect(func(_old, _new): signals_received["gold_changed"] = true)
+	EventBusAutoload.experience_changed.connect(
 		func(_old, _new): signals_received["experience_changed"] = true
 	)
 
