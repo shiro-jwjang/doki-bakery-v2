@@ -154,8 +154,7 @@ func test_avatar_data_resource_exists() -> void:
 
 func test_avatar_data_has_five_texture_exports() -> void:
 	# REQ: AvatarData에 5개 텍스처 export 변수 존재
-	var avatar_data_script: GDScript = load("res://resources/avatar_data.gd")
-	var data: Resource = avatar_data_script.new()
+	var data: AvatarData = AvatarData.new()
 
 	# 프로퍼티 존재 확인
 	var props: Array[Dictionary] = data.get_property_list()
