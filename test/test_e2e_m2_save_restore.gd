@@ -60,7 +60,12 @@ func test_e2e_save_restore_gold() -> void:
 	GameManager.gold = test_gold
 
 	# Save
-	var save_result := SaveManager.save_game()
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	var save_result := SaveManager.save_to_disk(save_data)
 	assert_true(save_result, "Save should succeed")
 
 	# Modify state
@@ -68,11 +73,11 @@ func test_e2e_save_restore_gold() -> void:
 	assert_eq(GameManager.gold, 0, "Gold should be 0 after reset")
 
 	# Load
-	var data := SaveManager.load_game()
+	var data := SaveManager.load_from_disk()
 	assert_false(data.is_empty(), "Load should return data")
 
 	# Apply loaded data
-	SaveManager.apply_save_data(data)
+	GameManager.set_state(data.get("game", {}))
 
 	# Verify gold restored
 	assert_eq(GameManager.gold, test_gold, "Gold should be restored to saved value")
@@ -85,7 +90,12 @@ func test_e2e_save_restore_level() -> void:
 	GameManager.level = test_level
 
 	# Save
-	var save_result := SaveManager.save_game()
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	var save_result := SaveManager.save_to_disk(save_data)
 	assert_true(save_result, "Save should succeed")
 
 	# Modify state
@@ -93,8 +103,8 @@ func test_e2e_save_restore_level() -> void:
 	assert_eq(GameManager.level, 1, "Level should be 1 after reset")
 
 	# Load
-	var data := SaveManager.load_game()
-	SaveManager.apply_save_data(data)
+	var data := SaveManager.load_from_disk()
+	GameManager.set_state(data.get("game", {}))
 
 	# Verify level restored
 	assert_eq(GameManager.level, test_level, "Level should be restored to saved value")
@@ -107,7 +117,12 @@ func test_e2e_save_restore_experience() -> void:
 	GameManager.experience = test_exp
 
 	# Save
-	var save_result := SaveManager.save_game()
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	var save_result := SaveManager.save_to_disk(save_data)
 	assert_true(save_result, "Save should succeed")
 
 	# Modify state
@@ -115,8 +130,8 @@ func test_e2e_save_restore_experience() -> void:
 	assert_eq(GameManager.experience, 0, "Experience should be 0 after reset")
 
 	# Load
-	var data := SaveManager.load_game()
-	SaveManager.apply_save_data(data)
+	var data := SaveManager.load_from_disk()
+	GameManager.set_state(data.get("game", {}))
 
 	# Verify experience restored
 	assert_eq(GameManager.experience, test_exp, "Experience should be restored to saved value")
@@ -136,7 +151,12 @@ func test_e2e_save_restore_full_state() -> void:
 	GameManager.legendary_bread = test_legendary
 
 	# Save
-	var save_result := SaveManager.save_game()
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	var save_result := SaveManager.save_to_disk(save_data)
 	assert_true(save_result, "Save should succeed")
 
 	# Clear all state
@@ -162,7 +182,12 @@ func test_e2e_save_signal_emitted() -> void:
 	watch_signals(EventBus)
 
 	# Save
-	SaveManager.save_game()
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	SaveManager.save_to_disk(save_data)
 
 	# Verify signal emitted
 	assert_signal_emitted(EventBus, "save_completed")
@@ -178,7 +203,7 @@ func test_e2e_load_signal_emitted() -> void:
 	watch_signals(EventBus)
 
 	# Load
-	SaveManager.load_game()
+	SaveManager.load_from_disk()
 
 	# Verify signal emitted
 	assert_signal_emitted(EventBus, "save_loaded")
@@ -189,7 +214,7 @@ func test_e2e_load_nonexistent_save() -> void:
 	# Use path that doesn't exist (save_path will be restored in after_each)
 	SaveManager.save_path = "user://nonexistent_save.json"
 
-	var data := SaveManager.load_game()
+	var data := SaveManager.load_from_disk()
 	assert_true(data.is_empty(), "Loading non-existent save should return empty dict")
 
 

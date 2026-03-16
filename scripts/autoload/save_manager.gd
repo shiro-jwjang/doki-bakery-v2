@@ -73,40 +73,6 @@ func load_from_disk(path: String = "") -> Dictionary:
 	return data
 
 
-## Legacy method: Save the current game state to disk
-## Deprecated: Use save_to_disk with GameManager.get_state() instead
-func save_game() -> bool:
-	var game_state := GameManager.get_state()
-	var save_data := {
-		"version": GameConstants.SAVE_VERSION,
-		"timestamp": Time.get_datetime_string_from_system(true, true),
-		"game": game_state
-	}
-	return save_to_disk(save_data)
-
-
-## Legacy method: Load game state from disk
-## Deprecated: Use load_from_disk and GameManager.set_state() instead
-func load_game() -> Dictionary:
-	return load_from_disk()
-
-
-## Legacy method: Get the current game state as a dictionary
-## Deprecated: Use GameManager.get_state() instead
-func get_save_data() -> Dictionary:
-	return {
-		"version": GameConstants.SAVE_VERSION,
-		"timestamp": Time.get_datetime_string_from_system(),
-		"game": GameManager.get_state()
-	}
-
-
-## Legacy method: Apply loaded save data to GameManager
-## Deprecated: Use GameManager.set_state() instead
-func apply_save_data(data: Dictionary) -> void:
-	GameManager.set_state(data.get("game", {}))
-
-
 ## Calculate offline progress based on time away
 ## Returns a Dictionary with gold_earned and time_elapsed
 ## NOTE: This method accesses GameManager.level for calculation
@@ -131,4 +97,11 @@ func _process(delta: float) -> void:
 	_auto_save_timer += delta
 	if _auto_save_timer >= auto_save_interval:
 		_auto_save_timer = 0.0
-		save_game()
+		# SNA-189: Auto-save using GameManager.get_state() and save_to_disk()
+		var game_state := GameManager.get_state()
+		var save_data := {
+			"version": GameConstants.SAVE_VERSION,
+			"timestamp": Time.get_datetime_string_from_system(true, true),
+			"game": game_state
+		}
+		save_to_disk(save_data)

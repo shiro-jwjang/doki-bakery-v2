@@ -35,11 +35,6 @@ func _ready() -> void:
 	if _container != null:
 		_initialize_slots()
 
-	# Connect to EventBus signals for production updates
-	EventBus.production_started.connect(on_production_started)
-	EventBus.production_progressed.connect(on_production_progressed)
-	EventBus.production_completed.connect(on_production_completed)
-
 
 func _initialize_slots() -> void:
 	var total_slots = BakeryManager.get_max_slots()
