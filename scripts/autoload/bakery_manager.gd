@@ -35,9 +35,11 @@ var _active_count: int = 0
 
 
 func _ready() -> void:
-	# Initialize providers with default implementations
-	_time_provider = SystemTimeProvider.new()
-	_recipe_provider = DataManagerRecipeProvider.new()
+	# Initialize providers with default implementations only if not already set
+	if _time_provider == null:
+		_time_provider = SystemTimeProvider.new()
+	if _recipe_provider == null:
+		_recipe_provider = DataManagerRecipeProvider.new()
 	set_process(true)
 
 

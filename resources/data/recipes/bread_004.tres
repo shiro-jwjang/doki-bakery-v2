@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/data/recipe_data.gd" id="1_abc12"]
+[ext_resource type="Texture2D"  path="res://assets/sprites/bread/icon_bread03.png" id="2_def36"]
+
+[resource]
+script = ExtResource("1_abc12")
+id = "bread_004"
+display_name = "베이글"
+production_time = 6.0
+base_price = 120
+unlock_level = 2
+xp_reward = 12
+icon = ExtResource("2_def36")

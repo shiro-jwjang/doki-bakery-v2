@@ -23,8 +23,9 @@ var customer_id: String = ""
 func _ready() -> void:
 	# Set initial position (will be updated by movement system)
 	position = Vector2(0, 0)
-	# Apply default texture
-	_sprite.texture = DEFAULT_TEXTURE
+	# Apply default texture (skip in headless mode where rendering is limited)
+	if _sprite != null and DisplayServer.get_name() != "headless":
+		_sprite.texture = DEFAULT_TEXTURE
 
 
 ## Setup the customer view with a customer ID
