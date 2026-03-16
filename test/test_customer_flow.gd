@@ -4,7 +4,7 @@ extends GutTest
 ## Tests the complete customer lifecycle: spawn → move → buy → leave → despawn
 ## SNA-139: 손님 풀 플로우: 입장 → 진열대 → 구매 → 퇴장
 
-## Signal tracking for EventBus signals
+## Signal tracking for EventBusAutoload signals
 var _signals_received := {}
 var _customer_flow: Node = null
 var _mock_customer_view: Node2D = null
@@ -12,7 +12,7 @@ var _mock_customer_view: Node2D = null
 
 func before_each() -> void:
 	_signals_received.clear()
-	# Connect to EventBus signals
+	# Connect to EventBusAutoload signals
 	_connect_event_bus_signals()
 
 
@@ -214,7 +214,7 @@ func test_customer_purchase_success() -> void:
 	assert_true(GameManager.gold > initial_gold, "Gold should increase after purchase")
 
 
-## Test that purchase emits correct EventBus signals
+## Test that purchase emits correct EventBusAutoload signals
 func test_customer_purchase_emits_signals() -> void:
 	if _create_customer_flow() == null:
 		pending("CustomerFlow not implemented yet")
@@ -358,22 +358,22 @@ func test_customer_spawned_signal() -> void:
 	)
 
 
-## Test all EventBus signals are defined
+## Test all EventBusAutoload signals are defined
 func test_event_bus_signals_defined() -> void:
 	assert_true(
 		EventBusAutoload.has_signal("customer_spawned"),
-		"customer_spawned signal must be defined in EventBus"
+		"customer_spawned signal must be defined in EventBusAutoload"
 	)
 	assert_true(
 		EventBusAutoload.has_signal("customer_arrived_at_display"),
-		"customer_arrived_at_display signal must be defined in EventBus"
+		"customer_arrived_at_display signal must be defined in EventBusAutoload"
 	)
 	assert_true(
 		EventBusAutoload.has_signal("customer_purchased"),
-		"customer_purchased signal must be defined in EventBus"
+		"customer_purchased signal must be defined in EventBusAutoload"
 	)
 	assert_true(
-		EventBusAutoload.has_signal("customer_left"), "customer_left signal must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_left"), "customer_left signal must be defined in EventBusAutoload"
 	)
 
 

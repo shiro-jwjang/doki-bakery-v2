@@ -245,23 +245,23 @@ func test_game_manager_no_file_io() -> void:
 
 
 ## ============================================================================
-## Signal Tests (EventBus Integration)
+## Signal Tests (EventBusAutoload Integration)
 ## ============================================================================
 
 
 ## Test save_completed signal is emitted after save_to_disk
 func test_save_to_disk_emits_signal() -> void:
-	watch_signals(EventBus)
+	watch_signals(EventBusAutoload)
 
 	var test_data := {"version": 1}
 	SaveManager.save_to_disk(test_data, _test_save_path)
 
-	assert_signal_emitted(EventBus, "save_completed", "save_completed signal should be emitted")
+	assert_signal_emitted(EventBusAutoload, "save_completed", "save_completed signal should be emitted")
 
 
 ## Test save_loaded signal is emitted after load_from_disk
 func test_load_from_disk_emits_signal() -> void:
-	watch_signals(EventBus)
+	watch_signals(EventBusAutoload)
 
 	# Write test file first
 	var file := FileAccess.open(_test_save_path, FileAccess.WRITE)
@@ -270,4 +270,4 @@ func test_load_from_disk_emits_signal() -> void:
 
 	SaveManager.load_from_disk(_test_save_path)
 
-	assert_signal_emitted(EventBus, "save_loaded", "save_loaded signal should be emitted")
+	assert_signal_emitted(EventBusAutoload, "save_loaded", "save_loaded signal should be emitted")

@@ -156,7 +156,7 @@ func test_level_up_on_xp_threshold() -> void:
 	var current_level = GameManager.get_level()
 	assert_eq(current_level, 1, "Starting level should be 1")
 
-	# Connect to level_up signal via EventBus
+	# Connect to level_up signal via EventBusAutoload
 	EventBusAutoload.level_up.connect(_on_level_up)
 
 	# Add XP to trigger level up
@@ -235,7 +235,7 @@ func test_purchase_fails_no_breads() -> void:
 	assert_eq(GameManager.get_xp(), xp_before, "XP should not change")
 
 
-## Test EventBus signals are emitted throughout loop
+## Test EventBusAutoload signals are emitted throughout loop
 func test_eventbus_signals_emitted() -> void:
 	# Track signal emissions
 	var signals_received := {

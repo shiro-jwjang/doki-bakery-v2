@@ -4,8 +4,8 @@ extends GutTest
 ##
 ## Tests the WorldController which:
 ## 1. Manages UI components within WorldView hierarchy
-## 2. Connects EventBus signals for forwarding to UI
-## 3. Validates EventBus signal connections
+## 2. Connects EventBusAutoload signals for forwarding to UI
+## 3. Validates EventBusAutoload signal connections
 
 const WorldControllerScript = preload("res://scripts/world/world_controller.gd")
 
@@ -50,7 +50,7 @@ func test_get_display_slots_returns_null_when_no_slots() -> void:
 	assert_null(slots, "get_display_slots should return null when no slots")
 
 
-# ==================== EventBus Connection Tests ====================
+# ==================== EventBusAutoload Connection Tests ====================
 
 
 func test_event_bus_gold_changed_connected() -> void:
@@ -117,14 +117,14 @@ func test_validate_connections_reports_connection_status() -> void:
 
 func test_validate_connections_all_connected_true_after_init() -> void:
 	var result: Dictionary = world_controller.validate_connections()
-	assert_true(result["all_connected"], "All EventBus connections should be established")
+	assert_true(result["all_connected"], "All EventBusAutoload connections should be established")
 
 
 # ==================== Signal Propagation Tests ====================
 
 
 func test_gold_change_signal_propagates() -> void:
-	# Verify WorldController receives gold_changed via EventBus
+	# Verify WorldController receives gold_changed via EventBusAutoload
 	assert_true(
 		EventBusAutoload.gold_changed.is_connected(world_controller._on_gold_changed),
 		"Signal should be wired through WorldController"

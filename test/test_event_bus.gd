@@ -1,7 +1,7 @@
 extends GutTest
 
-## Test suite for EventBus Autoload
-## SNA-66: EventBus 시그널 정의 (상태변경 + 액션요청)
+## Test suite for EventBusAutoload Autoload
+## SNA-66: EventBusAutoload 시그널 정의 (상태변경 + 액션요청)
 
 var _signal_emitted: bool = false
 var _signal_params: Array = []
@@ -16,7 +16,7 @@ func before_each() -> void:
 
 
 func test_gold_changed_forwarded() -> void:
-	# Setup: Connect to EventBus signal
+	# Setup: Connect to EventBusAutoload signal
 	EventBusAutoload.gold_changed.connect(_on_gold_changed)
 
 	# Act: Simulate GameManager emitting gold_changed
@@ -162,7 +162,7 @@ func test_event_bus_ready_called() -> void:
 	# This ensures _setup_connections is called via call_deferred
 	# After refactoring, connections should still work without has_signal checks
 
-	# This test passes if EventBus autoloads successfully
+	# This test passes if EventBusAutoload autoloads successfully
 	# and no errors occur during connection setup
-	assert_true(EventBus != null, "EventBus should be autoloaded")
+	assert_true(EventBusAutoload != null, "EventBusAutoload should be autoloaded")
 	assert_true(BakeryManager != null, "BakeryManager should be autoloaded")

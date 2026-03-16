@@ -268,7 +268,7 @@ func test_get_slots_reflects_current_state() -> void:
 
 
 ## ==================== PRODUCTION COMPLETION TESTS ====================
-## SNA-76: BakeryManager 생산 완료 → EventBus 시그널
+## SNA-76: BakeryManager 생산 완료 → EventBusAutoload 시그널
 
 
 ## Signal handler for production_completed

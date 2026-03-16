@@ -176,10 +176,10 @@ func test_e2e_save_restore_full_state() -> void:
 	assert_eq(GameManager.legendary_bread, test_legendary, "Legendary bread should be restored")
 
 
-## Test that save_completed signal is emitted on EventBus
+## Test that save_completed signal is emitted on EventBusAutoload
 func test_e2e_save_signal_emitted() -> void:
-	# Watch for signal on EventBus
-	watch_signals(EventBus)
+	# Watch for signal on EventBusAutoload
+	watch_signals(EventBusAutoload)
 
 	# Save
 	var save_data := {
@@ -190,7 +190,7 @@ func test_e2e_save_signal_emitted() -> void:
 	SaveManager.save_to_disk(save_data)
 
 	# Verify signal emitted
-	assert_signal_emitted(EventBus, "save_completed")
+	assert_signal_emitted(EventBusAutoload, "save_completed")
 
 
 ## Test that load_completed signal is emitted with data
@@ -199,14 +199,14 @@ func test_e2e_load_signal_emitted() -> void:
 	GameManager.gold = 999
 	SaveManager.save_game()
 
-	# Watch for signal on EventBus
-	watch_signals(EventBus)
+	# Watch for signal on EventBusAutoload
+	watch_signals(EventBusAutoload)
 
 	# Load
 	SaveManager.load_from_disk()
 
 	# Verify signal emitted
-	assert_signal_emitted(EventBus, "save_loaded")
+	assert_signal_emitted(EventBusAutoload, "save_loaded")
 
 
 ## Test that loading non-existent save returns empty dict

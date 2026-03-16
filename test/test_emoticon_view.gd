@@ -115,13 +115,13 @@ func test_invalid_emoticon_type_returns_default() -> void:
 	assert_true(true, "Should handle invalid type without crashing")
 
 
-## REQ: EventBus 연동 - emotion_triggered 시그널
+## REQ: EventBusAutoload 연동 - emotion_triggered 시그널
 func test_event_bus_signal_connection() -> void:
-	# Check if EventBus has emotion_triggered signal
-	var event_bus := get_node_or_null("/root/EventBus")
+	# Check if EventBusAutoload has emotion_triggered signal
+	var event_bus := get_node_or_null("/root/EventBusAutoload")
 	if event_bus:
 		assert_has_signal(
-			event_bus, "emotion_triggered", "EventBus should have emotion_triggered signal"
+			event_bus, "emotion_triggered", "EventBusAutoload should have emotion_triggered signal"
 		)
 
 

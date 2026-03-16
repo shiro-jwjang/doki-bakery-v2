@@ -127,7 +127,7 @@ func test_customer_arrived_unique_customer_id() -> void:
 
 func test_customer_arrived_signal_defined() -> void:
 	assert_true(
-		EventBusAutoload.has_signal("customer_arrived"), "customer_arrived must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_arrived"), "customer_arrived must be defined in EventBusAutoload"
 	)
 
 

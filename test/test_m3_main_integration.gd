@@ -25,10 +25,10 @@ func before_each() -> void:
 	# Additional wait for @onready variables and children to be initialized
 	await wait_seconds(0.5)
 
-	# Get EventBus reference
-	event_bus = get_node_or_null("/root/EventBus")
+	# Get EventBusAutoload reference
+	event_bus = get_node_or_null("/root/EventBusAutoload")
 	if event_bus == null:
-		fail_test("EventBus not found")
+		fail_test("EventBusAutoload not found")
 
 
 ## ==================== SCENE STRUCTURE TESTS ====================
@@ -149,25 +149,25 @@ func test_notification_area_has_show_method() -> void:
 ## ==================== EVENT BUS INTEGRATION TESTS ====================
 
 
-## Test that EventBus has required signals
+## Test that EventBusAutoload has required signals
 func test_event_bus_has_emotion_triggered() -> void:
 	if event_bus == null:
-		fail_test("EventBus not found")
+		fail_test("EventBusAutoload not found")
 		return
 
 	assert_has_signal(
-		event_bus, "emotion_triggered", "EventBus should have emotion_triggered signal"
+		event_bus, "emotion_triggered", "EventBusAutoload should have emotion_triggered signal"
 	)
 
 
-## Test that EventBus has notification_requested signal
+## Test that EventBusAutoload has notification_requested signal
 func test_event_bus_has_notification_requested() -> void:
 	if event_bus == null:
-		fail_test("EventBus not found")
+		fail_test("EventBusAutoload not found")
 		return
 
 	assert_has_signal(
-		event_bus, "notification_requested", "EventBus should have notification_requested signal"
+		event_bus, "notification_requested", "EventBusAutoload should have notification_requested signal"
 	)
 
 
@@ -177,7 +177,7 @@ func test_event_bus_has_notification_requested() -> void:
 ## Test customer arrival → emoticon → notification flow
 func test_customer_emoticon_notification_flow() -> void:
 	if main_scene == null or event_bus == null:
-		fail_test("Main scene or EventBus not loaded")
+		fail_test("Main scene or EventBusAutoload not loaded")
 		return
 
 	# Find customer view by name pattern (CustomerView gets renamed after setup)
@@ -232,7 +232,7 @@ func test_customer_emoticon_notification_flow() -> void:
 ## Test multiple emoticons in sequence
 func test_multiple_emoticon_sequence() -> void:
 	if main_scene == null or event_bus == null:
-		fail_test("Main scene or EventBus not loaded")
+		fail_test("Main scene or EventBusAutoload not loaded")
 		return
 
 	var emoticon_view = main_scene.find_child("EmoticonView", true, false)

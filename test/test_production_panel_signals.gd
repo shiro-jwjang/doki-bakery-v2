@@ -1,7 +1,7 @@
 extends GutTest
 
 ## Test Suite for ProductionPanel Signal-Based Updates
-## Tests that ProductionPanel updates UI via EventBus signals
+## Tests that ProductionPanel updates UI via EventBusAutoload signals
 ## SNA-95: ProductionPanel ↔ ProductionManager 시그널 연결
 
 const ProductionPanelScene = preload("res://scenes/ui/production_panel.tscn")

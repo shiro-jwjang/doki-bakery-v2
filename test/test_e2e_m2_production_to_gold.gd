@@ -59,7 +59,7 @@ func test_e2e_display_slot_auto_sell() -> void:
 	assert_gt(gold_after_sale, gold_before_sale, "Gold should increase after auto-sell")
 
 
-## Test HUD reflects gold changes via EventBus signal
+## Test HUD reflects gold changes via EventBusAutoload signal
 func test_e2e_hud_gold_changed_signal() -> void:
 	if _world_view == null:
 		fail_test("WorldView not loaded")
