@@ -90,6 +90,12 @@ func _connect_event_bus_signals() -> void:
 	if hud and hud.has_method("_on_premium_changed"):
 		hud._on_premium_changed(0, GameManager.legendary_bread)
 
+	# SNA-193: Initialize display slots from SalesManager inventory
+	# This ensures that when loading a saved game, display slots show
+	# items that were in inventory at the time of save
+	if display_slots and SalesManager.has_method("initialize_display_slots"):
+		SalesManager.initialize_display_slots(display_slots)
+
 	# Connect local UI signals
 	_connect_ui_signals()
 

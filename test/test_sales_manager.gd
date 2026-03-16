@@ -182,3 +182,98 @@ func test_remove_from_inventory_insufficient_stock() -> void:
 	# Count should remain unchanged
 	var count = SalesManager.get_inventory_count("bread_001")
 	assert_eq(count, 1, "Count should remain 1")
+
+
+## ==================== SNA-193: DISPLAY SLOT INITIALIZATION TESTS ====================
+
+
+## Test that initialize_display_slots method exists
+func test_initialize_display_slots_method_exists() -> void:
+	assert_true(
+		SalesManager.has_method("initialize_display_slots"),
+		"initialize_display_slots method must exist for SNA-193 fix"
+	)
+
+
+## Test that initialize_display_slots fills empty slots from inventory
+func test_initialize_display_slots_fills_empty_slots() -> void:
+	if not SalesManager.has_method("initialize_display_slots"):
+		fail_test("initialize_display_slots method not implemented yet")
+		return
+
+	# Arrange - Add items to inventory using known recipe
+	var recipe_id = "croissant"
+	var recipe = DataManager.get_recipe(recipe_id)
+	if recipe == null:
+		skip_test("Recipe %s not found in DataManager" % recipe_id)
+		return
+
+	SalesManager.add_to_inventory(recipe_id, recipe.base_price)
+	SalesManager.add_to_inventory(recipe_id, recipe.base_price)
+	SalesManager.add_to_inventory(recipe_id, recipe.base_price)
+
+	# Create DisplaySlots container
+	var display_slots_scene = load("res://scenes/ui/display_slots.tscn")
+	if display_slots_scene == null:
+		fail_test("DisplaySlots scene not found")
+		return
+
+	var display_slots = display_slots_scene.instantiate()
+	add_child_autoqfree(display_slots)
+	await wait_physics_frames(2)
+
+	# Act - Initialize display slots from inventory
+	SalesManager.initialize_display_slots(display_slots)
+	await wait_physics_frames(1)
+
+	# Assert - Slots should be filled from inventory
+	var slots = display_slots.get_slots()
+	var filled_count = 0
+	for slot in slots:
+		if slot.has_method("has_bread") and slot.has_bread():
+			filled_count += 1
+
+	# Should fill up to SLOT_COUNT or inventory size, whichever is smaller
+	var expected_fills = min(3, SalesManager.get_inventory_count(recipe_id))
+	assert_eq(filled_count, expected_fills, "Should fill %d slots from inventory" % expected_fills)
+
+
+## Test that initialize_display_slots respects slot limit
+func test_initialize_display_slots_respects_slot_limit() -> void:
+	if not SalesManager.has_method("initialize_display_slots"):
+		fail_test("initialize_display_slots method not implemented yet")
+		return
+
+	# Arrange - Add more items than slots
+	var recipe_id = "croissant"
+	var recipe = DataManager.get_recipe(recipe_id)
+	if recipe == null:
+		skip_test("Recipe %s not found in DataManager" % recipe_id)
+		return
+
+	# Add 5 items (more than SLOT_COUNT=3)
+	for i in range(5):
+		SalesManager.add_to_inventory(recipe_id, recipe.base_price)
+
+	# Create DisplaySlots container
+	var display_slots_scene = load("res://scenes/ui/display_slots.tscn")
+	if display_slots_scene == null:
+		fail_test("DisplaySlots scene not found")
+		return
+
+	var display_slots = display_slots_scene.instantiate()
+	add_child_autoqfree(display_slots)
+	await wait_physics_frames(2)
+
+	# Act - Initialize display slots from inventory
+	SalesManager.initialize_display_slots(display_slots)
+	await wait_physics_frames(1)
+
+	# Assert - Should not exceed slot count
+	var slots = display_slots.get_slots()
+	var filled_count = 0
+	for slot in slots:
+		if slot.has_method("has_bread") and slot.has_bread():
+			filled_count += 1
+
+	assert_eq(filled_count, GameConstants.SLOT_COUNT, "Should not exceed slot count")
