@@ -61,6 +61,17 @@ godot --headless --script addons/gut/gut_cmdln.gd --path . -gdir=test -gexit
 - [ ] Format: `gdformat .` 통과
 - [ ] Lint: `gdlint .` 통과
 - [ ] Git: commit & push 완료
+- [ ] PR 생성 완료
+- [ ] Linear 상태: **In Review**로 변경
+
+### PR 생성 후 필수
+```bash
+# PR 생성
+gh pr create --base develop --title "[이슈 번호] 제목" --body "내용"
+
+# Linear 상태 변경
+linear issue update SNA-XXX --state "In Review"
+```
 
 ### ❌ 실패 시
 - 테스트 1개라도 실패하면 **commit 금지**
