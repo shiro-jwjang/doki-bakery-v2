@@ -14,4 +14,6 @@ position = Vector2(100, 100)
 [node name="EmoticonView" parent="." instance=ExtResource("3_emoticon_view")]
 position = Vector2(100, 60)
 
-[node name="NotificationArea" parent="." instance=ExtResource("4_notification_area")]
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="NotificationArea" parent="UILayer" instance=ExtResource("4_notification_area")]

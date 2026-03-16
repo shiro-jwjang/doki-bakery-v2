@@ -7,7 +7,7 @@ extends Node2D
 ## References to M3 components
 @onready var customer_view: Node2D = $CustomerView
 @onready var emoticon_view: Node2D = $EmoticonView
-@onready var notification_area: Control = $NotificationArea
+@onready var notification_area: Control = $UILayer/NotificationArea
 
 
 func _ready() -> void:
