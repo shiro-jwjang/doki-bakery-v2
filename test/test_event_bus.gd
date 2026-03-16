@@ -70,7 +70,9 @@ func test_production_started_multiple_slots() -> void:
 
 
 func test_baking_requested_signal_exists() -> void:
-	assert_true(EventBusAutoload.has_signal("baking_requested"), "baking_requested signal should exist")
+	assert_true(
+		EventBusAutoload.has_signal("baking_requested"), "baking_requested signal should exist"
+	)
 
 
 func test_baking_requested_params() -> void:
@@ -112,18 +114,27 @@ func test_sell_requested_params() -> void:
 
 func test_event_bus_has_required_state_signals() -> void:
 	assert_true(EventBusAutoload.has_signal("gold_changed"), "Should have gold_changed signal")
-	assert_true(EventBusAutoload.has_signal("experience_changed"), "Should have experience_changed signal")
-	assert_true(EventBusAutoload.has_signal("level_up"), "Should have level_up signal")
-	assert_true(EventBusAutoload.has_signal("production_started"), "Should have production_started signal")
 	assert_true(
-		EventBusAutoload.has_signal("production_completed"), "Should have production_completed signal"
+		EventBusAutoload.has_signal("experience_changed"), "Should have experience_changed signal"
+	)
+	assert_true(EventBusAutoload.has_signal("level_up"), "Should have level_up signal")
+	assert_true(
+		EventBusAutoload.has_signal("production_started"), "Should have production_started signal"
+	)
+	assert_true(
+		EventBusAutoload.has_signal("production_completed"),
+		"Should have production_completed signal"
 	)
 	assert_true(EventBusAutoload.has_signal("bread_sold"), "Should have bread_sold signal")
-	assert_true(EventBusAutoload.has_signal("inventory_updated"), "Should have inventory_updated signal")
+	assert_true(
+		EventBusAutoload.has_signal("inventory_updated"), "Should have inventory_updated signal"
+	)
 
 
 func test_event_bus_has_required_action_signals() -> void:
-	assert_true(EventBusAutoload.has_signal("baking_requested"), "Should have baking_requested signal")
+	assert_true(
+		EventBusAutoload.has_signal("baking_requested"), "Should have baking_requested signal"
+	)
 	assert_true(EventBusAutoload.has_signal("sell_requested"), "Should have sell_requested signal")
 
 

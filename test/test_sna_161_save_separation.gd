@@ -256,7 +256,9 @@ func test_save_to_disk_emits_signal() -> void:
 	var test_data := {"version": 1}
 	SaveManager.save_to_disk(test_data, _test_save_path)
 
-	assert_signal_emitted(EventBusAutoload, "save_completed", "save_completed signal should be emitted")
+	assert_signal_emitted(
+		EventBusAutoload, "save_completed", "save_completed signal should be emitted"
+	)
 
 
 ## Test save_loaded signal is emitted after load_from_disk

@@ -167,7 +167,9 @@ func test_event_bus_has_notification_requested() -> void:
 		return
 
 	assert_has_signal(
-		event_bus, "notification_requested", "EventBusAutoload should have notification_requested signal"
+		event_bus,
+		"notification_requested",
+		"EventBusAutoload should have notification_requested signal"
 	)
 
 

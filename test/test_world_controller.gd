@@ -73,11 +73,15 @@ func test_event_bus_production_signals_connected() -> void:
 		"WorldController should be connected to production_started"
 	)
 	assert_true(
-		EventBusAutoload.production_progressed.is_connected(world_controller._on_production_progressed),
+		EventBusAutoload.production_progressed.is_connected(
+			world_controller._on_production_progressed
+		),
 		"WorldController should be connected to production_progressed"
 	)
 	assert_true(
-		EventBusAutoload.production_completed.is_connected(world_controller._on_production_completed),
+		EventBusAutoload.production_completed.is_connected(
+			world_controller._on_production_completed
+		),
 		"WorldController should be connected to production_completed"
 	)
 

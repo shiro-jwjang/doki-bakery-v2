@@ -373,7 +373,8 @@ func test_event_bus_signals_defined() -> void:
 		"customer_purchased signal must be defined in EventBusAutoload"
 	)
 	assert_true(
-		EventBusAutoload.has_signal("customer_left"), "customer_left signal must be defined in EventBusAutoload"
+		EventBusAutoload.has_signal("customer_left"),
+		"customer_left signal must be defined in EventBusAutoload"
 	)
 
 
@@ -497,7 +498,9 @@ func _create_mock_recipe() -> Resource:
 func _connect_event_bus_signals() -> void:
 	if not EventBusAutoload.customer_spawned.is_connected(_on_customer_spawned):
 		EventBusAutoload.customer_spawned.connect(_on_customer_spawned)
-	if not EventBusAutoload.customer_arrived_at_display.is_connected(_on_customer_arrived_at_display):
+	if not EventBusAutoload.customer_arrived_at_display.is_connected(
+		_on_customer_arrived_at_display
+	):
 		EventBusAutoload.customer_arrived_at_display.connect(_on_customer_arrived_at_display)
 	if not EventBusAutoload.customer_purchased.is_connected(_on_customer_purchased):
 		EventBusAutoload.customer_purchased.connect(_on_customer_purchased)

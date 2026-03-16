@@ -726,11 +726,10 @@ func test_dictionary_collect_production() -> void:
 
 		assert_eq(_manager.get_slots().size(), 3, "Should have 3 slots")
 
-		# Complete and collect middle slot
+		# Complete middle slot (auto-collects)
 		_manager.complete_production(1)
-		var recipe_id = _manager.collect_production(1)
 
-		assert_eq(recipe_id, "croissant", "Should return correct recipe_id")
+		# Slot should be removed after auto-collection
 		assert_eq(_manager.get_slots().size(), 2, "Should have 2 slots after collection")
 
 		# Verify remaining slots
