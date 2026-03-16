@@ -117,3 +117,36 @@ func get_available_inventory() -> Array[RecipeData]:
 			if recipe:
 				available.append(recipe)
 	return available
+
+
+## Initialize display slots from inventory
+## Fills empty display slots with items from inventory
+## @param display_slots: DisplaySlots container node
+## SNA-193: Fix web build display slot initialization
+func initialize_display_slots(display_slots: Node) -> void:
+	if display_slots == null or not display_slots.has_method("get_slots"):
+		return
+
+	# Get all slots
+	var slots = display_slots.get_slots()
+	var filled_count := 0
+
+	# Fill empty slots from inventory
+	for slot in slots:
+		# Stop if we've filled all available slots
+		if filled_count >= GameConstants.SLOT_COUNT:
+			break
+
+		# Skip already filled slots
+		if slot.has_method("has_bread") and slot.has_bread():
+			continue
+
+		# Find an available item from inventory
+		for recipe_id in _inventory.keys():
+			if _inventory[recipe_id] > 0:
+				var recipe = DataManager.get_recipe(recipe_id)
+				if recipe != null:
+					# Place item in slot
+					slot.setup(recipe_id, recipe.base_price)
+					filled_count += 1
+					break

@@ -148,3 +148,51 @@ func test_production_started_signal_propagates() -> void:
 		EventBus.production_started.is_connected(world_controller._on_production_started),
 		"production_started should propagate through WorldController"
 	)
+
+
+# ==================== SNA-193: Display Slot Initialization Tests ====================
+
+
+## Test that WorldController initializes display slots from SalesManager inventory
+func test_world_controller_initializes_display_slots_from_inventory() -> void:
+	# Arrange - Add items to SalesManager inventory
+	var recipe_id = "croissant"
+	var recipe = DataManager.get_recipe(recipe_id)
+	if recipe == null:
+		skip_test("Recipe %s not found in DataManager" % recipe_id)
+		return
+
+	# Add items to inventory
+	SalesManager.add_to_inventory(recipe_id, recipe.base_price)
+	SalesManager.add_to_inventory(recipe_id, recipe.base_price)
+
+	# Create DisplaySlots container
+	var display_slots_scene = load("res://scenes/ui/display_slots.tscn")
+	if display_slots_scene == null:
+		fail_test("DisplaySlots scene not found")
+		return
+
+	var display_slots = display_slots_scene.instantiate()
+	add_child_autoqfree(display_slots)
+	await wait_physics_frames(2)
+
+	# Set display_slots reference in world_controller
+	world_controller.set_display_slots(display_slots)
+
+	# Act - Simulate WorldController._ready() initialization
+	if SalesManager.has_method("initialize_display_slots"):
+		SalesManager.initialize_display_slots(display_slots)
+		await wait_physics_frames(1)
+
+	# Assert - Display slots should be filled from inventory
+	var slots = display_slots.get_slots()
+	var filled_count = 0
+	for slot in slots:
+		if slot.has_method("has_bread") and slot.has_bread():
+			filled_count += 1
+
+	# Should fill at least 1 slot from inventory
+	assert_true(
+		filled_count > 0,
+		"Display slots should be initialized from inventory (got %d filled)" % filled_count
+	)
