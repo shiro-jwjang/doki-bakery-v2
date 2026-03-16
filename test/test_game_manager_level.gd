@@ -30,10 +30,10 @@ func before_each() -> void:
 
 func after_each() -> void:
 	# Disconnect all signals
-	if EventBus.level_up.is_connected(_on_level_up):
-		EventBus.level_up.disconnect(_on_level_up)
-	if EventBus.experience_changed.is_connected(_on_experience_changed):
-		EventBus.experience_changed.disconnect(_on_experience_changed)
+	if EventBusAutoload.level_up.is_connected(_on_level_up):
+		EventBusAutoload.level_up.disconnect(_on_level_up)
+	if EventBusAutoload.experience_changed.is_connected(_on_experience_changed):
+		EventBusAutoload.experience_changed.disconnect(_on_experience_changed)
 
 
 ## Test add_xp increases experience points
@@ -65,7 +65,7 @@ func test_get_level() -> void:
 
 ## Test add_xp triggers level up at threshold (Level 1 -> 2)
 func test_level_up_threshold() -> void:
-	EventBus.level_up.connect(_on_level_up)
+	EventBusAutoload.level_up.connect(_on_level_up)
 
 	# Level 2 requires 100 XP (from LevelData)
 	GameManager.add_xp(100)
@@ -87,7 +87,7 @@ func test_level_up_with_excess_xp() -> void:
 
 ## Test multiple level ups with sufficient XP
 func test_multiple_level_ups() -> void:
-	EventBus.level_up.connect(_on_level_up)
+	EventBusAutoload.level_up.connect(_on_level_up)
 
 	# Level 1 -> 2 requires 100 XP
 	# Level 2 -> 3 requires 250 XP (total 350 XP from level 1)
@@ -99,7 +99,7 @@ func test_multiple_level_ups() -> void:
 
 ## Test max level cap prevents further leveling
 func test_max_level_cap() -> void:
-	EventBus.level_up.connect(_on_level_up)
+	EventBusAutoload.level_up.connect(_on_level_up)
 
 	# Add massive XP to cap at level 10
 	# Total XP needed for level 10: 100 + 250 + 500 + 1000 + 2000 + 4000 + 8000 + 16000 + 32000 = 63850
@@ -112,7 +112,7 @@ func test_max_level_cap() -> void:
 func test_cannot_level_up_beyond_max() -> void:
 	GameManager.level = 10
 	GameManager.experience = 0
-	EventBus.level_up.connect(_on_level_up)
+	EventBusAutoload.level_up.connect(_on_level_up)
 
 	GameManager.add_xp(1000)
 
@@ -122,7 +122,7 @@ func test_cannot_level_up_beyond_max() -> void:
 
 ## Test experience_changed signal is emitted when adding XP
 func test_experience_changed_signal() -> void:
-	EventBus.experience_changed.connect(_on_experience_changed)
+	EventBusAutoload.experience_changed.connect(_on_experience_changed)
 
 	GameManager.add_xp(50)
 
@@ -133,7 +133,7 @@ func test_experience_changed_signal() -> void:
 
 ## Test level_up signal is emitted for each level gained
 func test_level_up_signal_multiple_times() -> void:
-	EventBus.level_up.connect(_on_level_up)
+	EventBusAutoload.level_up.connect(_on_level_up)
 
 	# Level 1 -> 2 -> 3
 	GameManager.add_xp(350)

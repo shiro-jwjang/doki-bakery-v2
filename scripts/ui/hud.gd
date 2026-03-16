@@ -12,10 +12,10 @@ extends "res://scripts/ui/base_ui_component.gd"
 
 func _ready() -> void:
 	# Connect to EventBus signals (SNA-160: unified pattern)
-	_connect_signal(EventBus.experience_changed, _on_experience_changed)
-	_connect_signal(EventBus.level_up, _on_level_up)
-	_connect_signal(EventBus.gold_changed, _on_gold_changed)
-	_connect_signal(EventBus.premium_changed, _on_premium_changed)
+	_connect_signal(EventBusAutoload.experience_changed, _on_experience_changed)
+	_connect_signal(EventBusAutoload.level_up, _on_level_up)
+	_connect_signal(EventBusAutoload.gold_changed, _on_gold_changed)
+	_connect_signal(EventBusAutoload.premium_changed, _on_premium_changed)
 
 	# Initialize bar with current values
 	_update_exp_bar()

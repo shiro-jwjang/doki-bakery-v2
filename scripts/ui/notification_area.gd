@@ -10,7 +10,7 @@ const NotificationItemScene = preload("res://scenes/ui/notification_item.tscn")
 ## 기능:
 ## - 우선순위 큐 기반 노티피케이션 표시 (최대 3개)
 ## - 슬라이드 인/아웃 애니메이션 (3초 지속)
-## - EventBus.notification_requested 시그널 연동
+## - EventBusAutoload.notification_requested 시그널 연동
 
 @onready var vbox_container: VBoxContainer = $VBoxContainer
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -22,7 +22,7 @@ var _pending_notifications: Array[Dictionary] = []  # Priority queue for pending
 
 func _ready() -> void:
 	# Connect to EventBus signal
-	EventBus.notification_requested.connect(_on_notification_requested)
+	EventBusAutoload.notification_requested.connect(_on_notification_requested)
 
 
 ## Show a notification with the given parameters

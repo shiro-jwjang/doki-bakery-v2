@@ -205,7 +205,7 @@ func test_eventbus_signal_triggers_notification() -> void:
 	_create_notification_area()
 
 	# Emit EventBus signal
-	EventBus.notification_requested.emit("Event Title", "Event Description", test_icon, 0)
+	EventBusAutoload.notification_requested.emit("Event Title", "Event Description", test_icon, 0)
 	await wait_physics_frames(2)
 
 	var vbox = notification_area.get_node("VBoxContainer")

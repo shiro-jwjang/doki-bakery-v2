@@ -158,7 +158,7 @@ func collect_production(slot_index: int) -> String:
 
 	# Emit signal (guard for headless mode)
 	if EventBus:
-		EventBus.production_cleared.emit(slot_index)
+		EventBusAutoload.production_cleared.emit(slot_index)
 	return recipe_id
 
 
@@ -188,7 +188,7 @@ func _process(delta: float) -> void:
 				# Emit progress signal for UI updates (guard for headless mode)
 				if EventBus:
 					var slot_index: int = slot.get("slot_index", 0)
-					EventBus.production_progressed.emit(slot_index, slot["progress"])
+					EventBusAutoload.production_progressed.emit(slot_index, slot["progress"])
 
 			# Check if production is complete
 			if slot["remaining_time"] <= 0:

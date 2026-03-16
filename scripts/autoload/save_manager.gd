@@ -39,7 +39,7 @@ func save_to_disk(data: Dictionary, path: String = "") -> bool:
 	file.store_string(json_string)
 	file.close()
 
-	EventBus.save_completed.emit()
+	EventBusAutoload.save_completed.emit()
 	return true
 
 
@@ -69,7 +69,7 @@ func load_from_disk(path: String = "") -> Dictionary:
 		return {}
 
 	var data: Dictionary = json.data
-	EventBus.save_loaded.emit(data)
+	EventBusAutoload.save_loaded.emit(data)
 	return data
 
 

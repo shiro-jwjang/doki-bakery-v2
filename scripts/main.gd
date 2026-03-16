@@ -34,6 +34,6 @@ func _setup_m3_components() -> void:
 func _on_emoticon_shown(emoticon_type: String) -> void:
 	print("Emoticon shown: %s" % emoticon_type)
 	# Emit notification when emoticon is shown (demo flow)
-	EventBus.notification_requested.emit(
+	EventBusAutoload.notification_requested.emit(
 		"Customer Emotion", "Customer is feeling: %s" % emoticon_type, null, 0
 	)

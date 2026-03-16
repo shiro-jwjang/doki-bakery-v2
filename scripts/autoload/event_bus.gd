@@ -8,7 +8,7 @@ class_name EventBus
 ## Forwards manager signals to UI and routes UI requests to managers.
 ## SNA-66: EventBus 시그널 정의 (상태변경 + 액션요청)
 ##
-## Note: Uses deferred connection because managers load after EventBus.
+## Note: Uses deferred connection because managers load after EventBusAutoload.
 
 ## ==================== STATE CHANGE SIGNALS (Logic → UI) ====================
 

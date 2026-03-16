@@ -17,12 +17,12 @@ func before_each() -> void:
 
 func test_gold_changed_forwarded() -> void:
 	# Setup: Connect to EventBus signal
-	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBusAutoload.gold_changed.connect(_on_gold_changed)
 
 	# Act: Simulate GameManager emitting gold_changed
 	# Note: In real implementation, GameManager.gold_changed should be connected
 	# For now, test direct emission
-	EventBus.gold_changed.emit(100, 200)
+	EventBusAutoload.gold_changed.emit(100, 200)
 
 	# Assert
 	assert_true(_signal_emitted, "gold_changed should be emitted")
@@ -30,8 +30,8 @@ func test_gold_changed_forwarded() -> void:
 
 
 func test_gold_changed_params_order() -> void:
-	EventBus.gold_changed.connect(_on_gold_changed_with_params)
-	EventBus.gold_changed.emit(500, 1000)
+	EventBusAutoload.gold_changed.connect(_on_gold_changed_with_params)
+	EventBusAutoload.gold_changed.emit(500, 1000)
 
 	assert_eq(_signal_params[0], 500, "First param should be old gold")
 	assert_eq(_signal_params[1], 1000, "Second param should be new gold")
@@ -41,9 +41,9 @@ func test_gold_changed_params_order() -> void:
 
 
 func test_production_started_forwarded() -> void:
-	EventBus.production_started.connect(_on_production_started)
+	EventBusAutoload.production_started.connect(_on_production_started)
 
-	EventBus.production_started.emit(0, "bread_basic")
+	EventBusAutoload.production_started.emit(0, "bread_basic")
 
 	assert_true(_signal_emitted, "production_started should be emitted")
 	assert_eq(
@@ -55,13 +55,13 @@ func test_production_started_forwarded() -> void:
 
 func test_production_started_multiple_slots() -> void:
 	var received_slots: Array = []
-	EventBus.production_started.connect(
+	EventBusAutoload.production_started.connect(
 		func(slot_idx: int, _recipe: String): received_slots.append(slot_idx)
 	)
 
-	EventBus.production_started.emit(0, "bread_basic")
-	EventBus.production_started.emit(1, "bread_premium")
-	EventBus.production_started.emit(2, "cake_basic")
+	EventBusAutoload.production_started.emit(0, "bread_basic")
+	EventBusAutoload.production_started.emit(1, "bread_premium")
+	EventBusAutoload.production_started.emit(2, "cake_basic")
 
 	assert_eq(received_slots, [0, 1, 2], "All slot emissions should be received")
 
@@ -70,14 +70,14 @@ func test_production_started_multiple_slots() -> void:
 
 
 func test_baking_requested_signal_exists() -> void:
-	assert_true(EventBus.has_signal("baking_requested"), "baking_requested signal should exist")
+	assert_true(EventBusAutoload.has_signal("baking_requested"), "baking_requested signal should exist")
 
 
 func test_baking_requested_params() -> void:
-	EventBus.baking_requested.connect(_on_baking_requested)
+	EventBusAutoload.baking_requested.connect(_on_baking_requested)
 
 	# Use bread_001 which exists in DataManager
-	EventBus.baking_requested.emit(2, "bread_001")
+	EventBusAutoload.baking_requested.emit(2, "bread_001")
 
 	assert_true(_signal_emitted, "baking_requested should be emitted")
 	assert_eq(
@@ -91,13 +91,13 @@ func test_baking_requested_params() -> void:
 
 
 func test_sell_requested_signal_exists() -> void:
-	assert_true(EventBus.has_signal("sell_requested"), "sell_requested signal should exist")
+	assert_true(EventBusAutoload.has_signal("sell_requested"), "sell_requested signal should exist")
 
 
 func test_sell_requested_params() -> void:
-	EventBus.sell_requested.connect(_on_sell_requested)
+	EventBusAutoload.sell_requested.connect(_on_sell_requested)
 
-	EventBus.sell_requested.emit("customer_001", "bread_basic")
+	EventBusAutoload.sell_requested.emit("customer_001", "bread_basic")
 
 	assert_true(_signal_emitted, "sell_requested should be emitted")
 	assert_eq(
@@ -111,20 +111,20 @@ func test_sell_requested_params() -> void:
 
 
 func test_event_bus_has_required_state_signals() -> void:
-	assert_true(EventBus.has_signal("gold_changed"), "Should have gold_changed signal")
-	assert_true(EventBus.has_signal("experience_changed"), "Should have experience_changed signal")
-	assert_true(EventBus.has_signal("level_up"), "Should have level_up signal")
-	assert_true(EventBus.has_signal("production_started"), "Should have production_started signal")
+	assert_true(EventBusAutoload.has_signal("gold_changed"), "Should have gold_changed signal")
+	assert_true(EventBusAutoload.has_signal("experience_changed"), "Should have experience_changed signal")
+	assert_true(EventBusAutoload.has_signal("level_up"), "Should have level_up signal")
+	assert_true(EventBusAutoload.has_signal("production_started"), "Should have production_started signal")
 	assert_true(
-		EventBus.has_signal("production_completed"), "Should have production_completed signal"
+		EventBusAutoload.has_signal("production_completed"), "Should have production_completed signal"
 	)
-	assert_true(EventBus.has_signal("bread_sold"), "Should have bread_sold signal")
-	assert_true(EventBus.has_signal("inventory_updated"), "Should have inventory_updated signal")
+	assert_true(EventBusAutoload.has_signal("bread_sold"), "Should have bread_sold signal")
+	assert_true(EventBusAutoload.has_signal("inventory_updated"), "Should have inventory_updated signal")
 
 
 func test_event_bus_has_required_action_signals() -> void:
-	assert_true(EventBus.has_signal("baking_requested"), "Should have baking_requested signal")
-	assert_true(EventBus.has_signal("sell_requested"), "Should have sell_requested signal")
+	assert_true(EventBusAutoload.has_signal("baking_requested"), "Should have baking_requested signal")
+	assert_true(EventBusAutoload.has_signal("sell_requested"), "Should have sell_requested signal")
 
 
 ## ==================== CALLBACKS ====================
@@ -158,7 +158,7 @@ func _on_sell_requested(customer_id: String, recipe_id: String) -> void:
 
 
 func test_event_bus_ready_called() -> void:
-	# SNA-182: Verify EventBus._ready() completes without errors
+	# SNA-182: Verify EventBusAutoload._ready() completes without errors
 	# This ensures _setup_connections is called via call_deferred
 	# After refactoring, connections should still work without has_signal checks
 

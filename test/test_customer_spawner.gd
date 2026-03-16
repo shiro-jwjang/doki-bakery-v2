@@ -19,8 +19,8 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	if EventBus.customer_arrived.is_connected(_on_customer_arrived):
-		EventBus.customer_arrived.disconnect(_on_customer_arrived)
+	if EventBusAutoload.customer_arrived.is_connected(_on_customer_arrived):
+		EventBusAutoload.customer_arrived.disconnect(_on_customer_arrived)
 
 
 ## ==================== BASIC FUNCTIONALITY ====================
@@ -93,9 +93,9 @@ func test_customer_spawner_timer_wait_time() -> void:
 
 func test_customer_arrived_signal_emitted() -> void:
 	if CustomerSpawner.has_method("_on_timer_timeout"):
-		EventBus.customer_arrived.connect(_on_customer_arrived)
+		EventBusAutoload.customer_arrived.connect(_on_customer_arrived)
 		CustomerSpawner._on_timer_timeout()
-		await wait_for_signal(EventBus.customer_arrived, 0.1)
+		await wait_for_signal(EventBusAutoload.customer_arrived, 0.1)
 		assert_true(_signal_received, "customer_arrived signal should be emitted")
 		assert_true(_signal_data.has("customer_id"), "Signal should include customer_id")
 	else:
@@ -104,13 +104,13 @@ func test_customer_arrived_signal_emitted() -> void:
 
 func test_customer_arrived_unique_customer_id() -> void:
 	if CustomerSpawner.has_method("_on_timer_timeout"):
-		EventBus.customer_arrived.connect(_on_customer_arrived)
+		EventBusAutoload.customer_arrived.connect(_on_customer_arrived)
 
 		var customer_ids := []
 		for i in range(3):
 			_signal_received = false
 			CustomerSpawner._on_timer_timeout()
-			await wait_for_signal(EventBus.customer_arrived, 0.1)
+			await wait_for_signal(EventBusAutoload.customer_arrived, 0.1)
 			if _signal_received:
 				customer_ids.append(_signal_data["customer_id"])
 
@@ -127,7 +127,7 @@ func test_customer_arrived_unique_customer_id() -> void:
 
 func test_customer_arrived_signal_defined() -> void:
 	assert_true(
-		EventBus.has_signal("customer_arrived"), "customer_arrived must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_arrived"), "customer_arrived must be defined in EventBus"
 	)
 
 

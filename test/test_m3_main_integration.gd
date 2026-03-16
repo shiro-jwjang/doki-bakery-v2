@@ -4,7 +4,7 @@ extends GutTest
 ## SNA-168: 메인 씬 통합 — CustomerView/EmoticonView/NotificationArea 배치 및 연동
 ##
 ## This test verifies that all M3 components are properly integrated in the main scene
-## and can interact through the EventBus.
+## and can interact through the EventBusAutoload.
 
 const MAIN_SCENE := "res://scenes/main.tscn"
 

@@ -17,8 +17,8 @@ var _inventory_items: Dictionary = {}
 
 
 func _ready() -> void:
-	if not EventBus.production_completed.is_connected(_on_production_completed):
-		EventBus.production_completed.connect(_on_production_completed)
+	if not EventBusAutoload.production_completed.is_connected(_on_production_completed):
+		EventBusAutoload.production_completed.connect(_on_production_completed)
 
 
 ## Handle production completed event from BakeryManager via EventBus
@@ -50,7 +50,7 @@ func add_to_inventory(recipe_id: String, price: int) -> void:
 	inventory_updated.emit(recipe_id, _inventory[recipe_id])
 
 	# Notify display system via EventBus (direct autoload reference)
-	EventBus.baking_finished.emit(recipe_id)
+	EventBusAutoload.baking_finished.emit(recipe_id)
 
 
 ## Get the count of a specific bread in inventory

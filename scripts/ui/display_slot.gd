@@ -126,7 +126,7 @@ func _sell_bread() -> void:
 	GameManager.add_gold(_price)
 
 	# Notify via EventBus
-	EventBus.bread_sold.emit(_recipe_id, _price)
+	EventBusAutoload.bread_sold.emit(_recipe_id, _price)
 
 	# Emit local signal
 	bread_sold.emit(_recipe_id, _price)

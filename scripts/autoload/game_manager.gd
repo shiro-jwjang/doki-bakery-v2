@@ -11,25 +11,25 @@ var gold: int = 0:
 	set(value):
 		var old: int = gold
 		gold = value
-		_emit_property_changed(old, gold, EventBus.gold_changed)
+		_emit_property_changed(old, gold, EventBusAutoload.gold_changed)
 
 var legendary_bread: int = 0:
 	set(value):
 		var old: int = legendary_bread
 		legendary_bread = value
-		_emit_property_changed(old, legendary_bread, EventBus.premium_changed)
+		_emit_property_changed(old, legendary_bread, EventBusAutoload.premium_changed)
 
 var level: int = 1:
 	set(value):
 		var old: int = level
 		level = value
-		_emit_property_changed(old, level, EventBus.level_changed)
+		_emit_property_changed(old, level, EventBusAutoload.level_changed)
 
 var experience: int = 0:
 	set(value):
 		var old: int = experience
 		experience = value
-		_emit_property_changed(old, experience, EventBus.experience_changed)
+		_emit_property_changed(old, experience, EventBusAutoload.experience_changed)
 
 var experience_to_next_level: int = 100
 
@@ -38,7 +38,7 @@ var play_time: float = 0.0
 var game_state: String = "menu":
 	set(value):
 		game_state = value
-		EventBus.game_state_changed.emit(game_state)
+		EventBusAutoload.game_state_changed.emit(game_state)
 
 var bread_inventory: Dictionary = {}  # SNA-46
 
@@ -100,7 +100,7 @@ func add_experience(amount: int) -> void:
 
 	var old_xp := experience
 	experience += amount
-	EventBus.experience_gained.emit(amount)
+	EventBusAutoload.experience_gained.emit(amount)
 
 	# Check for level ups
 	_check_level_up()
@@ -135,7 +135,7 @@ func _level_up() -> void:
 	experience_to_next_level = (
 		_get_xp_required_for_level(level + 1) - _get_xp_required_for_level(level)
 	)
-	EventBus.level_up.emit(level)
+	EventBusAutoload.level_up.emit(level)
 
 
 func level_up() -> void:

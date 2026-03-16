@@ -49,7 +49,7 @@ func test_e2e_display_slot_auto_sell() -> void:
 	var gold_before_sale := GameManager.get_gold()
 
 	# Wait for auto-sell timer to trigger bread_sold signal
-	await wait_for_signal(EventBus.bread_sold, SELL_TIME + 2.0)
+	await wait_for_signal(EventBusAutoload.bread_sold, SELL_TIME + 2.0)
 
 	# Verify slot is now empty
 	assert_false(empty_slot.has_bread(), "Slot should be empty after auto-sell")
@@ -72,12 +72,12 @@ func test_e2e_hud_gold_changed_signal() -> void:
 	# Record initial gold
 	var initial_gold := GameManager.get_gold()
 
-	# Add gold via GameManager (triggers EventBus.gold_changed signal)
+	# Add gold via GameManager (triggers EventBusAutoload.gold_changed signal)
 	var gold_to_add := 150
 	GameManager.add_gold(gold_to_add)
 
 	# Wait for gold_changed signal
-	await wait_for_signal(EventBus.gold_changed, 2.0)
+	await wait_for_signal(EventBusAutoload.gold_changed, 2.0)
 
 	# Verify gold increased
 	var new_gold := GameManager.get_gold()

@@ -37,10 +37,10 @@ func after_each() -> void:
 	SaveManager.save_path = _original_save_path
 
 	# Disconnect signals
-	if EventBus.save_completed.is_connected(_on_save_completed):
-		EventBus.save_completed.disconnect(_on_save_completed)
-	if EventBus.save_loaded.is_connected(_on_save_loaded):
-		EventBus.save_loaded.disconnect(_on_save_loaded)
+	if EventBusAutoload.save_completed.is_connected(_on_save_completed):
+		EventBusAutoload.save_completed.disconnect(_on_save_completed)
+	if EventBusAutoload.save_loaded.is_connected(_on_save_loaded):
+		EventBusAutoload.save_loaded.disconnect(_on_save_loaded)
 
 	# Clean up test save file
 	if FileAccess.file_exists(_test_save_path):
@@ -144,7 +144,7 @@ func test_load_from_disk_reads_data() -> void:
 
 ## Test save_completed signal is emitted
 func test_save_completed_signal() -> void:
-	EventBus.save_completed.connect(_on_save_completed)
+	EventBusAutoload.save_completed.connect(_on_save_completed)
 
 	var save_data := {
 		"version": GameConstants.SAVE_VERSION,
@@ -167,7 +167,7 @@ func test_save_loaded_signal() -> void:
 	}
 	SaveManager.save_to_disk(save_data)
 
-	EventBus.save_loaded.connect(_on_save_loaded)
+	EventBusAutoload.save_loaded.connect(_on_save_loaded)
 
 	SaveManager.load_from_disk()
 

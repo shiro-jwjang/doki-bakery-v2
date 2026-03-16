@@ -33,7 +33,7 @@ func after_each() -> void:
 ## Test that panel updates on production_started signal
 func test_panel_updates_on_baking_started() -> void:
 	# Emit signal (simulating BakeryManager) with real recipe ID
-	EventBus.production_started.emit(0, "bread_croissant")
+	EventBusAutoload.production_started.emit(0, "bread_croissant")
 
 	# Wait for UI to update
 	await wait_physics_frames(2)
@@ -50,7 +50,7 @@ func test_panel_updates_on_baking_started() -> void:
 ## Test that panel updates on production_completed signal
 func test_panel_updates_on_baking_finished() -> void:
 	# Emit signal (simulating BakeryManager) with real recipe ID
-	EventBus.production_completed.emit(1, "bread_croissant")
+	EventBusAutoload.production_completed.emit(1, "bread_croissant")
 
 	# Wait for UI to update
 	await wait_physics_frames(2)
@@ -68,11 +68,11 @@ func test_panel_updates_on_baking_finished() -> void:
 ## Test that panel updates progress bar on production_progressed signal
 func test_panel_updates_on_baking_progressed() -> void:
 	# First start production so the slot exists
-	EventBus.production_started.emit(0, "bread_croissant")
+	EventBusAutoload.production_started.emit(0, "bread_croissant")
 	await wait_physics_frames(2)
 
 	# Emit progress signal at 50%
-	EventBus.production_progressed.emit(0, 0.5)
+	EventBusAutoload.production_progressed.emit(0, 0.5)
 	await wait_physics_frames(2)
 
 	# Verify progress bar was updated
@@ -81,7 +81,7 @@ func test_panel_updates_on_baking_progressed() -> void:
 	assert_eq(slot_ui._progress_bar.value, 0.5, "Progress bar should show 50%")
 
 	# Emit progress signal at 80%
-	EventBus.production_progressed.emit(0, 0.8)
+	EventBusAutoload.production_progressed.emit(0, 0.8)
 	await wait_physics_frames(2)
 
 	assert_eq(slot_ui._progress_bar.value, 0.8, "Progress bar should update to 80%")
@@ -93,8 +93,8 @@ func test_panel_no_process_polling() -> void:
 	# instead of polling BakeryManager in _process
 
 	# Emit signals without calling _process (use real recipe ID)
-	EventBus.production_started.emit(0, "bread_croissant")
-	EventBus.production_completed.emit(0, "bread_croissant")
+	EventBusAutoload.production_started.emit(0, "bread_croissant")
+	EventBusAutoload.production_completed.emit(0, "bread_croissant")
 
 	# Wait for UI to update
 	await wait_physics_frames(2)

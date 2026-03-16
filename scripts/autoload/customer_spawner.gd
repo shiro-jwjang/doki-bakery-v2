@@ -109,7 +109,7 @@ func _on_timer_timeout() -> void:
 	_customer_counter += 1
 	var customer_id := "customer_%d" % _customer_counter
 
-	EventBus.customer_arrived.emit(customer_id)
+	EventBusAutoload.customer_arrived.emit(customer_id)
 
 	customer_spawned.emit(customer_id)
 
