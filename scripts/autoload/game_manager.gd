@@ -42,6 +42,11 @@ var game_state: String = "menu":
 
 var bread_inventory: Dictionary = {}  # SNA-46
 
+var avatar_data_id: String = "":
+	set(value):
+		avatar_data_id = value
+		EventBusAutoload.avatar_changed.emit(value)
+
 var _is_loaded: bool = false
 
 
@@ -55,7 +60,8 @@ func get_state() -> Dictionary:
 		"level": level,
 		"experience": experience,
 		"play_time": play_time,
-		"game_state": game_state
+		"game_state": game_state,
+		"avatar_data_id": avatar_data_id
 	}
 
 
@@ -76,6 +82,8 @@ func set_state(data: Dictionary) -> void:
 		play_time = data.play_time
 	if data.has("game_state"):
 		game_state = data.game_state
+	if data.has("avatar_data_id"):
+		avatar_data_id = data.avatar_data_id
 
 
 func add_gold(amount: int) -> void:
@@ -169,3 +177,19 @@ func set_game_state(state: String) -> void:
 func _process(delta: float) -> void:
 	if game_state == "playing":
 		play_time += delta
+
+
+## SNA-122: Get avatar data resource from avatar_data_id
+## Returns: AvatarData resource or null if not found
+func get_avatar_data() -> AvatarData:
+	if avatar_data_id == "":
+		# Return null if no ID set (MVP - don't load default)
+		return null
+
+	if not ResourceLoader.exists(avatar_data_id):
+		return null
+
+	var resource = load(avatar_data_id)
+	if resource is AvatarData:
+		return resource as AvatarData
+	return null

@@ -31,6 +31,9 @@ signal level_up(new_level: int)
 ## Emitted when the game state changes
 signal game_state_changed(new_state: String)
 
+## SNA-122: Emitted when the player's avatar changes
+signal avatar_changed(new_avatar_id: String)
+
 ## Emitted when production starts in a slot
 signal production_started(slot_index: int, recipe_id: String)
 

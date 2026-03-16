@@ -1,0 +1,68 @@
+[gd_scene load_steps=7 format=3 uid="uid://avatar_compositor_scene"]
+
+[ext_resource type="Script" path="res://scripts/components/avatar_compositor.gd" id="1_compositor"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_hairdn"]
+animations/frame_0/tags = {}
+animations/frame_1/tags = {}
+animations/frame_2/tags = {}
+animations/frame_3/tags = {}
+animations/frame_4/tags = {}
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_body"]
+animations/frame_0/tags = {}
+animations/frame_1/tags = {}
+animations/frame_2/tags = {}
+animations/frame_3/tags = {}
+animations/frame_4/tags = {}
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_eye"]
+animations/frame_0/tags = {}
+animations/frame_1/tags = {}
+animations/frame_2/tags = {}
+animations/frame_3/tags = {}
+animations/frame_4/tags = {}
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_hairup"]
+animations/frame_0/tags = {}
+animations/frame_1/tags = {}
+animations/frame_2/tags = {}
+animations/frame_3/tags = {}
+animations/frame_4/tags = {}
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_hat"]
+animations/frame_0/tags = {}
+animations/frame_1/tags = {}
+animations/frame_2/tags = {}
+animations/frame_3/tags = {}
+animations/frame_4/tags = {}
+
+[node name="AvatarCompositor" type="Node2D"]
+script = ExtResource("1_compositor")
+
+[node name="Layers" type="Node2D" parent="."]
+
+[node name="HairDn" type="AnimatedSprite2D" parent="Layers"]
+z_index = 0
+sprite_frames = SubResource("SpriteFrames_hairdn")
+animation = &"idle"
+
+[node name="Body" type="AnimatedSprite2D" parent="Layers"]
+z_index = 1
+sprite_frames = SubResource("SpriteFrames_body")
+animation = &"idle"
+
+[node name="Eye" type="AnimatedSprite2D" parent="Layers"]
+z_index = 2
+sprite_frames = SubResource("SpriteFrames_eye")
+animation = &"idle"
+
+[node name="HairUp" type="AnimatedSprite2D" parent="Layers"]
+z_index = 3
+sprite_frames = SubResource("SpriteFrames_hairup")
+animation = &"idle"
+
+[node name="Hat" type="AnimatedSprite2D" parent="Layers"]
+z_index = 4
+sprite_frames = SubResource("SpriteFrames_hat")
+animation = &"idle"
