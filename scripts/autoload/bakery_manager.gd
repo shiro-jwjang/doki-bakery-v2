@@ -18,6 +18,9 @@ signal production_completed(slot_index: int, recipe_id: String)
 ## Signal emitted when production fails
 signal production_failed(slot_index: int, reason: String)
 
+## Signal emitted when auto-repeat production starts
+signal auto_repeat_started(slot_index: int, recipe_id: String)
+
 ## Time provider for wall clock abstraction (DI)
 var _time_provider: TimeProvider = null
 
@@ -38,6 +41,10 @@ var _active_slots: Dictionary = {}
 
 ## Current number of active productions
 var _active_count: int = 0
+
+## AUTO-REPEAT: Dictionary of auto-repeat settings per slot (slot_index → recipe_id)
+## Stores which recipe should be automatically restarted when production completes
+var _auto_repeat: Dictionary = {}
 
 
 func _ready() -> void:
@@ -144,6 +151,13 @@ func complete_production(slot_index: int) -> void:
 
 		# AUTO-COLLECT: Automatically clear the slot when finished
 		collect_production(slot_index)
+
+		# AUTO-REPEAT: Check if auto-repeat is set for this slot
+		if _auto_repeat.has(slot_index):
+			var repeat_recipe_id: String = _auto_repeat[slot_index]
+			# Start new production with the same recipe
+			start_production(slot_index, repeat_recipe_id)
+			auto_repeat_started.emit(slot_index, repeat_recipe_id)
 
 
 ## Collect finished production from a slot, clearing it for reuse (O(1) lookup).
@@ -276,3 +290,32 @@ func restore_slots(slots_data: Array) -> void:
 		if slot.is_active:
 			_active_slots[slot_index] = slot
 			_active_count += 1
+
+
+## ==================== AUTO-REPEAT METHODS ====================
+## AUTO-REPEAT: 빵 자동 연속 생산 기능
+
+
+## Set auto-repeat for a specific slot
+## When production completes, it will automatically restart with this recipe
+func set_auto_repeat(slot_index: int, recipe_id: String) -> void:
+	_auto_repeat[slot_index] = recipe_id
+
+
+## Clear auto-repeat for a specific slot
+## Stops automatic repetition when production completes
+func clear_auto_repeat(slot_index: int) -> void:
+	_auto_repeat.erase(slot_index)
+
+
+## Check if auto-repeat is set for a specific slot
+func is_auto_repeat_set(slot_index: int) -> bool:
+	return _auto_repeat.has(slot_index)
+
+
+## Get the recipe_id for auto-repeat on a specific slot
+## Returns empty string if not set
+func get_auto_repeat_recipe(slot_index: int) -> String:
+	if _auto_repeat.has(slot_index):
+		return _auto_repeat[slot_index]
+	return ""
