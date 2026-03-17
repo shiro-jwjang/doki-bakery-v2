@@ -69,7 +69,7 @@ func test_project_config_has_theme() -> void:
 	var err := config.load("res://project.godot")
 	assert_eq(err, OK, "Project config should load successfully")
 
-	var theme_value := config.get_value("gui", "theme/custom", "")
+	var theme_value: String = config.get_value("gui", "theme/custom", "")
 	assert_eq(theme_value, theme_path, "Project should use default_theme.tres")
 
 
@@ -108,5 +108,5 @@ func test_export_presets_includes_fonts() -> void:
 	# Check Web preset specifically
 	for section in config.get_sections():
 		if config.get_value(section, "platform", "") == "Web":
-			var export_filter := config.get_value(section, "export_filter", "")
+			var export_filter: String = config.get_value(section, "export_filter", "")
 			assert_eq(export_filter, "all_resources", "Web export should include all resources")
