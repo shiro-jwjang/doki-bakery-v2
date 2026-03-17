@@ -15,7 +15,6 @@ var display_slot: Control
 func before_each() -> void:
 	# Reset SalesManager inventory to prevent state leakage between tests
 	SalesManager._inventory.clear()
-	SalesManager._inventory_items.clear()
 
 	# Create DisplaySlot from scene (not new() to init @onready vars)
 	display_slot = DisplaySlotScene.instantiate()
@@ -169,8 +168,9 @@ func test_display_slot_auto_fills_on_baking_finished() -> void:
 	# Arrange - directly populate inventory without triggering baking_finished
 	var recipe_id = "croissant"
 	var price = 75
-	SalesManager._inventory[recipe_id] = 1
-	SalesManager._inventory_items[recipe_id] = [{"price": price}]
+	var inventory_item = InventoryItem.new(recipe_id)
+	inventory_item.add(price)
+	SalesManager._inventory[recipe_id] = inventory_item
 	watch_signals(display_slot)
 
 	# Act - emit baking_finished signal (DisplaySlot._on_baking_finished uses DataManager)

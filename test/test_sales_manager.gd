@@ -9,7 +9,6 @@ extends GutTest
 func before_each() -> void:
 	# Clear inventory before each test
 	SalesManager._inventory.clear()
-	SalesManager._inventory_items.clear()
 
 
 func after_each() -> void:
