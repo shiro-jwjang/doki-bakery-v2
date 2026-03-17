@@ -8,8 +8,6 @@ extends Control
 ## SNA-95: ProductionPanel ↔ BakeryManager 시그널 연결
 ## SNA-96: 슬롯 클릭 → BreadMenu → 생산 시작
 
-
-
 ## Emitted when a slot is clicked
 signal slot_clicked(slot_index: int)
 
