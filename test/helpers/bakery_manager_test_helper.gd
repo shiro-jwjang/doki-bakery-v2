@@ -24,6 +24,7 @@ func create_manager(max_slots: int = 3) -> Node:
 	_manager._slots = {}
 	_manager._active_slots = {}
 	_manager._active_count = 0
+	_manager._auto_repeat = {}  # Initialize empty auto-repeat dictionary
 	return _manager
 
 

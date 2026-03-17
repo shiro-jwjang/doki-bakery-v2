@@ -649,9 +649,9 @@ func test_dictionary_slot_lookup_is_active() -> void:
 ## Test that get_remaining_time uses O(1) lookup
 func test_dictionary_get_remaining_time() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("get_remaining_time"):
-		_mock_recipe_provider.get_recipe("bread_001").production_time = 5.0
-		_mock_recipe_provider.get_recipe("croissant").production_time = 3.0
-		_mock_recipe_provider.get_recipe("baguette").production_time = 7.0
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 5.0
+		_helper.get_mock_recipe_provider().get_recipe("croissant").production_time = 3.0
+		_helper.get_mock_recipe_provider().get_recipe("baguette").production_time = 7.0
 
 		_manager.start_production(0, "bread_001")
 		_manager.start_production(1, "croissant")
@@ -779,5 +779,228 @@ func test_rapid_slot_operations() -> void:
 		assert_eq(_manager.get_active_count(), 1, "Should have 1 active slot")
 		assert_eq(_manager.get_slots().size(), 1, "Should have 1 slot")
 		assert_eq(_manager.get_slots()[0]["slot_index"], 0, "Should be slot 0")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## ==================== AUTO-REPEAT TESTS ====================
+## AUTO-REPEAT: 빵 자동 연속 생산 기능
+
+
+## Test that set_auto_repeat stores the recipe_id for a slot
+func test_set_auto_repeat_stores_recipe() -> void:
+	if _manager.has_method("set_auto_repeat"):
+		_manager.set_auto_repeat(0, "bread_001")
+		assert_true(_manager.is_auto_repeat_set(0), "Should have auto-repeat set for slot 0")
+		assert_eq(_manager.get_auto_repeat_recipe(0), "bread_001", "Should store recipe_id")
+	else:
+		fail_test("set_auto_repeat method not implemented yet")
+
+
+## Test that clear_auto_repeat removes the setting
+func test_clear_auto_repeat_removes_setting() -> void:
+	if _manager.has_method("set_auto_repeat") and _manager.has_method("clear_auto_repeat"):
+		_manager.set_auto_repeat(0, "bread_001")
+		assert_true(_manager.is_auto_repeat_set(0), "Should have auto-repeat set")
+
+		_manager.clear_auto_repeat(0)
+		assert_false(_manager.is_auto_repeat_set(0), "Should not have auto-repeat after clearing")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that is_auto_repeat_set returns true when set
+func test_is_auto_repeat_set_returns_true_when_set() -> void:
+	if _manager.has_method("set_auto_repeat") and _manager.has_method("is_auto_repeat_set"):
+		_manager.set_auto_repeat(1, "croissant")
+		assert_true(_manager.is_auto_repeat_set(1), "Should return true when set")
+		assert_false(_manager.is_auto_repeat_set(0), "Should return false for different slot")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that get_auto_repeat_recipe returns stored id
+func test_get_auto_repeat_recipe_returns_stored_id() -> void:
+	if _manager.has_method("set_auto_repeat") and _manager.has_method("get_auto_repeat_recipe"):
+		_manager.set_auto_repeat(0, "bread_001")
+		_manager.set_auto_repeat(1, "croissant")
+		_manager.set_auto_repeat(2, "baguette")
+
+		assert_eq(
+			_manager.get_auto_repeat_recipe(0),
+			"bread_001",
+			"Should return correct recipe for slot 0"
+		)
+		assert_eq(
+			_manager.get_auto_repeat_recipe(1),
+			"croissant",
+			"Should return correct recipe for slot 1"
+		)
+		assert_eq(
+			_manager.get_auto_repeat_recipe(2),
+			"baguette",
+			"Should return correct recipe for slot 2"
+		)
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that production_completed auto-repeats when set
+func test_production_completed_auto_repeats_when_set() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("set_auto_repeat")
+		and _manager.has_method("complete_production")
+		and _manager.has_method("_process")
+	):
+		# Start production and set auto-repeat
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
+		_manager.start_production(0, "bread_001")
+		_manager.set_auto_repeat(0, "bread_001")  # Explicitly set auto-repeat
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
+
+		# Complete production - should auto-repeat
+		_manager.complete_production(0)
+
+		# Auto-repeat should start new production immediately
+		assert_eq(
+			_manager.get_active_count(), 1, "Should have 1 active production after auto-repeat"
+		)
+		assert_eq(_manager.get_slots().size(), 1, "Should have 1 slot after auto-repeat")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that start_production does not automatically set auto-repeat
+func test_start_production_does_not_auto_set_repeat() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("is_auto_repeat_set"):
+		# Start production without explicitly setting auto-repeat
+		_manager.start_production(0, "bread_001")
+
+		# Auto-repeat should NOT be automatically set
+		assert_false(
+			_manager.is_auto_repeat_set(0), "Should not have auto-repeat set automatically"
+		)
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that production_completed does not repeat after clearing
+func test_production_completed_no_repeat_after_clearing() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("clear_auto_repeat")
+		and _manager.has_method("complete_production")
+		and _manager.has_method("_process")
+	):
+		# Start production (auto-repeat is automatically set)
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
+		_manager.start_production(0, "bread_001")
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
+
+		# Clear auto-repeat before completion
+		_manager.clear_auto_repeat(0)
+
+		# Complete production
+		_manager.complete_production(0)
+		assert_eq(_manager.get_active_count(), 0, "Should have 0 active after completion")
+
+		# No auto-repeat should occur
+		_manager._process(0.01)
+		await wait_physics_frames(1)
+
+		assert_eq(_manager.get_active_count(), 0, "Should still have 0 active productions")
+		assert_eq(_manager.get_slots().size(), 0, "Should have no slots after completion")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that clear_auto_repeat stops repeating
+func test_clear_auto_repeat_stops_repeating() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("set_auto_repeat")
+		and _manager.has_method("clear_auto_repeat")
+		and _manager.has_method("complete_production")
+	):
+		# Start production and explicitly set auto-repeat
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
+		_manager.start_production(0, "bread_001")
+		_manager.set_auto_repeat(0, "bread_001")
+
+		# Clear auto-repeat before completion
+		_manager.clear_auto_repeat(0)
+		assert_false(_manager.is_auto_repeat_set(0), "Should not have auto-repeat after clearing")
+
+		# Complete production
+		_manager.complete_production(0)
+
+		# Should not auto-repeat
+		assert_eq(_manager.get_active_count(), 0, "Should have 0 active after completion")
+		assert_eq(_manager.get_slots().size(), 0, "Should have no slots (auto-collected)")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that each slot can have different auto-repeat recipe
+func test_multiple_slots_different_auto_repeat() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("set_auto_repeat")
+		and _manager.has_method("complete_production")
+	):
+		# Set different auto-repeat recipes for each slot
+		_manager.set_auto_repeat(0, "bread_001")
+		_manager.set_auto_repeat(1, "croissant")
+		_manager.set_auto_repeat(2, "baguette")
+
+		assert_eq(_manager.get_auto_repeat_recipe(0), "bread_001", "Slot 0 should have bread_001")
+		assert_eq(_manager.get_auto_repeat_recipe(1), "croissant", "Slot 1 should have croissant")
+		assert_eq(_manager.get_auto_repeat_recipe(2), "baguette", "Slot 2 should have baguette")
+
+		# Clear one slot should not affect others
+		_manager.clear_auto_repeat(1)
+
+		assert_true(_manager.is_auto_repeat_set(0), "Slot 0 should still have auto-repeat")
+		assert_false(_manager.is_auto_repeat_set(1), "Slot 1 should not have auto-repeat")
+		assert_true(_manager.is_auto_repeat_set(2), "Slot 2 should still have auto-repeat")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that auto_repeat_started signal is emitted
+func _on_auto_repeat_started(slot_index: int, recipe_id: String) -> void:
+	_signal_received = true
+	_received_slot_index = slot_index
+	_received_recipe_id = recipe_id
+
+
+func test_auto_repeat_started_signal_emitted() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("set_auto_repeat")
+		and _manager.has_method("complete_production")
+	):
+		# Start production and explicitly set auto-repeat
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
+		_manager.start_production(0, "bread_001")
+		_manager.set_auto_repeat(0, "bread_001")
+
+		# Reset signal tracking
+		_signal_received = false
+		_received_slot_index = -1
+		_received_recipe_id = ""
+
+		_manager.auto_repeat_started.connect(_on_auto_repeat_started)
+
+		# Complete production to trigger auto-repeat
+		_manager.complete_production(0)
+		await wait_physics_frames(1)
+
+		assert_true(_signal_received, "auto_repeat_started signal should be emitted")
+		assert_eq(_received_slot_index, 0, "Slot index should match")
+		assert_eq(_received_recipe_id, "bread_001", "Recipe ID should match")
+
+		_manager.auto_repeat_started.disconnect(_on_auto_repeat_started)
 	else:
 		fail_test("Required methods not implemented yet")
