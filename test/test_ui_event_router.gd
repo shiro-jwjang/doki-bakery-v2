@@ -260,3 +260,22 @@ func test_validate_connections_reports_connection_status() -> void:
 	assert_true(
 		result.has("experience_changed_connected"), "Should report experience_changed_connected"
 	)
+
+
+# ==================== call_safe_method Helper Tests ====================
+
+
+func test_call_safe_method_with_null_component() -> void:
+	# Should not crash with null component
+	router.call_safe_method(null, "_on_test_event", [1, 2])
+	assert_true(true, "call_safe_method handles null component gracefully")
+
+
+func test_call_safe_method_with_missing_method() -> void:
+	var test_node = Node.new()
+	test_node.name = "TestNode"
+	add_child_autofree(test_node)
+
+	# Should not crash if method doesn't exist
+	router.call_safe_method(test_node, "_nonexistent_method", [1, 2])
+	assert_true(true, "call_safe_method handles missing method gracefully")

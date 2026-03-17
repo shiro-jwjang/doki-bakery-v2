@@ -107,56 +107,56 @@ func get_component_registry() -> Node:
 	return _component_registry
 
 
+# ==================== Helper Methods ====================
+
+
+## Safely call a method on a component if it exists.
+## This helper method reduces boilerplate for has_method + call pattern.
+## Parameters:
+## - component: The Node to call the method on (can be null)
+## - method_name: The name of the method to call
+## - args: Array of arguments to pass to the method (optional)
+func call_safe_method(component: Node, method_name: String, args: Array = []) -> void:
+	if component and component.has_method(method_name):
+		component.callv(method_name, args)
+
+
 # ==================== EventBus Signal Handlers ====================
 
 
 ## Forward gold changes to HUD
 func _on_gold_changed(old: int, new: int) -> void:
-	var hud = get_hud()
-	if hud and hud.has_method("_on_gold_changed"):
-		hud._on_gold_changed(old, new)
+	call_safe_method(get_hud(), "_on_gold_changed", [old, new])
 
 
 ## Forward premium changes to HUD
 func _on_premium_changed(_old: int, new: int) -> void:
-	var hud = get_hud()
-	if hud and hud.has_method("_on_premium_changed"):
-		hud._on_premium_changed(_old, new)
+	call_safe_method(get_hud(), "_on_premium_changed", [_old, new])
 
 
 ## Forward XP changes to HUD
 func _on_experience_changed(old: int, new: int) -> void:
-	var hud = get_hud()
-	if hud and hud.has_method("_on_experience_changed"):
-		hud._on_experience_changed(old, new)
+	call_safe_method(get_hud(), "_on_experience_changed", [old, new])
 
 
 ## Forward level up to HUD
 func _on_level_up(new_level: int) -> void:
-	var hud = get_hud()
-	if hud and hud.has_method("_on_level_up"):
-		hud._on_level_up(new_level)
+	call_safe_method(get_hud(), "_on_level_up", [new_level])
 
 
 ## Forward production started to ProductionPanel
 func _on_production_started(slot_index: int, recipe_id: String) -> void:
-	var panel = get_production_panel()
-	if panel and panel.has_method("on_production_started"):
-		panel.on_production_started(slot_index, recipe_id)
+	call_safe_method(get_production_panel(), "on_production_started", [slot_index, recipe_id])
 
 
 ## Forward production progress to ProductionPanel
 func _on_production_progressed(slot_index: int, progress: float) -> void:
-	var panel = get_production_panel()
-	if panel and panel.has_method("on_production_progressed"):
-		panel.on_production_progressed(slot_index, progress)
+	call_safe_method(get_production_panel(), "on_production_progressed", [slot_index, progress])
 
 
 ## Forward production completed to ProductionPanel
 func _on_production_completed(slot_index: int, recipe_id: String) -> void:
-	var panel = get_production_panel()
-	if panel and panel.has_method("on_production_completed"):
-		panel.on_production_completed(slot_index, recipe_id)
+	call_safe_method(get_production_panel(), "on_production_completed", [slot_index, recipe_id])
 
 
 ## Forward baking finished to DisplaySlots (find empty slot and fill)
@@ -172,9 +172,7 @@ func _on_baking_finished(recipe_id: String) -> void:
 
 ## Forward bread sold to DisplaySlots
 func _on_bread_sold(recipe_id: String, price: int) -> void:
-	var slots = get_display_slots()
-	if slots and slots.has_method("on_bread_sold"):
-		slots.on_bread_sold(recipe_id, price)
+	call_safe_method(get_display_slots(), "on_bread_sold", [recipe_id, price])
 
 
 ## Handle production cleared signal -> Reset Slot UI to Empty
