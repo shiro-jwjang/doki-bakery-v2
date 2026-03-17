@@ -3,13 +3,12 @@ extends GutTest
 ## Test suite for LevelUpNotification UI component
 ## SNA-99: 레벨업 시 해금 알림 표시
 
-const LevelUpNotificationScript = preload("res://scripts/ui/level_up_notification.gd")
-
 var notification: Control
 
 
 func before_each() -> void:
-	notification = LevelUpNotificationScript.new()
+	var LevelUpNotificationScene = preload("res://scenes/ui/level_up_notification.tscn")
+	notification = LevelUpNotificationScene.instantiate()
 	add_child_autofree(notification)
 	await wait_physics_frames(1)
 
@@ -68,7 +67,9 @@ func test_notification_shows_unlocked_items_text() -> void:
 	notification.show_unlocks(5, unlocked_items)
 
 	# Check that item names are displayed
-	var items_text = notification.get_items_text() if notification.has_method("get_items_text") else ""
+	var items_text = (
+		notification.get_items_text() if notification.has_method("get_items_text") else ""
+	)
 	assert_true(items_text.length() > 0, "Should display unlocked items text")
 
 
@@ -90,23 +91,39 @@ func test_notification_auto_closes_after_delay() -> void:
 	notification.show_unlocks(1, ["bread_001"])
 	assert_true(notification.visible, "Notification should be visible initially")
 
-	# Wait for auto-close (3 seconds + small buffer)
-	await wait_seconds(3.5)
+	# Set short direct timer for testing
+	if notification.auto_close_timer:
+		notification.auto_close_timer.stop()
+		notification.auto_close_timer.wait_time = 0.1
+		notification.auto_close_timer.start()
 
-	assert_false(notification.visible, "Notification should auto-close after 3 seconds")
+	# Wait for auto-close (0.1 seconds + buffer)
+	await wait_seconds(0.2)
+
+	assert_false(notification.visible, "Notification should auto-close after delay")
 
 
 func test_notification_show_multiple_times() -> void:
 	# First show
 	notification.show_unlocks(1, ["bread_001"])
+	if notification.auto_close_timer:
+		notification.auto_close_timer.stop()
+		notification.auto_close_timer.wait_time = 0.1
+		notification.auto_close_timer.start()
+
 	assert_true(notification.visible, "Should be visible first time")
 
-	await wait_seconds(3.5)
+	await wait_seconds(0.2)
 	assert_false(notification.visible, "Should be hidden after auto-close")
 
 	# Second show
 	notification.show_unlocks(2, ["bread_002"])
+	if notification.auto_close_timer:
+		notification.auto_close_timer.stop()
+		notification.auto_close_timer.wait_time = 0.1
+		notification.auto_close_timer.start()
+
 	assert_true(notification.visible, "Should be visible second time")
 
-	await wait_seconds(3.5)
+	await wait_seconds(0.2)
 	assert_false(notification.visible, "Should be hidden after second auto-close")

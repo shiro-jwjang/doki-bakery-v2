@@ -4,13 +4,12 @@ extends GutTest
 ## Tests slot management functionality including starting production,
 ## retrieving slot information, and managing active slot limits.
 ## SNA-74: BakeryManager 슬롯 관리
+## SNA-190: BakeryManager 테스트 헬퍼 클래스 도입
 
-const BakeryManagerClass = preload("res://scripts/autoload/bakery_manager.gd")
-const ProductionSlotClass = preload("res://resources/data/production_slot.gd")
-const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
+const BakeryManagerTestHelper = preload("res://test/helpers/bakery_manager_test_helper.gd")
 
+var _helper: BakeryManagerTestHelper
 var _manager: Node
-var _mock_recipe: Resource
 
 # Signal tracking variables
 var _signal_received := false
@@ -19,25 +18,11 @@ var _received_recipe_id := ""
 
 
 func before_each() -> void:
-	# Create BakeryManager instance for testing
-	_manager = BakeryManagerClass.new()
+	# Create helper instance
+	_helper = BakeryManagerTestHelper.new()
 
-	# Create mock recipe for testing
-	_mock_recipe = RecipeDataClass.new()
-	_mock_recipe.id = "bread_001"
-	_mock_recipe.production_time = 10.0
-
-	# Set up manager state
-	_manager._max_slots = 3
-	_manager._slots = []
-	_manager._active_count = 0
-	_manager._mock_recipe = _mock_recipe
-
-	# Enable mock time for testing (wall clock simulation)
-	if _manager.has_method("reset_mock_time"):
-		_manager.reset_mock_time()
-	else:
-		_manager._mock_time = 0.0
+	# Use helper to set up complete test environment
+	_manager = _helper.setup_complete(3)
 
 	add_child_autofree(_manager)
 
@@ -259,7 +244,7 @@ func test_get_slots_reflects_current_state() -> void:
 
 
 ## ==================== PRODUCTION COMPLETION TESTS ====================
-## SNA-76: BakeryManager 생산 완료 → EventBus 시그널
+## SNA-76: BakeryManager 생산 완료 → EventBusAutoload 시그널
 
 
 ## Signal handler for production_completed
@@ -273,7 +258,7 @@ func _on_production_completed(slot_index: int, recipe_id: String) -> void:
 func test_production_completed_signal_emitted() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("_process"):
 		# Start production with a recipe that has 0.1 second production time
-		_mock_recipe.production_time = 0.1
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
 		_manager.start_production(0, "bread_001")
 
 		# Reset signal tracking
@@ -304,7 +289,7 @@ func test_production_completed_signal_emitted() -> void:
 ## Test that slot is released after production completes
 func test_slot_released_after_completion() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("_process"):
-		_mock_recipe.production_time = 0.1
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
 		_manager.start_production(0, "bread_001")
 
 		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
@@ -327,30 +312,34 @@ func test_slot_released_after_completion() -> void:
 ## Test that completed bread is marked as completed
 func test_completed_bread_marked_completed() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("_process"):
-		_mock_recipe.production_time = 0.1
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
 		_manager.start_production(0, "bread_001")
 
 		var slots = _manager.get_slots()
 		var slot = slots[0]
 
-		assert_false(slot.is_completed, "Slot should not be completed initially")
+		assert_false(slot["is_completed"], "Slot should not be completed initially")
 
 		# Simulate time passing - process half the time
 		_manager._process(0.05)
 		await wait_physics_frames(1)
 
+		# After completion, slot is removed from active slots
 		slots = _manager.get_slots()
 		slot = slots[0]
-		assert_false(slot.is_completed, "Slot should not be completed at 50%")
+		assert_false(slot["is_completed"], "Slot should not be completed at 50%")
 
 		# Process remaining time + small buffer to trigger completion
 		_manager._process(0.06)
 		await wait_physics_frames(1)
 
-		# After completion, slot is auto-collected and removed from array
-		# This is expected behavior - verify slot was cleared
+		# After completion, collect the production to remove it from array
+		if _manager.has_method("collect_production"):
+			_manager.collect_production(0)
+
+		# Verify slot was cleared after collection
 		slots = _manager.get_slots()
-		assert_eq(slots.size(), 0, "Slot should be auto-collected after completion")
+		assert_eq(slots.size(), 0, "Slot should be removed after collection")
 	else:
 		fail_test("Required methods not implemented yet")
 
@@ -362,9 +351,9 @@ func test_production_timer_decreases() -> void:
 		and _manager.has_method("_process")
 		and _manager.has_method("get_remaining_time")
 	):
-		_mock_recipe.production_time = 1.0
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_manager._mock_time = 0.0
+		_helper.get_mock_time_provider().reset_time()
 		_manager.start_production(0, "bread_001")
 
 		var time_before = _manager.get_remaining_time(0)
@@ -392,9 +381,9 @@ func test_remaining_time_wall_clock_based() -> void:
 		and _manager.has_method("_process")
 		and _manager.has_method("get_remaining_time")
 	):
-		_mock_recipe.production_time = 1.0
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_manager._mock_time = 0.0
+		_helper.get_mock_time_provider().reset_time()
 		_manager.start_production(0, "bread_001")
 
 		# Get initial remaining time
@@ -419,9 +408,9 @@ func test_wall_clock_variable_delta() -> void:
 		and _manager.has_method("_process")
 		and _manager.has_method("get_remaining_time")
 	):
-		_mock_recipe.production_time = 1.0
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_manager._mock_time = 0.0
+		_helper.get_mock_time_provider().reset_time()
 		_manager.start_production(0, "bread_001")
 
 		# Process with variable delta times (simulating frame rate fluctuations)
@@ -450,9 +439,9 @@ func test_progress_from_wall_clock() -> void:
 		and _manager.has_method("_process")
 		and _manager.has_method("get_slots")
 	):
-		_mock_recipe.production_time = 1.0
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 1.0
 		# Ensure mock time is reset at 0.0 for consistent testing
-		_manager._mock_time = 0.0
+		_helper.get_mock_time_provider().reset_time()
 		_manager.start_production(0, "bread_001")
 
 		# Process half the time
@@ -463,8 +452,555 @@ func test_progress_from_wall_clock() -> void:
 
 		# Progress should be approximately 50%
 		assert_true(
-			slot.progress >= 0.48 and slot.progress <= 0.52,
+			slot["progress"] >= 0.48 and slot["progress"] <= 0.52,
 			"Progress should be approximately 50% (±2%)"
 		)
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## ==================== RESTORE_SLOTS TESTS ====================
+## SNA-177: DI 패턴 도입 후 restore_slots 테스트
+
+
+## Test restore_slots with empty data
+func test_restore_slots_empty_data() -> void:
+	if _manager.has_method("restore_slots"):
+		_manager.restore_slots([])
+
+		assert_eq(_manager.get_slots().size(), 0, "Should have no slots after restoring empty data")
+		assert_eq(_manager.get_active_count(), 0, "Should have 0 active productions")
+	else:
+		fail_test("restore_slots method not implemented yet")
+
+
+## Test restore_slots with valid slot data
+func test_restore_slots_valid_data() -> void:
+	if _manager.has_method("restore_slots"):
+		# Prepare slot data with DI-compliant providers
+		_helper.get_mock_time_provider().reset_time()
+
+		var slot_data := [
+			{
+				"slot_index": 0,
+				"recipe_id": "bread_001",
+				"start_time": 0.0,
+				"progress": 0.5,
+				"is_active": true,
+				"is_completed": false
+			}
+		]
+
+		_manager.restore_slots(slot_data)
+
+		var slots = _manager.get_slots()
+		assert_eq(slots.size(), 1, "Should have 1 slot after restore")
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
+
+		var slot = slots[0]
+		assert_eq(slot["slot_index"], 0, "Slot index should match")
+		assert_eq(slot["is_active"], true, "Slot should be active")
+	else:
+		fail_test("restore_slots method not implemented yet")
+
+
+## Test restore_slots uses DI recipe provider
+func test_restore_slots_uses_recipe_provider() -> void:
+	if _manager.has_method("restore_slots"):
+		# Verify recipe provider is used, not DataManager singleton
+		_helper.get_mock_time_provider().reset_time()
+
+		var slot_data := [
+			{
+				"slot_index": 0,
+				"recipe_id": "bread_001",
+				"start_time": 0.0,
+				"progress": 0.0,
+				"is_active": true,
+				"is_completed": false
+			}
+		]
+
+		_manager.restore_slots(slot_data)
+
+		var slots = _manager.get_slots()
+		assert_eq(slots.size(), 1, "Should restore slot using mock recipe provider")
+
+		var slot = slots[0]
+		var recipe = slot["recipe"]
+		assert_not_null(recipe, "Recipe should be obtained from provider")
+		assert_eq(recipe.id, "bread_001", "Recipe ID should match")
+	else:
+		fail_test("restore_slots method not implemented yet")
+
+
+## Test restore_slots uses DI time provider
+func test_restore_slots_uses_time_provider() -> void:
+	if _manager.has_method("restore_slots"):
+		# Verify time provider is used for remaining time calculation
+		_helper.get_mock_time_provider().reset_time()
+		_helper.get_mock_time_provider().set_time(5.0)
+
+		var slot_data := [
+			{
+				"slot_index": 0,
+				"recipe_id": "bread_001",
+				"start_time": 0.0,
+				"progress": 0.0,
+				"is_active": true,
+				"is_completed": false
+			}
+		]
+
+		_manager.restore_slots(slot_data)
+
+		var slots = _manager.get_slots()
+		var slot = slots[0]
+		var recipe = slot["recipe"]
+
+		# remaining_time should be calculated using current time from provider
+		var expected_remaining = maxf(0.0, recipe.production_time - 5.0)
+		assert_eq(
+			slot["remaining_time"],
+			expected_remaining,
+			"Should calculate remaining time using time provider"
+		)
+	else:
+		fail_test("restore_slots method not implemented yet")
+
+
+## Test restore_slots with invalid data
+func test_restore_slots_invalid_data() -> void:
+	if _manager.has_method("restore_slots"):
+		_helper.get_mock_time_provider().reset_time()
+
+		var slot_data := [
+			"invalid_string_data",  # Invalid: not a dictionary
+			{
+				"slot_index": 1,
+				"recipe_id": "",  # Invalid: empty recipe_id
+				"start_time": 0.0,
+				"progress": 0.0,
+				"is_active": true,
+				"is_completed": false
+			}
+		]
+
+		_manager.restore_slots(slot_data)
+
+		# Should skip invalid entries
+		assert_eq(_manager.get_slots().size(), 0, "Should skip invalid slot data")
+	else:
+		fail_test("restore_slots method not implemented yet")
+
+
+## Test restore_slots clears existing slots
+func test_restore_slots_clears_existing() -> void:
+	if _manager.has_method("restore_slots") and _manager.has_method("start_production"):
+		# Start with some active productions
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(1, "croissant")
+		assert_eq(_manager.get_slots().size(), 2, "Should have 2 slots before restore")
+
+		# Restore should clear existing slots
+		_helper.get_mock_time_provider().reset_time()
+		var slot_data := [
+			{
+				"slot_index": 2,
+				"recipe_id": "baguette",
+				"start_time": 0.0,
+				"progress": 0.0,
+				"is_active": true,
+				"is_completed": false
+			}
+		]
+
+		_manager.restore_slots(slot_data)
+
+		assert_eq(_manager.get_slots().size(), 1, "Should have only 1 slot after restore")
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
+
+		var slots = _manager.get_slots()
+		assert_eq(slots[0]["slot_index"], 2, "Should have restored slot with index 2")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## ==================== O(1) SLOT LOOKUP TESTS ====================
+## SNA-187: O(1) 슬롯 검색 최적화
+
+
+## Test that slot lookup works correctly with dictionary implementation
+func test_dictionary_slot_lookup_is_active() -> void:
+	if _manager.has_method("start_production"):
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(2, "croissant")
+
+		# Both slots should be active
+		assert_eq(_manager.get_active_count(), 2, "Should have 2 active slots")
+
+		# Slot 1 should not be active
+		_manager.start_production(1, "baguette")
+		assert_eq(_manager.get_active_count(), 3, "Should have 3 active slots")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that get_remaining_time uses O(1) lookup
+func test_dictionary_get_remaining_time() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("get_remaining_time"):
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 5.0
+		_helper.get_mock_recipe_provider().get_recipe("croissant").production_time = 3.0
+		_helper.get_mock_recipe_provider().get_recipe("baguette").production_time = 7.0
+
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(1, "croissant")
+		_manager.start_production(2, "baguette")
+
+		# Each slot should have correct remaining time
+		var time0 = _manager.get_remaining_time(0)
+		var time1 = _manager.get_remaining_time(1)
+		var time2 = _manager.get_remaining_time(2)
+
+		assert_eq(time0, 5.0, "Slot 0 should have 5.0s remaining")
+		assert_eq(time1, 3.0, "Slot 1 should have 3.0s remaining")
+		assert_eq(time2, 7.0, "Slot 2 should have 7.0s remaining")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that complete_production uses O(1) lookup
+func test_dictionary_complete_production() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("complete_production"):
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(1, "croissant")
+		_manager.start_production(2, "baguette")
+
+		assert_eq(_manager.get_active_count(), 3, "Should have 3 active slots")
+
+		# Complete middle slot
+		_manager.complete_production(1)
+		assert_eq(_manager.get_active_count(), 2, "Should have 2 active slots")
+
+		# Complete first slot
+		_manager.complete_production(0)
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active slot")
+
+		# Complete last slot
+		_manager.complete_production(2)
+		assert_eq(_manager.get_active_count(), 0, "Should have 0 active slots")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that collect_production uses O(1) lookup
+func test_dictionary_collect_production() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("collect_production"):
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(1, "croissant")
+		_manager.start_production(2, "baguette")
+
+		assert_eq(_manager.get_slots().size(), 3, "Should have 3 slots")
+
+		# Complete middle slot (auto-collects)
+		_manager.complete_production(1)
+
+		# Slot should be removed after auto-collection
+		assert_eq(_manager.get_slots().size(), 2, "Should have 2 slots after collection")
+
+		# Verify remaining slots
+		var slots = _manager.get_slots()
+		assert_eq(slots[0]["slot_index"], 0, "Slot 0 should still exist")
+		assert_eq(slots[1]["slot_index"], 2, "Slot 2 should still exist")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test slot lookup with non-sequential indices
+func test_dictionary_non_sequential_indices() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("get_remaining_time"):
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(2, "baguette")
+
+		# Should correctly identify both slots
+		assert_eq(_manager.get_active_count(), 2, "Should have 2 active slots")
+
+		# get_remaining_time should work for both
+		var time0 = _manager.get_remaining_time(0)
+		var time2 = _manager.get_remaining_time(2)
+
+		assert_true(time0 > 0, "Slot 0 should have remaining time")
+		assert_true(time2 > 0, "Slot 2 should have remaining time")
+
+		# Slot 1 should not exist
+		var time1 = _manager.get_remaining_time(1)
+		assert_eq(time1, 0.0, "Slot 1 should have 0.0 remaining time (not active)")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that get_slots returns array in slot_index order
+func test_get_slots_ordered_by_index() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("get_slots"):
+		# Start productions in non-sequential order
+		_manager.start_production(2, "baguette")
+		_manager.start_production(0, "bread_001")
+		_manager.start_production(1, "croissant")
+
+		var slots = _manager.get_slots()
+
+		# Slots should be ordered by slot_index
+		assert_eq(slots.size(), 3, "Should have 3 slots")
+		assert_eq(slots[0]["slot_index"], 0, "First slot should have index 0")
+		assert_eq(slots[1]["slot_index"], 1, "Second slot should have index 1")
+		assert_eq(slots[2]["slot_index"], 2, "Third slot should have index 2")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test rapid slot activation and deactivation
+func test_rapid_slot_operations() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("complete_production")
+		and _manager.has_method("collect_production")
+	):
+		# Rapidly start and complete productions
+		_manager.start_production(0, "bread_001")
+		_manager.complete_production(0)
+		_manager.collect_production(0)
+
+		_manager.start_production(0, "croissant")
+		_manager.complete_production(0)
+		_manager.collect_production(0)
+
+		_manager.start_production(0, "baguette")
+
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active slot")
+		assert_eq(_manager.get_slots().size(), 1, "Should have 1 slot")
+		assert_eq(_manager.get_slots()[0]["slot_index"], 0, "Should be slot 0")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## ==================== AUTO-REPEAT TESTS ====================
+## AUTO-REPEAT: 빵 자동 연속 생산 기능
+
+
+## Test that set_auto_repeat stores the recipe_id for a slot
+func test_set_auto_repeat_stores_recipe() -> void:
+	if _manager.has_method("set_auto_repeat"):
+		_manager.set_auto_repeat(0, "bread_001")
+		assert_true(_manager.is_auto_repeat_set(0), "Should have auto-repeat set for slot 0")
+		assert_eq(_manager.get_auto_repeat_recipe(0), "bread_001", "Should store recipe_id")
+	else:
+		fail_test("set_auto_repeat method not implemented yet")
+
+
+## Test that clear_auto_repeat removes the setting
+func test_clear_auto_repeat_removes_setting() -> void:
+	if _manager.has_method("set_auto_repeat") and _manager.has_method("clear_auto_repeat"):
+		_manager.set_auto_repeat(0, "bread_001")
+		assert_true(_manager.is_auto_repeat_set(0), "Should have auto-repeat set")
+
+		_manager.clear_auto_repeat(0)
+		assert_false(_manager.is_auto_repeat_set(0), "Should not have auto-repeat after clearing")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that is_auto_repeat_set returns true when set
+func test_is_auto_repeat_set_returns_true_when_set() -> void:
+	if _manager.has_method("set_auto_repeat") and _manager.has_method("is_auto_repeat_set"):
+		_manager.set_auto_repeat(1, "croissant")
+		assert_true(_manager.is_auto_repeat_set(1), "Should return true when set")
+		assert_false(_manager.is_auto_repeat_set(0), "Should return false for different slot")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that get_auto_repeat_recipe returns stored id
+func test_get_auto_repeat_recipe_returns_stored_id() -> void:
+	if _manager.has_method("set_auto_repeat") and _manager.has_method("get_auto_repeat_recipe"):
+		_manager.set_auto_repeat(0, "bread_001")
+		_manager.set_auto_repeat(1, "croissant")
+		_manager.set_auto_repeat(2, "baguette")
+
+		assert_eq(
+			_manager.get_auto_repeat_recipe(0),
+			"bread_001",
+			"Should return correct recipe for slot 0"
+		)
+		assert_eq(
+			_manager.get_auto_repeat_recipe(1),
+			"croissant",
+			"Should return correct recipe for slot 1"
+		)
+		assert_eq(
+			_manager.get_auto_repeat_recipe(2),
+			"baguette",
+			"Should return correct recipe for slot 2"
+		)
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that production_completed auto-repeats when set
+func test_production_completed_auto_repeats_when_set() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("set_auto_repeat")
+		and _manager.has_method("complete_production")
+		and _manager.has_method("_process")
+	):
+		# Start production and set auto-repeat
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
+		_manager.start_production(0, "bread_001")
+		_manager.set_auto_repeat(0, "bread_001")  # Explicitly set auto-repeat
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
+
+		# Complete production - should auto-repeat
+		_manager.complete_production(0)
+
+		# Auto-repeat should start new production immediately
+		assert_eq(
+			_manager.get_active_count(), 1, "Should have 1 active production after auto-repeat"
+		)
+		assert_eq(_manager.get_slots().size(), 1, "Should have 1 slot after auto-repeat")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that start_production does not automatically set auto-repeat
+func test_start_production_does_not_auto_set_repeat() -> void:
+	if _manager.has_method("start_production") and _manager.has_method("is_auto_repeat_set"):
+		# Start production without explicitly setting auto-repeat
+		_manager.start_production(0, "bread_001")
+
+		# Auto-repeat should NOT be automatically set
+		assert_false(
+			_manager.is_auto_repeat_set(0), "Should not have auto-repeat set automatically"
+		)
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that production_completed does not repeat after clearing
+func test_production_completed_no_repeat_after_clearing() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("clear_auto_repeat")
+		and _manager.has_method("complete_production")
+		and _manager.has_method("_process")
+	):
+		# Start production (auto-repeat is automatically set)
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
+		_manager.start_production(0, "bread_001")
+		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
+
+		# Clear auto-repeat before completion
+		_manager.clear_auto_repeat(0)
+
+		# Complete production
+		_manager.complete_production(0)
+		assert_eq(_manager.get_active_count(), 0, "Should have 0 active after completion")
+
+		# No auto-repeat should occur
+		_manager._process(0.01)
+		await wait_physics_frames(1)
+
+		assert_eq(_manager.get_active_count(), 0, "Should still have 0 active productions")
+		assert_eq(_manager.get_slots().size(), 0, "Should have no slots after completion")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that clear_auto_repeat stops repeating
+func test_clear_auto_repeat_stops_repeating() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("set_auto_repeat")
+		and _manager.has_method("clear_auto_repeat")
+		and _manager.has_method("complete_production")
+	):
+		# Start production and explicitly set auto-repeat
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
+		_manager.start_production(0, "bread_001")
+		_manager.set_auto_repeat(0, "bread_001")
+
+		# Clear auto-repeat before completion
+		_manager.clear_auto_repeat(0)
+		assert_false(_manager.is_auto_repeat_set(0), "Should not have auto-repeat after clearing")
+
+		# Complete production
+		_manager.complete_production(0)
+
+		# Should not auto-repeat
+		assert_eq(_manager.get_active_count(), 0, "Should have 0 active after completion")
+		assert_eq(_manager.get_slots().size(), 0, "Should have no slots (auto-collected)")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that each slot can have different auto-repeat recipe
+func test_multiple_slots_different_auto_repeat() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("set_auto_repeat")
+		and _manager.has_method("complete_production")
+	):
+		# Set different auto-repeat recipes for each slot
+		_manager.set_auto_repeat(0, "bread_001")
+		_manager.set_auto_repeat(1, "croissant")
+		_manager.set_auto_repeat(2, "baguette")
+
+		assert_eq(_manager.get_auto_repeat_recipe(0), "bread_001", "Slot 0 should have bread_001")
+		assert_eq(_manager.get_auto_repeat_recipe(1), "croissant", "Slot 1 should have croissant")
+		assert_eq(_manager.get_auto_repeat_recipe(2), "baguette", "Slot 2 should have baguette")
+
+		# Clear one slot should not affect others
+		_manager.clear_auto_repeat(1)
+
+		assert_true(_manager.is_auto_repeat_set(0), "Slot 0 should still have auto-repeat")
+		assert_false(_manager.is_auto_repeat_set(1), "Slot 1 should not have auto-repeat")
+		assert_true(_manager.is_auto_repeat_set(2), "Slot 2 should still have auto-repeat")
+	else:
+		fail_test("Required methods not implemented yet")
+
+
+## Test that auto_repeat_started signal is emitted
+func _on_auto_repeat_started(slot_index: int, recipe_id: String) -> void:
+	_signal_received = true
+	_received_slot_index = slot_index
+	_received_recipe_id = recipe_id
+
+
+func test_auto_repeat_started_signal_emitted() -> void:
+	if (
+		_manager.has_method("start_production")
+		and _manager.has_method("set_auto_repeat")
+		and _manager.has_method("complete_production")
+	):
+		# Start production and explicitly set auto-repeat
+		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
+		_manager.start_production(0, "bread_001")
+		_manager.set_auto_repeat(0, "bread_001")
+
+		# Reset signal tracking
+		_signal_received = false
+		_received_slot_index = -1
+		_received_recipe_id = ""
+
+		_manager.auto_repeat_started.connect(_on_auto_repeat_started)
+
+		# Complete production to trigger auto-repeat
+		_manager.complete_production(0)
+		await wait_physics_frames(1)
+
+		assert_true(_signal_received, "auto_repeat_started signal should be emitted")
+		assert_eq(_received_slot_index, 0, "Slot index should match")
+		assert_eq(_received_recipe_id, "bread_001", "Recipe ID should match")
+
+		_manager.auto_repeat_started.disconnect(_on_auto_repeat_started)
 	else:
 		fail_test("Required methods not implemented yet")

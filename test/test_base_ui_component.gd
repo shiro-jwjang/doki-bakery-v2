@@ -9,7 +9,8 @@ const BaseUIComponent = preload("res://scripts/ui/base_ui_component.gd")
 
 
 ## Helper class to track callable execution
-class _CallableTracker extends RefCounted:
+class _CallableTracker:
+	extends RefCounted
 	var was_called: bool = false
 	var call_count: int = 0
 	var result: String = ""
@@ -74,7 +75,9 @@ func test_safe_update_with_multiple_calls() -> void:
 	component.safe_update(test_callable)
 
 	# Verify callable was executed 3 times
-	assert_eq(tracker.call_count, 3, "safe_update should execute callable each time when inside tree")
+	assert_eq(
+		tracker.call_count, 3, "safe_update should execute callable each time when inside tree"
+	)
 
 
 func test_safe_update_with_callable_arguments() -> void:
@@ -90,7 +93,9 @@ func test_safe_update_with_callable_arguments() -> void:
 	component.safe_update(test_callable.bind("Hello, Bakery!"))
 
 	# Verify callable was executed with correct argument
-	assert_eq(tracker.result, "Hello, Bakery!", "safe_update should execute callable with arguments")
+	assert_eq(
+		tracker.result, "Hello, Bakery!", "safe_update should execute callable with arguments"
+	)
 
 
 func test_safe_update_with_node_removal() -> void:
@@ -122,26 +127,25 @@ func test_safe_update_with_node_removal() -> void:
 
 
 func test_safe_update_callable_exception_handling() -> void:
-	"""safe_update should execute callable even if it accesses null"""
+	"""safe_update should execute callables even if they perform operations that would normally be logged"""
 	var component: Control = BaseUIComponent.new()
 	var tracker := _CallableTracker.new()
+	# Use a callable that performs a normal operation (not an error)
+	# The test verifies that safe_update doesn't prevent normal callable execution
 	var test_callable := func():
 		tracker.was_called = true
-		# Access a null reference (won't crash, but shows error handling)
-		var _null_ref: Node = null
-		if _null_ref == null:
-			# Do nothing if null
-			pass
+		tracker.result = "executed"
 
 	# Add to scene tree
 	add_child(component)
 	await wait_physics_frames(1)  # Ensure component is inside tree
 
-	# Call safe_update - should execute the callable
+	# Call safe_update - should execute the callable normally
 	component.safe_update(test_callable)
 
 	# Verify the callable was executed
-	assert_true(tracker.was_called, "safe_update should execute callable")
+	assert_true(tracker.was_called, "safe_update should execute the callable")
+	assert_eq(tracker.result, "executed", "Callable should complete normally")
 
 	# Clean up
 	remove_child(component)

@@ -10,10 +10,10 @@ func change_screen(scene_name: String) -> void:
 		push_error("UIManager: Scene name not found - ", scene_name)
 		return
 
-	# Try to load game if GameManager is available (it handles its own caching/loading state)
-	var game_mgr = get_node_or_null("/root/GameManager")
-	if game_mgr and game_mgr.has_method("load_game"):
-		game_mgr.load_game()
+	# SNA-189: Load game using SaveManager.load_from_disk() and GameManager.set_state()
+	var save_data := SaveManager.load_from_disk()
+	if not save_data.is_empty():
+		GameManager.set_state(save_data.get("game", {}))
 
 	var path: String = scenes[scene_name]
 	var err: int = get_tree().change_scene_to_file(path)

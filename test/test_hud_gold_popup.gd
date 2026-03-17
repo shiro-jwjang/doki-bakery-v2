@@ -94,24 +94,23 @@ func test_gold_popup_shows_negative_amount() -> void:
 
 ## Test that popup disappears after a delay
 func test_gold_popup_auto_disappears() -> void:
-	#if not _can_load_scenes():
-	#	pending("HUD tests require GUI mode")
-	#	return
-
 	var hud_scene = preload("res://scenes/ui/hud.tscn")
 	hud = hud_scene.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 
+	# Set short lifetime for testing before triggering
+	hud.gold_popup_lifetime = 0.5
+
 	GameManager.add_gold(10)
-	await wait_physics_frames(5)
+	# Wait enough frames for signal propagation and node creation
+	await wait_physics_frames(10)
 
 	var popup = _find_gold_popup(hud)
 	assert_not_null(popup, "Popup should exist initially")
 
-	# Wait for more than 1.5 seconds (popup lifetime)
-	# In tests, 2.0s is safe
-	await wait_seconds(2.0)
+	# Wait for lifetime (0.5s) + buffer
+	await wait_seconds(0.8)
 
 	assert_true(not is_instance_valid(popup), "Popup should be freed after delay")
 

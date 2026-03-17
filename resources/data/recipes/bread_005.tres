@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/data/recipe_data.gd" id="1_abc12"]
+[ext_resource type="Texture2D"  path="res://assets/sprites/bread/icon_bread04.png" id="2_def37"]
+
+[resource]
+script = ExtResource("1_abc12")
+id = "bread_005"
+display_name = "호밀빵"
+production_time = 5.0
+base_price = 100
+unlock_level = 2
+xp_reward = 10
+icon = ExtResource("2_def37")

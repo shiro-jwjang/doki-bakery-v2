@@ -9,13 +9,16 @@ extends "res://scripts/ui/base_ui_component.gd"
 @onready var premium_label: Label = $Control/GoldenBreadBox/Label
 @onready var gold_label: Label = $Control/GoldBox/Label
 
+## Configurable gold popup lifetime (for testing)
+var gold_popup_lifetime: float = 1.5
+
 
 func _ready() -> void:
 	# Connect to EventBus signals (SNA-160: unified pattern)
-	_connect_signal(EventBus.experience_changed, _on_experience_changed)
-	_connect_signal(EventBus.level_up, _on_level_up)
-	_connect_signal(EventBus.gold_changed, _on_gold_changed)
-	_connect_signal(EventBus.premium_changed, _on_premium_changed)
+	_connect_signal(EventBusAutoload.experience_changed, _on_experience_changed)
+	_connect_signal(EventBusAutoload.level_up, _on_level_up)
+	_connect_signal(EventBusAutoload.gold_changed, _on_gold_changed)
+	_connect_signal(EventBusAutoload.premium_changed, _on_premium_changed)
 
 	# Initialize bar with current values
 	_update_exp_bar()
@@ -43,7 +46,7 @@ func _on_gold_changed(old: int, new: int) -> void:
 ## Spawn a gold popup showing the change amount
 func _spawn_gold_popup(change: int) -> void:
 	var popup := GoldPopup.new()
-	popup.setup(change)
+	popup.setup(change, gold_popup_lifetime)
 	# Center the popup on screen (SNA-94 pattern)
 	popup.position = get_viewport().get_visible_rect().size * 0.5
 	add_child(popup)

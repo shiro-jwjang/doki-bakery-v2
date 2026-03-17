@@ -24,14 +24,14 @@ func before_each() -> void:
 	_last_level_up = 0
 
 	# Connect to level_up signal for tracking
-	if not EventBus.level_up.is_connected(_on_level_up):
-		EventBus.level_up.connect(_on_level_up)
+	if not EventBusAutoload.level_up.is_connected(_on_level_up):
+		EventBusAutoload.level_up.connect(_on_level_up)
 
 
 func after_each() -> void:
 	# Disconnect signals
-	if EventBus.level_up.is_connected(_on_level_up):
-		EventBus.level_up.disconnect(_on_level_up)
+	if EventBusAutoload.level_up.is_connected(_on_level_up):
+		EventBusAutoload.level_up.disconnect(_on_level_up)
 
 	# Clean up WorldView
 	if _world_view != null and is_instance_valid(_world_view):
@@ -52,8 +52,6 @@ func _reset_game_manager() -> void:
 	GameManager.experience = 0
 	GameManager.play_time = 0.0
 	GameManager.set_game_state("menu")
-	# Clear cached level data
-	GameManager._level_data_cache.clear()
 
 
 func _load_world_view() -> bool:
@@ -117,7 +115,7 @@ func test_e2e_accumulate_xp_from_sales_and_level_up() -> void:
 
 	# Wait for level_up signal if expected
 	if GameManager.experience >= LEVEL_2_XP or _level_up_count > 0:
-		await wait_for_signal(EventBus.level_up, 1.0)
+		await wait_for_signal(EventBusAutoload.level_up, 1.0)
 
 	# Verify level up occurred
 	assert_gt(_level_up_count, 0, "Level up signal should have been emitted")
@@ -145,7 +143,7 @@ func test_e2e_hud_exp_bar_updates() -> void:
 	var initial_value := exp_bar.value
 
 	# Add XP
-	GameManager.add_xp(30)
+	GameManager.add_experience(30)
 	await wait_physics_frames(2)
 
 	# Verify exp bar updated
@@ -166,8 +164,8 @@ func test_e2e_hud_level_display_updates_on_level_up() -> void:
 	assert_not_null(hud, "HUD should exist in WorldView")
 
 	# Add enough XP to level up
-	GameManager.add_xp(LEVEL_2_XP)
-	await wait_for_signal(EventBus.level_up, 2.0)
+	GameManager.add_experience(LEVEL_2_XP)
+	await wait_for_signal(EventBusAutoload.level_up, 2.0)
 
 	# Verify level changed
 	assert_eq(GameManager.level, 2, "Should be level 2")
@@ -205,8 +203,8 @@ func test_e2e_level_up_notification_shows() -> void:
 	assert_false(notification.visible, "Notification should start hidden")
 
 	# Trigger level up
-	GameManager.add_xp(LEVEL_2_XP)
-	await wait_for_signal(EventBus.level_up, 2.0)
+	GameManager.add_experience(LEVEL_2_XP)
+	await wait_for_signal(EventBusAutoload.level_up, 2.0)
 
 	# Check if notification becomes visible
 	# Note: The notification needs to be connected to level_up signal
@@ -251,7 +249,7 @@ func test_e2e_complete_production_to_level_up_flow() -> void:
 		EconomyManager.sell_bread(recipe)
 
 	# Wait for level up signal
-	await wait_for_signal(EventBus.level_up, 2.0)
+	await wait_for_signal(EventBusAutoload.level_up, 2.0)
 
 	# Verify level up occurred
 	assert_eq(GameManager.level, initial_level + 1, "Should have leveled up")
@@ -263,7 +261,9 @@ func test_e2e_complete_production_to_level_up_flow() -> void:
 	var exp_bar: ProgressBar = hud.get_node_or_null("Control/ExpBar")
 	if exp_bar != null:
 		# Exp bar should reflect current XP
-		assert_eq(exp_bar.value, float(GameManager.experience), "HUD exp bar should match GameManager XP")
+		assert_eq(
+			exp_bar.value, float(GameManager.experience), "HUD exp bar should match GameManager XP"
+		)
 
 
 ## Test 7: Level up with excess XP carries over correctly
@@ -282,7 +282,7 @@ func test_e2e_level_up_with_excess_xp() -> void:
 		EconomyManager.sell_bread(recipe)
 
 	# Wait for level up
-	await wait_for_signal(EventBus.level_up, 2.0)
+	await wait_for_signal(EventBusAutoload.level_up, 2.0)
 
 	# Verify level
 	assert_eq(GameManager.level, 2, "Should be level 2")

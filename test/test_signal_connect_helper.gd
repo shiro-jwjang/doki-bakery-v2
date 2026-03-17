@@ -83,7 +83,9 @@ func test_connect_signal_handles_already_connected() -> void:
 
 
 ## Mock UI component with _connect_signal method
-class _MockUIComponent extends Control:
+class _MockUIComponent:
+	extends Control
+
 	func _connect_signal(sig: Signal, callback: Callable) -> void:
 		if not sig.is_connected(callback):
 			sig.connect(callback)

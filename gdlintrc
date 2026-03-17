@@ -18,14 +18,12 @@ class-name: ([A-Z][a-z0-9]*)+
 class-variable-name: _?[a-z][a-z0-9]*(_[a-z0-9]+)*
 comparison-with-itself: null
 constant-name: _?[A-Z][A-Z0-9]*(_[A-Z0-9]+)*
-disable: [class-definitions-order, max-public-methods]
+disable: [class-definitions-order]
 duplicated-load: null
 enum-element-name: '[A-Z][A-Z0-9]*(_[A-Z0-9]+)*'
 enum-name: ([A-Z][a-z0-9]*)+
 excluded_directories: !!set
   .git: null
-exclude: !!set
-  test/test_world_controller.gd: null
 expression-not-assigned: null
 function-argument-name: _?[a-z][a-z0-9]*(_[a-z0-9]+)*
 function-arguments-number: 10

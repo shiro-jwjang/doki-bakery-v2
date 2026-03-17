@@ -7,7 +7,7 @@ extends GutTest
 ## 2. Display slots automatically sell bread after 5 seconds
 ## 3. Gold is awarded when bread is sold
 
-const DisplaySlotClass = preload("res://scripts/ui/display_slot.gd")
+const DisplaySlotScene = preload("res://scenes/ui/display_slot.tscn")
 
 var display_slot: Control
 
@@ -15,13 +15,13 @@ var display_slot: Control
 func before_each() -> void:
 	# Reset SalesManager inventory to prevent state leakage between tests
 	SalesManager._inventory.clear()
-	SalesManager._inventory_items.clear()
 
 	# Create DisplaySlot from scene (not new() to init @onready vars)
-	var display_slot_scene = preload("res://scenes/ui/display_slot.tscn")
-	display_slot = display_slot_scene.instantiate()
+	display_slot = DisplaySlotScene.instantiate()
 	add_child(display_slot)
-	display_slot._sell_timer.wait_time = 0.1  # Fast forward timer for tests
+	# Fast forward timer for tests - access via node path
+	var timer = display_slot.get_node("SellTimer")
+	timer.wait_time = 0.1
 	await wait_physics_frames(2)
 
 
@@ -168,8 +168,9 @@ func test_display_slot_auto_fills_on_baking_finished() -> void:
 	# Arrange - directly populate inventory without triggering baking_finished
 	var recipe_id = "croissant"
 	var price = 75
-	SalesManager._inventory[recipe_id] = 1
-	SalesManager._inventory_items[recipe_id] = [{"price": price}]
+	var inventory_item = InventoryItem.new(recipe_id)
+	inventory_item.add(price)
+	SalesManager._inventory[recipe_id] = inventory_item
 	watch_signals(display_slot)
 
 	# Act - emit baking_finished signal (DisplaySlot._on_baking_finished uses DataManager)
@@ -179,7 +180,7 @@ func test_display_slot_auto_fills_on_baking_finished() -> void:
 		# If DataManager doesn't know this recipe, setup manually and skip auto-fill test
 		display_slot.setup(recipe_id, price)
 	else:
-		EventBus.baking_finished.emit(recipe_id)
+		EventBusAutoload.baking_finished.emit(recipe_id)
 	await wait_physics_frames(2)
 
 	# Assert - empty slot should be filled
@@ -199,7 +200,7 @@ func test_display_slot_wont_fill_if_has_bread() -> void:
 	watch_signals(display_slot)
 
 	# Emit baking_finished for different recipe
-	EventBus.baking_finished.emit(second_recipe)
+	EventBusAutoload.baking_finished.emit(second_recipe)
 	await wait_physics_frames(2)
 
 	# Assert - should still have first bread

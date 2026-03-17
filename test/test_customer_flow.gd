@@ -4,7 +4,7 @@ extends GutTest
 ## Tests the complete customer lifecycle: spawn → move → buy → leave → despawn
 ## SNA-139: 손님 풀 플로우: 입장 → 진열대 → 구매 → 퇴장
 
-## Signal tracking for EventBus signals
+## Signal tracking for EventBusAutoload signals
 var _signals_received := {}
 var _customer_flow: Node = null
 var _mock_customer_view: Node2D = null
@@ -12,7 +12,7 @@ var _mock_customer_view: Node2D = null
 
 func before_each() -> void:
 	_signals_received.clear()
-	# Connect to EventBus signals
+	# Connect to EventBusAutoload signals
 	_connect_event_bus_signals()
 
 
@@ -58,6 +58,9 @@ func test_state_transition_entering_to_moving() -> void:
 		return
 
 	_customer_flow.start_customer_flow("test_customer_1")
+
+	# Wait for delayed movement timer to fire (0.01s timer in _start_movement_to_display_delayed)
+	await wait_seconds(0.05)
 
 	# After start, state should be MOVING_TO_DISPLAY (ENTERING is transient)
 	assert_eq(
@@ -132,7 +135,9 @@ func test_state_transition_leaving_to_despawned() -> void:
 	_simulate_exit_complete()
 
 	await wait_seconds(0.1)
-	assert_eq(_get_customer_state(), "DESPAWNED", "State should transition to DESPAWNED after exit")
+	# SNA-186: CustomerFlow now deletes itself after exit.
+	# Check that the flow node is no longer valid or has completed its job.
+	assert_true(not is_instance_valid(_customer_flow), "Flow node should be freed after exit")
 
 
 ## ==================== SPAWN POSITION TESTS ====================
@@ -211,7 +216,7 @@ func test_customer_purchase_success() -> void:
 	assert_true(GameManager.gold > initial_gold, "Gold should increase after purchase")
 
 
-## Test that purchase emits correct EventBus signals
+## Test that purchase emits correct EventBusAutoload signals
 func test_customer_purchase_emits_signals() -> void:
 	if _create_customer_flow() == null:
 		pending("CustomerFlow not implemented yet")
@@ -315,15 +320,12 @@ func test_customer_view_despawned() -> void:
 	_simulate_purchase_complete()
 	await wait_seconds(0.1)
 	_simulate_exit_complete()
-	await wait_seconds(0.1)
+	await wait_seconds(0.2)  # Give it time to queue_free
 
-	# Customer view should be queued for deletion or removed
-	if _customer_flow.has_method("get_customer_view"):
-		var view = _customer_flow.get_customer_view()
-		assert_true(
-			view == null or not is_instance_valid(view),
-			"Customer view should be null or invalid after despawn"
-		)
+	# Customer flow should be removed (it calls queue_free() internally after exit)
+	assert_true(
+		not is_instance_valid(_customer_flow), "Customer flow should be freed after despawn"
+	)
 
 
 ## ==================== EVENT BUS SIGNAL TESTS ====================
@@ -355,22 +357,23 @@ func test_customer_spawned_signal() -> void:
 	)
 
 
-## Test all EventBus signals are defined
+## Test all EventBusAutoload signals are defined
 func test_event_bus_signals_defined() -> void:
 	assert_true(
-		EventBus.has_signal("customer_spawned"),
-		"customer_spawned signal must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_spawned"),
+		"customer_spawned signal must be defined in EventBusAutoload"
 	)
 	assert_true(
-		EventBus.has_signal("customer_arrived_at_display"),
-		"customer_arrived_at_display signal must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_arrived_at_display"),
+		"customer_arrived_at_display signal must be defined in EventBusAutoload"
 	)
 	assert_true(
-		EventBus.has_signal("customer_purchased"),
-		"customer_purchased signal must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_purchased"),
+		"customer_purchased signal must be defined in EventBusAutoload"
 	)
 	assert_true(
-		EventBus.has_signal("customer_left"), "customer_left signal must be defined in EventBus"
+		EventBusAutoload.has_signal("customer_left"),
+		"customer_left signal must be defined in EventBusAutoload"
 	)
 
 
@@ -492,25 +495,27 @@ func _create_mock_recipe() -> Resource:
 
 
 func _connect_event_bus_signals() -> void:
-	if not EventBus.customer_spawned.is_connected(_on_customer_spawned):
-		EventBus.customer_spawned.connect(_on_customer_spawned)
-	if not EventBus.customer_arrived_at_display.is_connected(_on_customer_arrived_at_display):
-		EventBus.customer_arrived_at_display.connect(_on_customer_arrived_at_display)
-	if not EventBus.customer_purchased.is_connected(_on_customer_purchased):
-		EventBus.customer_purchased.connect(_on_customer_purchased)
-	if not EventBus.customer_left.is_connected(_on_customer_left):
-		EventBus.customer_left.connect(_on_customer_left)
+	if not EventBusAutoload.customer_spawned.is_connected(_on_customer_spawned):
+		EventBusAutoload.customer_spawned.connect(_on_customer_spawned)
+	if not EventBusAutoload.customer_arrived_at_display.is_connected(
+		_on_customer_arrived_at_display
+	):
+		EventBusAutoload.customer_arrived_at_display.connect(_on_customer_arrived_at_display)
+	if not EventBusAutoload.customer_purchased.is_connected(_on_customer_purchased):
+		EventBusAutoload.customer_purchased.connect(_on_customer_purchased)
+	if not EventBusAutoload.customer_left.is_connected(_on_customer_left):
+		EventBusAutoload.customer_left.connect(_on_customer_left)
 
 
 func _disconnect_event_bus_signals() -> void:
-	if EventBus.customer_spawned.is_connected(_on_customer_spawned):
-		EventBus.customer_spawned.disconnect(_on_customer_spawned)
-	if EventBus.customer_arrived_at_display.is_connected(_on_customer_arrived_at_display):
-		EventBus.customer_arrived_at_display.disconnect(_on_customer_arrived_at_display)
-	if EventBus.customer_purchased.is_connected(_on_customer_purchased):
-		EventBus.customer_purchased.disconnect(_on_customer_purchased)
-	if EventBus.customer_left.is_connected(_on_customer_left):
-		EventBus.customer_left.disconnect(_on_customer_left)
+	if EventBusAutoload.customer_spawned.is_connected(_on_customer_spawned):
+		EventBusAutoload.customer_spawned.disconnect(_on_customer_spawned)
+	if EventBusAutoload.customer_arrived_at_display.is_connected(_on_customer_arrived_at_display):
+		EventBusAutoload.customer_arrived_at_display.disconnect(_on_customer_arrived_at_display)
+	if EventBusAutoload.customer_purchased.is_connected(_on_customer_purchased):
+		EventBusAutoload.customer_purchased.disconnect(_on_customer_purchased)
+	if EventBusAutoload.customer_left.is_connected(_on_customer_left):
+		EventBusAutoload.customer_left.disconnect(_on_customer_left)
 
 
 func _on_customer_spawned(customer_id: String) -> void:
@@ -612,7 +617,10 @@ func test_get_world_view_returns_null_when_missing() -> void:
 	var result = _customer_flow._get_world_view()
 	# Note: Due to _setup_mock_world_view() in _create_customer_flow(),
 	# we expect WorldView to exist in most cases, so we just verify it doesn't crash
-	assert_true(result == null or result.is_class("Node"), "_get_world_view() should not crash and should return null or Node")
+	assert_true(
+		result == null or result.is_class("Node"),
+		"_get_world_view() should not crash and should return null or Node"
+	)
 
 
 ## Test that _get_world_view() doesn't hardcode scene path

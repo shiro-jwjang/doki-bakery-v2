@@ -1,12 +1,9 @@
 [gd_scene format=3 uid="uid://b3x5q8r7k2n5p"]
 
 [ext_resource type="Script" uid="uid://h3f3vjgx1jfj" path="res://scripts/world/player_view.gd" id="1_0abcd"]
-[ext_resource type="SpriteFrames" uid="uid://b3x5q8r7k2n6p" path="res://resources/animations/player_animations.tres" id="2_01234"]
+[ext_resource type="PackedScene" uid="uid://avatar_compositor_scene" path="res://scenes/components/avatar_compositor.tscn" id="2_compositor"]
 
 [node name="PlayerView" type="Node2D" unique_id=2013184927]
 script = ExtResource("1_0abcd")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=385674789]
-sprite_frames = ExtResource("2_01234")
-animation = &"idle"
-autoplay = "idle"
+[node name="AvatarCompositor" parent="." instance=ExtResource("2_compositor")]

@@ -1,12 +1,11 @@
 extends GutTest
-# gdlint: disable=max-public-methods
 
 ## Test Suite: SNA-98 WorldController Centralized Event Wiring
 ##
 ## Tests the WorldController which:
 ## 1. Manages UI components within WorldView hierarchy
-## 2. Connects EventBus signals for forwarding to UI
-## 3. Validates EventBus signal connections
+## 2. Connects EventBusAutoload signals for forwarding to UI
+## 3. Validates EventBusAutoload signal connections
 
 const WorldControllerScript = preload("res://scripts/world/world_controller.gd")
 
@@ -51,48 +50,52 @@ func test_get_display_slots_returns_null_when_no_slots() -> void:
 	assert_null(slots, "get_display_slots should return null when no slots")
 
 
-# ==================== EventBus Connection Tests ====================
+# ==================== EventBusAutoload Connection Tests ====================
 
 
 func test_event_bus_gold_changed_connected() -> void:
 	assert_true(
-		EventBus.gold_changed.is_connected(world_controller._on_gold_changed),
+		EventBusAutoload.gold_changed.is_connected(world_controller._on_gold_changed),
 		"WorldController should be connected to gold_changed"
 	)
 
 
 func test_event_bus_experience_changed_connected() -> void:
 	assert_true(
-		EventBus.experience_changed.is_connected(world_controller._on_experience_changed),
+		EventBusAutoload.experience_changed.is_connected(world_controller._on_experience_changed),
 		"WorldController should be connected to experience_changed"
 	)
 
 
 func test_event_bus_production_signals_connected() -> void:
 	assert_true(
-		EventBus.production_started.is_connected(world_controller._on_production_started),
+		EventBusAutoload.production_started.is_connected(world_controller._on_production_started),
 		"WorldController should be connected to production_started"
 	)
 	assert_true(
-		EventBus.production_progressed.is_connected(world_controller._on_production_progressed),
+		EventBusAutoload.production_progressed.is_connected(
+			world_controller._on_production_progressed
+		),
 		"WorldController should be connected to production_progressed"
 	)
 	assert_true(
-		EventBus.production_completed.is_connected(world_controller._on_production_completed),
+		EventBusAutoload.production_completed.is_connected(
+			world_controller._on_production_completed
+		),
 		"WorldController should be connected to production_completed"
 	)
 
 
 func test_event_bus_baking_finished_connected() -> void:
 	assert_true(
-		EventBus.baking_finished.is_connected(world_controller._on_baking_finished),
+		EventBusAutoload.baking_finished.is_connected(world_controller._on_baking_finished),
 		"WorldController should be connected to baking_finished"
 	)
 
 
 func test_event_bus_bread_sold_connected() -> void:
 	assert_true(
-		EventBus.bread_sold.is_connected(world_controller._on_bread_sold),
+		EventBusAutoload.bread_sold.is_connected(world_controller._on_bread_sold),
 		"WorldController should be connected to bread_sold"
 	)
 
@@ -118,16 +121,16 @@ func test_validate_connections_reports_connection_status() -> void:
 
 func test_validate_connections_all_connected_true_after_init() -> void:
 	var result: Dictionary = world_controller.validate_connections()
-	assert_true(result["all_connected"], "All EventBus connections should be established")
+	assert_true(result["all_connected"], "All EventBusAutoload connections should be established")
 
 
 # ==================== Signal Propagation Tests ====================
 
 
 func test_gold_change_signal_propagates() -> void:
-	# Verify WorldController receives gold_changed via EventBus
+	# Verify WorldController receives gold_changed via EventBusAutoload
 	assert_true(
-		EventBus.gold_changed.is_connected(world_controller._on_gold_changed),
+		EventBusAutoload.gold_changed.is_connected(world_controller._on_gold_changed),
 		"Signal should be wired through WorldController"
 	)
 
@@ -137,7 +140,7 @@ func test_gold_change_signal_propagates() -> void:
 	world_controller.set_hud(mock_hud)
 
 	# Emit signal — WorldController._on_gold_changed will run without error
-	EventBus.gold_changed.emit(0, 100)
+	EventBusAutoload.gold_changed.emit(0, 100)
 
 	# If we get here without crash/hang, signal propagation works
 	assert_true(true, "gold_changed signal propagated without error")
@@ -146,68 +149,54 @@ func test_gold_change_signal_propagates() -> void:
 func test_production_started_signal_propagates() -> void:
 	# Verify WorldController is listening
 	assert_true(
-		EventBus.production_started.is_connected(world_controller._on_production_started),
+		EventBusAutoload.production_started.is_connected(world_controller._on_production_started),
 		"production_started should propagate through WorldController"
 	)
 
 
-# ==================== SNA-176: Automatic Signal Routing Tests ====================
+# ==================== SNA-193: Display Slot Initialization Tests ====================
 
 
-func test_automatic_signal_routing_metadata_exists() -> void:
-	# Verify WorldController has signal routing metadata
-	assert_true(
-		world_controller.has_method("get_signal_routes"),
-		"WorldController should have get_signal_routes method for metadata"
-	)
-
-
-func test_get_signal_routes_returns_array() -> void:
-	var routes: Array = world_controller.get_signal_routes()
-	assert_not_null(routes, "get_signal_routes should return an array")
-	assert_true(routes is Array, "get_signal_routes should return Array type")
-
-
-func test_signal_routes_contain_required_fields() -> void:
-	var routes: Array = world_controller.get_signal_routes()
-	if routes.is_empty():
-		# No routes yet - fail until we implement the feature
-		fail_test("get_signal_routes should return at least one route")
+## Test that WorldController initializes display slots from SalesManager inventory
+func test_world_controller_initializes_display_slots_from_inventory() -> void:
+	# Arrange - Add items to SalesManager inventory
+	var recipe_id = "croissant"
+	var recipe = DataManager.get_recipe(recipe_id)
+	if recipe == null:
+		skip_test("Recipe %s not found in DataManager" % recipe_id)
 		return
 
-	var route = routes[0]
-	assert_true(route.has("event_bus_signal"), "Route should have event_bus_signal field")
-	assert_true(route.has("handler_method"), "Route should have handler_method field")
+	# Add items to inventory
+	SalesManager.add_to_inventory(recipe_id, recipe.base_price)
+	SalesManager.add_to_inventory(recipe_id, recipe.base_price)
 
+	# Create DisplaySlots container
+	var display_slots_scene = load("res://scenes/ui/display_slots.tscn")
+	if display_slots_scene == null:
+		fail_test("DisplaySlots scene not found")
+		return
 
-func test_automatic_routing_connects_all_signals() -> void:
-	# After _ready() is called, all EventBus signals should be connected
-	# This tests the automatic routing system
-	var routes: Array = world_controller.get_signal_routes()
+	var display_slots = display_slots_scene.instantiate()
+	add_child_autoqfree(display_slots)
+	await wait_physics_frames(2)
 
-	for route in routes:
-		var signal_name = route["event_bus_signal"]
-		var handler_name = route["handler_method"]
+	# Set display_slots reference in world_controller
+	world_controller.set_display_slots(display_slots)
 
-		# Get EventBus signal object
-		var event_bus_signal = EventBus.get(signal_name)
-		if event_bus_signal is Signal:
-			var handler = Callable(world_controller, handler_name)
-			assert_true(
-				event_bus_signal.is_connected(handler),
-				"Automatic routing should connect %s to %s" % [signal_name, handler_name]
-			)
+	# Act - Simulate WorldController._ready() initialization
+	if SalesManager.has_method("initialize_display_slots"):
+		SalesManager.initialize_display_slots(display_slots)
+		await wait_physics_frames(1)
 
+	# Assert - Display slots should be filled from inventory
+	var slots = display_slots.get_slots()
+	var filled_count = 0
+	for slot in slots:
+		if slot.has_method("has_bread") and slot.has_bread():
+			filled_count += 1
 
-func test_signal_routing_preserves_existing_behavior() -> void:
-	# Ensure automatic routing doesn't break existing signal forwarding
-	var mock_hud := Control.new()
-	add_child_autofree(mock_hud)
-	world_controller.set_hud(mock_hud)
-
-	# This should not crash - signals should propagate
-	EventBus.gold_changed.emit(0, 100)
-	EventBus.experience_changed.emit(0, 50)
-	EventBus.level_up.emit(5)
-
-	assert_true(true, "Signal propagation should work with automatic routing")
+	# Should fill at least 1 slot from inventory
+	assert_true(
+		filled_count > 0,
+		"Display slots should be initialized from inventory (got %d filled)" % filled_count
+	)

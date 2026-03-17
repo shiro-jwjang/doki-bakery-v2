@@ -1,29 +1,35 @@
 extends Node
 
-const MAX_LEVEL: int = 10
+
+## Helper method for setters that emit (old, new) signal pattern
+## Used to reduce duplication in property setters
+func _emit_property_changed(old_value: int, new_value: int, changed_signal: Signal) -> void:
+	changed_signal.emit(old_value, new_value)
+
 
 var gold: int = 0:
 	set(value):
 		var old: int = gold
 		gold = value
-		EventBus.gold_changed.emit(old, gold)
+		_emit_property_changed(old, gold, EventBusAutoload.gold_changed)
 
 var legendary_bread: int = 0:
 	set(value):
 		var old: int = legendary_bread
 		legendary_bread = value
-		EventBus.premium_changed.emit(old, legendary_bread)
+		_emit_property_changed(old, legendary_bread, EventBusAutoload.premium_changed)
 
 var level: int = 1:
 	set(value):
+		var old: int = level
 		level = value
-		EventBus.level_changed.emit(level)
+		_emit_property_changed(old, level, EventBusAutoload.level_changed)
 
 var experience: int = 0:
 	set(value):
 		var old: int = experience
 		experience = value
-		EventBus.experience_changed.emit(old, experience)
+		_emit_property_changed(old, experience, EventBusAutoload.experience_changed)
 
 var experience_to_next_level: int = 100
 
@@ -32,9 +38,14 @@ var play_time: float = 0.0
 var game_state: String = "menu":
 	set(value):
 		game_state = value
-		EventBus.game_state_changed.emit(game_state)
+		EventBusAutoload.game_state_changed.emit(game_state)
 
 var bread_inventory: Dictionary = {}  # SNA-46
+
+var avatar_data_id: String = "":
+	set(value):
+		avatar_data_id = value
+		EventBusAutoload.avatar_changed.emit(value)
 
 var _is_loaded: bool = false
 
@@ -49,7 +60,8 @@ func get_state() -> Dictionary:
 		"level": level,
 		"experience": experience,
 		"play_time": play_time,
-		"game_state": game_state
+		"game_state": game_state,
+		"avatar_data_id": avatar_data_id
 	}
 
 
@@ -63,18 +75,34 @@ func set_state(data: Dictionary) -> void:
 	if data.has("legendary_bread"):
 		legendary_bread = data.legendary_bread
 	if data.has("level"):
-		level = clamp(data.level, 1, MAX_LEVEL)
+		level = clamp(data.level, 1, GameConstants.MAX_LEVEL)
 	if data.has("experience"):
 		experience = data.experience
 	if data.has("play_time"):
 		play_time = data.play_time
 	if data.has("game_state"):
 		game_state = data.game_state
+	if data.has("avatar_data_id"):
+		avatar_data_id = data.avatar_data_id
+
+
+## Helper method to modify gold balance
+## Returns: true if successful, false if insufficient funds (for spending)
+func _modify_gold(amount: int, allow_negative: bool = false) -> bool:
+	if amount >= 0:
+		gold += amount
+		print("Added %d gold, new total: %d" % [amount, gold])
+		return true
+	else:
+		var cost: int = -amount
+		if gold >= cost:
+			gold -= cost
+			return true
+		return false
 
 
 func add_gold(amount: int) -> void:
-	gold += amount
-	print("Added %d gold, new total: %d" % [amount, gold])
+	_modify_gold(amount)
 
 
 func get_gold() -> int:
@@ -82,10 +110,21 @@ func get_gold() -> int:
 
 
 func spend_gold(amount: int) -> bool:
-	if gold >= amount:
-		gold -= amount
+	return _modify_gold(-amount)
+
+
+## Helper method to modify premium (legendary bread) balance
+## Returns: true if successful, false if insufficient funds (for spending)
+func _modify_premium(amount: int, allow_negative: bool = false) -> bool:
+	if amount >= 0:
+		legendary_bread += amount
 		return true
-	return false
+	else:
+		var cost: int = -amount
+		if legendary_bread >= cost:
+			legendary_bread -= cost
+			return true
+		return false
 
 
 func add_experience(amount: int) -> void:
@@ -94,14 +133,10 @@ func add_experience(amount: int) -> void:
 
 	var old_xp := experience
 	experience += amount
-	EventBus.experience_gained.emit(amount)
+	EventBusAutoload.experience_gained.emit(amount)
 
 	# Check for level ups
 	_check_level_up()
-
-
-func add_xp(amount: int) -> void:
-	add_experience(amount)
 
 
 func get_xp() -> int:
@@ -114,26 +149,22 @@ func get_level() -> int:
 
 func _check_level_up() -> void:
 	# Handle multiple level ups if needed
-	while level < MAX_LEVEL:
+	while level < GameConstants.MAX_LEVEL:
 		var required_xp := _get_xp_required_for_level(level + 1)
 		if experience >= required_xp:
-			_level_up()
+			_perform_level_up()
 		else:
 			break
 
 
-func _level_up() -> void:
+func _perform_level_up() -> void:
 	level += 1
 	var required_xp := _get_xp_required_for_level(level)
 	experience = max(0, experience - required_xp)
 	experience_to_next_level = (
 		_get_xp_required_for_level(level + 1) - _get_xp_required_for_level(level)
 	)
-	EventBus.level_up.emit(level)
-
-
-func level_up() -> void:
-	_level_up()
+	EventBusAutoload.level_up.emit(level)
 
 
 func _get_xp_required_for_level(lvl: int) -> int:
@@ -142,7 +173,7 @@ func _get_xp_required_for_level(lvl: int) -> int:
 
 
 func add_premium(amount: int) -> void:
-	legendary_bread += amount
+	_modify_premium(amount)
 
 
 func get_premium() -> int:
@@ -150,94 +181,29 @@ func get_premium() -> int:
 
 
 func spend_premium(amount: int) -> bool:
-	if legendary_bread >= amount:
-		legendary_bread -= amount
-		return true
-	return false
-
-
-## Legacy method: Save game state to file
-## Deprecated: Use GameManager.get_state() with SaveManager.save_to_disk() instead
-## This method now delegates to SaveManager
-func save_game(path: String = "user://save.json") -> bool:
-	var save_data := {
-		"version": "1.0",
-		"gold": gold,
-		"premium": legendary_bread,
-		"level": level,
-		"xp": experience,
-		"play_time": play_time,
-		"game_state": game_state,
-		"unlocked_recipes": [],
-		"shop_stage": 1,
-		"production_slots": []
-	}
-
-	# SNA-161: Delegate file I/O to SaveManager
-	return SaveManager.save_to_disk(save_data, path)
+	return _modify_premium(-amount)
 
 
 func set_game_state(state: String) -> void:
 	game_state = state
 
 
-## Legacy method: Load game state from file
-## Deprecated: Use SaveManager.load_from_disk() with GameManager.set_state() instead
-## This method now delegates to SaveManager
-func load_game() -> bool:
-	var save_path := "user://save.json"
-
-	# SNA-161: Delegate file I/O to SaveManager
-	var data: Dictionary = SaveManager.load_from_disk(save_path)
-
-	if data.is_empty():
-		# No save file exists or error loading
-		_reset_to_defaults()
-		return true
-
-	# Load fields with defaults for missing keys
-	# Support both old and new field names for compatibility
-	if data.has("gold"):
-		gold = data["gold"]
-	else:
-		gold = 0
-	if data.has("legendary_bread"):
-		legendary_bread = data["legendary_bread"]
-	elif data.has("premium"):
-		legendary_bread = data["premium"]  # Support both names
-	else:
-		legendary_bread = 0
-	if data.has("level"):
-		level = clamp(data["level"], 1, MAX_LEVEL)  # Ensure valid level range
-	else:
-		level = 1
-	if data.has("experience"):
-		experience = data["experience"]
-	elif data.has("xp"):
-		experience = data["xp"]  # Support both names
-	else:
-		experience = 0
-	if data.has("play_time"):
-		play_time = data["play_time"]
-	else:
-		play_time = 0.0
-	if data.has("game_state"):
-		game_state = data["game_state"]
-	else:
-		game_state = "menu"
-
-	return true
-
-
-func _reset_to_defaults() -> void:
-	gold = 0
-	legendary_bread = 0
-	level = 1
-	experience = 0
-	play_time = 0.0
-	game_state = "menu"
-
-
 func _process(delta: float) -> void:
 	if game_state == "playing":
 		play_time += delta
+
+
+## SNA-122: Get avatar data resource from avatar_data_id
+## Returns: AvatarData resource or null if not found
+func get_avatar_data() -> AvatarData:
+	if avatar_data_id == "":
+		# Return null if no ID set (MVP - don't load default)
+		return null
+
+	if not ResourceLoader.exists(avatar_data_id):
+		return null
+
+	var resource = load(avatar_data_id)
+	if resource is AvatarData:
+		return resource as AvatarData
+	return null

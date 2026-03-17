@@ -9,10 +9,6 @@ extends Node2D
 ## SNA-88: WorldView 루트 씬 구성 + Y-Sort 레이어
 ## SNA-114: YSort 헬퍼 메서드 및 뷰포트 명시
 
-# Viewport configuration (matches project.godot settings)
-const VIEWPORT_WIDTH: int = 1200
-const VIEWPORT_HEIGHT: int = 1000
-
 # Node references (cached for performance)
 @onready var _y_sort: Node2D = $Entities/YSort
 

@@ -3,24 +3,24 @@ extends EditorPlugin
 
 var VersionConversion = load("res://addons/gut/version_conversion.gd")
 var MenuManager = load("res://addons/gut/gut_menu.gd")
-var BottomPanelScene = preload('res://addons/gut/gui/GutBottomPanel.tscn')
-var GutEditorGlobals = load('res://addons/gut/gui/editor_globals.gd')
-var GutDock = load('res://addons/gut/gui/gut_dock.gd')
-var UpdateRequiredDialog = load('res://addons/gut/gui/update_required.tscn')
+var BottomPanelScene = preload("res://addons/gut/gui/GutBottomPanel.tscn")
+var GutEditorGlobals = load("res://addons/gut/gui/editor_globals.gd")
+var GutDock = load("res://addons/gut/gui/gut_dock.gd")
+var UpdateRequiredDialog = load("res://addons/gut/gui/update_required.tscn")
 var CheckForUpdateControl = load("res://addons/gut/gui/check_for_update.tscn")
 
-var _bottom_panel : Control = null
+var _bottom_panel: Control = null
 var _menu_mgr = null
 var _gut_button = null
 var _gut_window = null
-var _dock_mode = 'none'
+var _dock_mode = "none"
 var _gut_dock = null
 var _update_required = null
 var _check_for_update = null
 
 
 func _init():
-	if(VersionConversion.error_if_not_all_classes_imported()):
+	if VersionConversion.error_if_not_all_classes_imported():
 		return
 
 
@@ -35,11 +35,11 @@ func _should_continue_loading_gut():
 	get_tree().root.add_child(_update_required)
 	_update_required.set_check_for_update_control(_check_for_update)
 
-	if(!_check_for_update.update_detector.is_gut_version_valid()):
+	if !_check_for_update.update_detector.is_gut_version_valid():
 		_update_required.popup_centered()
-		await(_update_required.closed)
+		await (_update_required.closed)
 
-		if(!_update_required.should_continue):
+		if !_update_required.should_continue:
 			to_return = false
 
 	_update_required.remove_child(_check_for_update)
@@ -49,11 +49,11 @@ func _should_continue_loading_gut():
 
 
 func _enter_tree():
-	if(!_version_conversion()):
+	if !_version_conversion():
 		return
 
 	var should_continue = await _should_continue_loading_gut()
-	if(!should_continue):
+	if !should_continue:
 		print("GUT loading canceled.  Restart editor to try loading again.")
 		return
 
@@ -80,7 +80,7 @@ func _enter_tree():
 	_check_for_update.visible = false
 	_bottom_panel.add_child(_check_for_update)
 	var days_since = _check_for_update.update_detector.get_days_since_last_fetch()
-	if(days_since >= 2):
+	if days_since >= 2:
 		_check_for_update.update_detector.check_for_update_with_fetch(true)
 
 	_bottom_panel.set_interface(get_editor_interface())
@@ -99,7 +99,7 @@ func _version_conversion():
 	var EditorGlobals = load("res://addons/gut/gui/editor_globals.gd")
 	EditorGlobals.create_temp_directory()
 
-	if(VersionConversion.error_if_not_all_classes_imported()):
+	if VersionConversion.error_if_not_all_classes_imported():
 		return false
 
 	VersionConversion.convert()
@@ -112,8 +112,10 @@ func gut_as_panel():
 	_gut_dock.title = "GUT"
 
 	_gut_dock.default_slot = DOCK_SLOT_BOTTOM
-	_gut_dock.set_global(false);
-	_gut_dock.set_available_layouts(EditorDock.DOCK_LAYOUT_HORIZONTAL | EditorDock.DOCK_LAYOUT_FLOATING);
+	_gut_dock.set_global(false)
+	_gut_dock.set_available_layouts(
+		EditorDock.DOCK_LAYOUT_HORIZONTAL | EditorDock.DOCK_LAYOUT_FLOATING
+	)
 
 	add_dock(_gut_dock)
 	_gut_dock.add_bottom_panel(_bottom_panel)
@@ -121,7 +123,9 @@ func gut_as_panel():
 
 
 func toggle_windowed():
-	push_warning("You have to right click the GUT tab and choose 'floating'.  I cannot do this from a menu anymore.")
+	push_warning(
+		"You have to right click the GUT tab and choose 'floating'.  I cannot do this from a menu anymore."
+	)
 
 
 func _exit_tree():
@@ -133,23 +137,23 @@ func _exit_tree():
 
 	remove_dock(_gut_dock)
 	_gut_dock.queue_free()
-	remove_tool_menu_item("GUT") # made by _menu_mgr
+	remove_tool_menu_item("GUT")  # made by _menu_mgr
 
 	_check_for_update.queue_free()
 
 
 func show_output_panel():
-	if(_gut_dock == null or !_gut_dock.is_inside_tree()):
+	if _gut_dock == null or !_gut_dock.is_inside_tree():
 		return
 
 	var panel = null
 	var kids = _gut_dock.get_parent().get_children()
 	var idx = 0
 
-	while(idx < kids.size() and panel == null):
-		if(kids[idx].name == 'Output'):
+	while idx < kids.size() and panel == null:
+		if kids[idx].name == "Output":
 			panel = kids[idx]
 		idx += 1
 
-	if(panel != null):
+	if panel != null:
 		panel.make_visible()

@@ -18,13 +18,15 @@ var customer_id: String = ""
 
 ## Sprite node for customer appearance
 @onready var _sprite: Sprite2D = $Sprite2D
+@onready var _emoticon_view: EmoticonView = %EmoticonView
 
 
 func _ready() -> void:
 	# Set initial position (will be updated by movement system)
 	position = Vector2(0, 0)
-	# Apply default texture
-	_sprite.texture = DEFAULT_TEXTURE
+	# Apply default texture (skip in headless mode where rendering is limited)
+	if _sprite != null and DisplayServer.get_name() != "headless":
+		_sprite.texture = DEFAULT_TEXTURE
 
 
 ## Setup the customer view with a customer ID
@@ -32,6 +34,9 @@ func _ready() -> void:
 func setup(id: String) -> void:
 	customer_id = id
 	name = "Customer_%s" % id
+
+	if _emoticon_view:
+		_emoticon_view.character_id = id
 
 
 ## Get the customer ID

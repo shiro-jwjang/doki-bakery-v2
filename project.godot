@@ -23,7 +23,8 @@ config/icon="res://icon.svg"
 [autoload]
 
 SteamManager="*res://scripts/autoload/steam_manager.gd"
-EventBus="*res://scripts/autoload/event_bus.gd"
+EventBusAutoload="*res://scripts/autoload/event_bus.gd"
+GameConstants="*res://scripts/autoload/game_constants.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
 DataManager="*res://scripts/autoload/data_manager.gd"
@@ -33,10 +34,6 @@ BakeryManager="*res://scripts/autoload/bakery_manager.gd"
 CustomerSpawner="*res://scripts/autoload/customer_spawner.gd"
 CustomerFlow="*res://scripts/customer/customer_flow.gd"
 UIManager="*res://scenes/autoload/ui_manager.tscn"
-
-[gui]
-
-theme/custom="res://themes/default_theme.tres"
 
 [display]
 
@@ -52,6 +49,10 @@ window/stretch/mode="canvas_items"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/godotsteam/plugin.cfg")
+
+[gui]
+
+theme/custom="res://themes/default_theme.tres"
 
 [rendering]
 
