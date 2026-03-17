@@ -5,7 +5,7 @@ extends GutTest
 ## Tests that BakeryManager returns ProductionSlot instances (not Dictionary)
 
 const BakeryManagerTestHelper = preload("res://test/helpers/bakery_manager_test_helper.gd")
-const ProductionSlot = preload("res://resources/data/production_slot.gd")
+const ProductionSlotData = preload("res://resources/data/production_slot_data.gd")
 
 var _helper: BakeryManagerTestHelper
 var _manager: Node
@@ -34,7 +34,7 @@ func test_get_slots_returns_production_slot_instances() -> void:
 	var slot = slots[0]
 
 	# This should fail initially - slot is Dictionary, not ProductionSlot
-	assert_true(slot is ProductionSlot, "Slot should be ProductionSlot instance, not Dictionary")
+	assert_true(slot is ProductionSlotData, "Slot should be ProductionSlot instance, not Dictionary")
 
 
 ## Test slot from get_slots has typed properties
@@ -81,7 +81,7 @@ func test_internal_slots_dictionary_has_typed_slots() -> void:
 	var slot = slots_dict[0]
 
 	# This should fail initially - slot is Dictionary, not ProductionSlot
-	assert_true(slot is ProductionSlot, "Internal slot should be ProductionSlot instance")
+	assert_true(slot is ProductionSlotData, "Internal slot should be ProductionSlot instance")
 
 
 ## Test _active_slots dictionary contains ProductionSlot instances
@@ -96,7 +96,7 @@ func test_internal_active_slots_has_typed_slots() -> void:
 	var slot = active_slots_dict[0]
 
 	# This should fail initially - slot is Dictionary, not ProductionSlot
-	assert_true(slot is ProductionSlot, "Active slot should be ProductionSlot instance")
+	assert_true(slot is ProductionSlotData, "Active slot should be ProductionSlot instance")
 
 
 ## Test complete_production works with ProductionSlot

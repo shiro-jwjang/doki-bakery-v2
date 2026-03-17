@@ -14,7 +14,7 @@ const RecipeProvider = preload("res://scripts/providers/recipe_provider.gd")
 const DataManagerRecipeProvider = preload("res://scripts/providers/data_manager_recipe_provider.gd")
 const TimeProvider = preload("res://scripts/providers/time_provider.gd")
 const SystemTimeProvider = preload("res://scripts/providers/system_time_provider.gd")
-const ProductionSlot = preload("res://resources/data/production_slot.gd")
+const ProductionSlotData = preload("res://resources/data/production_slot_data.gd")
 
 ## Signal emitted when production starts
 signal production_started(slot_index: int, recipe_id: String)
@@ -104,8 +104,8 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 		push_error("BakeryManager: Recipe not found - %s" % recipe_id)
 		return false
 
-	# Create new production slot as typed ProductionSlot (SNA-200)
-	var slot = ProductionSlot.new()
+	# Create new production slot as typed ProductionSlotData (SNA-200)
+	var slot = ProductionSlotData.new()
 	slot.slot_index = slot_index
 	slot.recipe = recipe
 	slot.start_time = _get_current_time()
@@ -278,8 +278,8 @@ func restore_slots(slots_data: Array) -> void:
 
 		var slot_index: int = slot_data.get("slot_index", 0)
 
-		# Create typed ProductionSlot (SNA-200)
-		var slot = ProductionSlot.new()
+		# Create typed ProductionSlotData (SNA-200)
+		var slot = ProductionSlotData.new()
 		slot.slot_index = slot_index
 		slot.recipe = recipe
 		slot.start_time = slot_data.get("start_time", 0.0)

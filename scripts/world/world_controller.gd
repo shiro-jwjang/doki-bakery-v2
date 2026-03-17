@@ -15,8 +15,8 @@ extends Node
 ## - Handle UI-specific initialization (level up notification)
 
 const LEVEL_UP_NOTIFICATION_SCENE = preload("res://scenes/ui/level_up_notification.tscn")
-const UIComponentRegistryScript = preload("res://scripts/ui/ui_component_registry.gd")
-const UIEventRouterScript = preload("res://scripts/ui/ui_event_router.gd")
+const UIComponentRegistry = preload("res://scripts/ui/ui_component_registry.gd")
+const UIEventRouter = preload("res://scripts/ui/ui_event_router.gd")
 
 ## Reference to UI container (CanvasLayer)
 @onready var ui_layer: CanvasLayer = get_node_or_null("../UI")
@@ -70,14 +70,14 @@ func _ready() -> void:
 
 ## Initialize UI Component Registry
 func _init_component_registry() -> void:
-	_component_registry = UIComponentRegistryScript.new()
+	_component_registry = UIComponentRegistry.new()
 	_component_registry.set_root_node(self)
 	add_child(_component_registry)
 
 
 ## Initialize UI Event Router
 func _init_event_router() -> void:
-	_event_router = UIEventRouterScript.new()
+	_event_router = UIEventRouter.new()
 	_event_router.set_component_registry(_component_registry)
 	add_child(_event_router)
 
@@ -239,11 +239,11 @@ func get_event_router() -> Node:
 
 # ==================== Customer Events ====================
 
-const CustomerFlowScript = preload("res://scripts/customer/customer_flow.gd")
+const CustomerFlow = preload("res://scripts/customer/customer_flow.gd")
 
 
 func _on_customer_arrived(p_customer_id: String) -> void:
-	var flow = CustomerFlowScript.new()
+	var flow = CustomerFlow.new()
 	flow.name = "CustomerFlow_" + p_customer_id
 	add_child(flow)
 	flow.start_customer_flow(p_customer_id)

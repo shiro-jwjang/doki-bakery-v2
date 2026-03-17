@@ -11,6 +11,9 @@ const PURCHASE_DURATION = 1.5
 ## Signal emitted when purchase completes
 signal purchase_completed(customer_id: String, recipe_id: String, price: int)
 
+## Signal emitted when purchase timer expires
+signal purchase_timer_timeout
+
 ## Purchase timer
 var _purchase_timer: Timer = null
 
@@ -148,6 +151,5 @@ func cleanup() -> void:
 
 ## Handle purchase timer completion
 func _on_purchase_timer_timeout() -> void:
-	# This is a placeholder for subclasses to override
-	# The actual purchase logic is triggered by the timer in CustomerFlow
-	pass
+	# Signal to the flow logic that it's time to process the purchase
+	purchase_timer_timeout.emit()

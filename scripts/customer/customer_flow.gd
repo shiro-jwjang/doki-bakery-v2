@@ -1,3 +1,4 @@
+class_name CustomerFlow
 extends Node
 
 ## CustomerFlow
@@ -63,6 +64,7 @@ func _ready() -> void:
 	_state_machine.state_changed.connect(_on_state_changed)
 	_movement.movement_completed.connect(_on_movement_completed)
 	_purchase.purchase_completed.connect(_on_purchase_component_completed)
+	_purchase.purchase_timer_timeout.connect(_on_purchase_timer_timeout)
 
 	# Initialize customer view factory
 	_initialize_view_factory()
@@ -75,6 +77,12 @@ func _ready() -> void:
 ## @param id: Unique customer identifier
 func start_customer_flow(id: String) -> void:
 	customer_id = id
+
+	# Randomize display position offset to prevent overlapping
+	if _movement != null:
+		var rx = randf_range(-40.0, 40.0)
+		var ry = randf_range(-20.0, 20.0)
+		_movement.display_offset = Vector2(rx, ry)
 
 	# Create customer view
 	_create_customer_view()
@@ -240,15 +248,12 @@ func _process_purchase() -> void:
 		return
 
 	# Process sale through purchase component
-	var success = false
 	if _purchase != null:
-		success = _purchase.process_purchase(customer_id, selected_bread)
-
-	if success:
-		# Start leaving after successful purchase
-		_start_leaving()
+		var success = _purchase.process_purchase(customer_id, selected_bread)
+		# If success, _on_purchase_component_completed will handle _start_leaving()
+		if not success:
+			_start_leaving()
 	else:
-		# Purchase failed, leave anyway
 		_start_leaving()
 
 

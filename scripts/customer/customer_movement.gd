@@ -23,6 +23,9 @@ signal movement_completed
 ## Movement tween
 var _tween: Tween = null
 
+## Display position offset (to prevent overlapping)
+var display_offset: Vector2 = Vector2.ZERO
+
 
 func _ready() -> void:
 	pass
@@ -74,7 +77,8 @@ func move_to_display(customer_view: Node2D) -> void:
 	_tween.set_ease(Tween.EASE_IN_OUT)
 	_tween.set_trans(Tween.TRANS_QUAD)
 
-	_tween.tween_property(customer_view, "position", DISPLAY_POSITION, MOVEMENT_DURATION)
+	var target_pos = DISPLAY_POSITION + display_offset
+	_tween.tween_property(customer_view, "position", target_pos, MOVEMENT_DURATION)
 	_tween.tween_callback(_on_movement_completed)
 
 

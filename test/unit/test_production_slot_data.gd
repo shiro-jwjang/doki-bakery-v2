@@ -5,7 +5,7 @@ extends GutTest
 ## Tests that ProductionSlot provides type-safe slot management
 ## instead of Dictionary-based approach
 
-const ProductionSlot = preload("res://resources/data/production_slot.gd")
+const ProductionSlotData = preload("res://resources/data/production_slot_data.gd")
 const RecipeData = preload("res://resources/data/recipe_data.gd")
 
 
@@ -22,7 +22,7 @@ func after_each() -> void:
 
 ## Test ProductionSlot can be instantiated with typed fields
 func test_production_slot_instantiation() -> void:
-	var slot = ProductionSlot.new()
+	var slot = ProductionSlotData.new()
 	assert_not_null(slot, "ProductionSlot should be instantiated")
 	assert_eq(slot.slot_index, 0, "slot_index should default to 0")
 	assert_eq(slot.start_time, 0.0, "start_time should default to 0.0")
@@ -34,7 +34,7 @@ func test_production_slot_instantiation() -> void:
 
 ## Test ProductionSlot typed property access
 func test_production_slot_typed_properties() -> void:
-	var slot = ProductionSlot.new()
+	var slot = ProductionSlotData.new()
 	slot.slot_index = 1
 	slot.start_time = 100.0
 	slot.progress = 0.5
@@ -52,7 +52,7 @@ func test_production_slot_typed_properties() -> void:
 
 ## Test ProductionSlot with RecipeData
 func test_production_slot_with_recipe() -> void:
-	var slot = ProductionSlot.new()
+	var slot = ProductionSlotData.new()
 	var recipe = RecipeData.new()
 	recipe.id = "bread_001"
 	recipe.production_time = 10.0
@@ -66,7 +66,7 @@ func test_production_slot_with_recipe() -> void:
 
 ## Test ProductionSlot prevents typos (unlike Dictionary)
 func test_production_slot_type_safety_no_typos() -> void:
-	var slot = ProductionSlot.new()
+	var slot = ProductionSlotData.new()
 	slot.slot_index = 1
 
 	# Typo would cause compile-time error instead of runtime error
@@ -78,7 +78,7 @@ func test_production_slot_type_safety_no_typos() -> void:
 
 ## Test ProductionSlot enables IDE autocomplete
 func test_production_slot_ide_autocomplete_support() -> void:
-	var slot = ProductionSlot.new()
+	var slot = ProductionSlotData.new()
 
 	# All properties are typed and visible to IDE
 	slot.slot_index = 0
@@ -96,7 +96,7 @@ func test_production_slot_ide_autocomplete_support() -> void:
 
 ## Test ProductionSlot serialization compatibility
 func test_production_slot_serialization() -> void:
-	var slot = ProductionSlot.new()
+	var slot = ProductionSlotData.new()
 	slot.slot_index = 2
 	slot.start_time = 200.0
 	slot.progress = 0.75
@@ -121,7 +121,7 @@ func test_production_slot_serialization() -> void:
 
 ## Test ProductionSlot prevents invalid type assignment
 func test_production_slot_type_validation() -> void:
-	var slot = ProductionSlot.new()
+	var slot = ProductionSlotData.new()
 
 	# slot_index must be int
 	slot.slot_index = 5
@@ -150,7 +150,7 @@ func test_production_slot_type_validation() -> void:
 
 ## Test ProductionSlot default values
 func test_production_slot_default_values() -> void:
-	var slot = ProductionSlot.new()
+	var slot = ProductionSlotData.new()
 
 	assert_eq(slot.slot_index, 0, "slot_index defaults to 0")
 	assert_eq(slot.start_time, 0.0, "start_time defaults to 0.0")
