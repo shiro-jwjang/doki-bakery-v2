@@ -9,11 +9,9 @@ extends Node
 ## Signal emitted when inventory is updated
 signal inventory_updated(recipe_id: String, count: int)
 
-## Inventory storage: recipe_id -> count
+## Inventory storage: recipe_id -> InventoryItem
+## SNA-203: Consolidated from dual-dictionary to single InventoryItem approach
 var _inventory: Dictionary = {}
-
-## Track bread items in inventory with metadata
-var _inventory_items: Dictionary = {}
 
 
 func _ready() -> void:
@@ -39,15 +37,12 @@ func _on_production_completed(_slot_index: int, recipe_id: String) -> void:
 ## @param price: The selling price of this bread
 func add_to_inventory(recipe_id: String, price: int) -> void:
 	if not _inventory.has(recipe_id):
-		_inventory[recipe_id] = 0
-		_inventory_items[recipe_id] = []
+		_inventory[recipe_id] = InventoryItem.new(recipe_id)
 
-	_inventory[recipe_id] += 1
+	var inventory_item = _inventory[recipe_id]
+	inventory_item.add(price)
 
-	# Track item with price
-	_inventory_items[recipe_id].append({"price": price})
-
-	inventory_updated.emit(recipe_id, _inventory[recipe_id])
+	inventory_updated.emit(recipe_id, inventory_item.count)
 
 	# Notify display system via EventBus (direct autoload reference)
 	EventBusAutoload.baking_finished.emit(recipe_id)
@@ -56,14 +51,14 @@ func add_to_inventory(recipe_id: String, price: int) -> void:
 ## Get the count of a specific bread in inventory
 func get_inventory_count(recipe_id: String) -> int:
 	if _inventory.has(recipe_id):
-		return _inventory[recipe_id]
+		return _inventory[recipe_id].count
 	return 0
 
 
 ## Get all bread items for a recipe
 func get_inventory_items(recipe_id: String) -> Array:
-	if _inventory_items.has(recipe_id):
-		return _inventory_items[recipe_id]
+	if _inventory.has(recipe_id):
+		return _inventory[recipe_id].get_items()
 	return []
 
 
@@ -80,24 +75,17 @@ func remove_from_inventory(recipe_id: String, amount: int = 1) -> bool:
 	if not _inventory.has(recipe_id):
 		return false
 
-	if _inventory[recipe_id] < amount:
-		return false
+	var inventory_item = _inventory[recipe_id]
+	var success = inventory_item.remove(amount)
 
-	_inventory[recipe_id] -= amount
+	if success:
+		inventory_updated.emit(recipe_id, inventory_item.count)
 
-	# Remove oldest items first (FIFO)
-	for i in range(amount):
-		if _inventory_items[recipe_id].size() > 0:
-			_inventory_items[recipe_id].pop_front()
+		# Clean up if empty
+		if inventory_item.is_empty():
+			_inventory.erase(recipe_id)
 
-	inventory_updated.emit(recipe_id, _inventory[recipe_id])
-
-	# Clean up if empty
-	if _inventory[recipe_id] == 0:
-		_inventory.erase(recipe_id)
-		_inventory_items.erase(recipe_id)
-
-	return true
+	return success
 
 
 ## Get all recipe IDs currently in inventory
@@ -109,8 +97,9 @@ func get_inventory_recipe_ids() -> Array:
 ## Clear all inventory (mainly for testing)
 ## SNA-199: Added for unit test isolation
 func clear_inventory() -> void:
+	for recipe_id in _inventory.keys():
+		_inventory[recipe_id].clear()
 	_inventory.clear()
-	_inventory_items.clear()
 
 
 ## Get all recipes with available inventory (stock > 0)
@@ -119,7 +108,8 @@ func clear_inventory() -> void:
 func get_available_inventory() -> Array[RecipeData]:
 	var available: Array[RecipeData] = []
 	for recipe_id in _inventory.keys():
-		if _inventory[recipe_id] > 0:
+		var inventory_item = _inventory[recipe_id]
+		if inventory_item.has_stock():
 			var recipe = DataManager.get_recipe(recipe_id)
 			if recipe:
 				available.append(recipe)
@@ -150,7 +140,8 @@ func initialize_display_slots(display_slots: Node) -> void:
 
 		# Find an available item from inventory
 		for recipe_id in _inventory.keys():
-			if _inventory[recipe_id] > 0:
+			var inventory_item = _inventory[recipe_id]
+			if inventory_item.has_stock():
 				var recipe = DataManager.get_recipe(recipe_id)
 				if recipe != null:
 					# Place item in slot
