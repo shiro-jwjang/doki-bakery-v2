@@ -1,4 +1,4 @@
-class_name ProductionSlot
+class_name ProductionSlotUI
 extends Button
 
 ## ProductionSlot UI
@@ -103,9 +103,14 @@ func _update_auto_repeat_button() -> void:
 		is_set = BakeryManager.is_auto_repeat_set(slot_index)
 
 	# Temporarily disconnect to avoid triggering the toggle signal
-	_auto_repeat_button.toggled.disconnect(_on_auto_repeat_toggled)
+	var is_connected = _auto_repeat_button.toggled.is_connected(_on_auto_repeat_toggled)
+	if is_connected:
+		_auto_repeat_button.toggled.disconnect(_on_auto_repeat_toggled)
+
 	_auto_repeat_button.button_pressed = is_set
-	_auto_repeat_button.toggled.connect(_on_auto_repeat_toggled)
+
+	if is_connected:
+		_auto_repeat_button.toggled.connect(_on_auto_repeat_toggled)
 
 
 ## Handle auto-repeat toggle button pressed

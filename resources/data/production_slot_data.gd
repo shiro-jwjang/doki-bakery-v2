@@ -1,4 +1,4 @@
-class_name ProductionSlot
+class_name ProductionSlotData
 extends Resource
 
 @export var slot_index: int = 0

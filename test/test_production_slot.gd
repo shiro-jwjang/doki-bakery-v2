@@ -1,6 +1,6 @@
 extends GutTest
 
-const ProductionSlotClass = preload("res://resources/data/production_slot.gd")
+const ProductionSlotClass = preload("res://resources/data/production_slot_data.gd")
 const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
 
 var slot: Resource

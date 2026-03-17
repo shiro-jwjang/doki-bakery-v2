@@ -50,6 +50,10 @@ var avatar_data_id: String = "":
 var _is_loaded: bool = false
 
 
+func _ready() -> void:
+	randomize()
+
+
 ## SNA-161: Get current game state as a dictionary (State management only)
 ## This method does NOT perform file I/O.
 ## Returns: Dictionary containing current game state
@@ -88,17 +92,17 @@ func set_state(data: Dictionary) -> void:
 
 ## Helper method to modify gold balance
 ## Returns: true if successful, false if insufficient funds (for spending)
-func _modify_gold(amount: int, allow_negative: bool = false) -> bool:
+func _modify_gold(amount: int, _allow_negative: bool = false) -> bool:
 	if amount >= 0:
 		gold += amount
 		print("Added %d gold, new total: %d" % [amount, gold])
 		return true
-	else:
-		var cost: int = -amount
-		if gold >= cost:
-			gold -= cost
-			return true
-		return false
+
+	var cost: int = -amount
+	if gold >= cost:
+		gold -= cost
+		return true
+	return false
 
 
 func add_gold(amount: int) -> void:
@@ -115,16 +119,16 @@ func spend_gold(amount: int) -> bool:
 
 ## Helper method to modify premium (legendary bread) balance
 ## Returns: true if successful, false if insufficient funds (for spending)
-func _modify_premium(amount: int, allow_negative: bool = false) -> bool:
+func _modify_premium(amount: int, _allow_negative: bool = false) -> bool:
 	if amount >= 0:
 		legendary_bread += amount
 		return true
-	else:
-		var cost: int = -amount
-		if legendary_bread >= cost:
-			legendary_bread -= cost
-			return true
-		return false
+
+	var cost: int = -amount
+	if legendary_bread >= cost:
+		legendary_bread -= cost
+		return true
+	return false
 
 
 func add_experience(amount: int) -> void:
