@@ -6,7 +6,7 @@ extends GutTest
 
 const ProductionPanelScene = preload("res://scenes/ui/production_panel.tscn")
 
-var panel: Control
+var panel: ProductionPanel
 var event_router: Node
 
 

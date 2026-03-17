@@ -8,8 +8,8 @@ extends Node
 
 const BakeryManagerClass = preload("res://scripts/autoload/bakery_manager.gd")
 const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
-const MockTimeProviderClass = preload("res://scripts/utils/mock_time_provider.gd")
-const MockRecipeProviderClass = preload("res://scripts/utils/mock_recipe_provider.gd")
+const MockTimeProviderClass = preload("res://scripts/providers/mock_time_provider.gd")
+const MockRecipeProviderClass = preload("res://scripts/providers/mock_recipe_provider.gd")
 
 var _manager: Node
 var _mock_time_provider: MockTimeProvider

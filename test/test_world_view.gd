@@ -118,16 +118,20 @@ func test_production_panel_exists_in_ui() -> void:
 
 ## Test that WorldController references ProductionPanel
 func test_world_controller_has_production_panel_reference() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
+    if _world_view == null:
+        fail_test("WorldView scene file does not exist")
 
-	var controller = _world_view.find_child("WorldController", true, false)
-	if controller == null:
-		fail_test("WorldController not found")
+    var controller = _world_view.find_child("WorldController", true, false)
+    if controller == null:
+        fail_test("WorldController not found")
 
-	assert_not_null(
-		controller.production_panel, "WorldController should have production_panel reference"
-	)
+    # Cast to WorldController to access production_panel property
+    if controller is WorldController:
+\t\tassert_not_null(
+\t\t\tcontroller.production_panel, "WorldController should have production_panel reference"
+\t\t)
+\telse:
+\t\tfail_test("Found controller is not a WorldController instance")
 
 
 ## ==================== SNA-116: BreadMenu PLACEMENT TESTS ====================

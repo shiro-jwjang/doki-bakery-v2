@@ -3,5 +3,6 @@
   "log_level": 3,
   "should_exit": true,
   "include_subdirs": true,
-  "double_strategy": "SCRIPT_ONLY"
+  "double_strategy": "SCRIPT_ONLY",
+  "failure_error_types": ["gut", "push_error"]
 }

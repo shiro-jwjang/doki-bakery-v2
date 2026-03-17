@@ -9,6 +9,13 @@ extends Node
 ## SNA-177: DI 패턴 도입 (TimeProvider, RecipeProvider)
 ## SNA-200: ProductionSlot 타입 안전성 (Typed slot management)
 
+## Preload dependencies
+const RecipeProvider = preload("res://scripts/providers/recipe_provider.gd")
+const DataManagerRecipeProvider = preload("res://scripts/providers/data_manager_recipe_provider.gd")
+const TimeProvider = preload("res://scripts/providers/time_provider.gd")
+const SystemTimeProvider = preload("res://scripts/providers/system_time_provider.gd")
+const ProductionSlot = preload("res://resources/data/production_slot.gd")
+
 ## Signal emitted when production starts
 signal production_started(slot_index: int, recipe_id: String)
 
@@ -135,29 +142,32 @@ func complete_production(slot_index: int) -> void:
 		return
 
 	var slot = _slots[slot_index]
+	var recipe = slot.recipe
+
+	# Mark slot as completed
 	slot.is_active = false
 	slot.is_completed = true
 	slot.progress = 1.0
 	_active_count -= 1
-
-	# Remove from active slots dictionary (O(1) removal)
 	_active_slots.erase(slot_index)
 
-	var recipe = slot.recipe
 	if recipe:
 		var recipe_id: String = recipe.id
 		production_completed.emit(slot_index, recipe_id)
 		EventBusAutoload.production_completed.emit(slot_index, recipe_id)
 
-		# AUTO-COLLECT: Automatically clear the slot when finished
-		collect_production(slot_index)
-
 		# AUTO-REPEAT: Check if auto-repeat is set for this slot
 		if _auto_repeat.has(slot_index):
 			var repeat_recipe_id: String = _auto_repeat[slot_index]
-			# Start new production with the same recipe
+			# Remove old slot from _slots to avoid duplicates
+			_slots.erase(slot_index)
+			# Start new production with the same recipe immediately
 			start_production(slot_index, repeat_recipe_id)
 			auto_repeat_started.emit(slot_index, repeat_recipe_id)
+		else:
+			# NO AUTO-REPEAT: Clear the slot for manual reuse
+			_slots.erase(slot_index)
+			EventBusAutoload.production_cleared.emit(slot_index)
 
 
 ## Collect finished production from a slot, clearing it for reuse (O(1) lookup).
