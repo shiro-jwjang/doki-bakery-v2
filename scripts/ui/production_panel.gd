@@ -7,6 +7,8 @@ extends Control
 ## SNA-95: ProductionPanel ↔ BakeryManager 시그널 연결
 ## SNA-96: 슬롯 클릭 → BreadMenu → 생산 시작
 
+class_name ProductionPanel
+
 ## Emitted when a slot is clicked
 signal slot_clicked(slot_index: int)
 
@@ -22,13 +24,17 @@ func _ready() -> void:
 	var started_callback := on_production_started
 	var progressed_callback := on_production_progressed
 	var completed_callback := on_production_completed
+	var auto_repeat_callback := on_auto_repeat_started
 
-	if not EventBus.production_started.is_connected(started_callback):
-		EventBus.production_started.connect(started_callback)
-	if not EventBus.production_progressed.is_connected(progressed_callback):
-		EventBus.production_progressed.connect(progressed_callback)
-	if not EventBus.production_completed.is_connected(completed_callback):
-		EventBus.production_completed.connect(completed_callback)
+	if not EventBusAutoload.production_started.is_connected(started_callback):
+		EventBusAutoload.production_started.connect(started_callback)
+	if not EventBusAutoload.production_progressed.is_connected(progressed_callback):
+		EventBusAutoload.production_progressed.connect(progressed_callback)
+	if not EventBusAutoload.production_completed.is_connected(completed_callback):
+		EventBusAutoload.production_completed.connect(completed_callback)
+	# SNA-204: Connect to auto-repeat signal
+	if not BakeryManager.auto_repeat_started.is_connected(auto_repeat_callback):
+		BakeryManager.auto_repeat_started.connect(auto_repeat_callback)
 
 	# Initialize slots from BakeryManager count
 	# Only initialize if container exists (requires scene file)
@@ -82,6 +88,13 @@ func on_production_progressed(slot_index: int, progress: float) -> void:
 func on_production_completed(slot_index: int, recipe_id: String) -> void:
 	var slot := _get_or_create_slot(slot_index)
 	slot.set_completed(recipe_id)
+
+
+## Handle auto-repeat started signal (SNA-204)
+func on_auto_repeat_started(slot_index: int, recipe_id: String) -> void:
+	var slot_ui: Node = get_slot_ui(slot_index)
+	if slot_ui != null and slot_ui.has_method("set_production"):
+		slot_ui.set_production(recipe_id)
 
 
 ## Get or create slot UI container

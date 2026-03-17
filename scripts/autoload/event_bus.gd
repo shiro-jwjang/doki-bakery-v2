@@ -2,6 +2,11 @@ extends Node
 
 ## EventBus Autoload
 ##
+## Global event bus for game-wide signals.
+## Access via EventBusAutoload (autoload name) or EventBus class_name.
+
+class_name EventBus
+##
 ## Pure signal hub for global game events.
 ## SNA-66: EventBus 시그널 정의 (상태변경 + 액션요청)
 ## SNA-188: Removed forwarders - now a pure signal hub

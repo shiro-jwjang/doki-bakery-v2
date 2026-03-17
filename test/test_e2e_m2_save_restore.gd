@@ -166,8 +166,8 @@ func test_e2e_save_restore_full_state() -> void:
 	GameManager.legendary_bread = 0
 
 	# Load and apply
-	var data := SaveManager.load_game()
-	SaveManager.apply_save_data(data)
+	var data: Dictionary = SaveManager.load_from_disk()
+	GameManager.set_state(data.get("game", {}))
 
 	# Verify all values restored
 	assert_eq(GameManager.gold, test_gold, "Gold should be restored")
@@ -197,7 +197,12 @@ func test_e2e_save_signal_emitted() -> void:
 func test_e2e_load_signal_emitted() -> void:
 	# First save something
 	GameManager.gold = 999
-	SaveManager.save_game()
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"game": GameManager.get_state()
+	}
+	SaveManager.save_to_disk(save_data)
 
 	# Watch for signal on EventBusAutoload
 	watch_signals(EventBusAutoload)
