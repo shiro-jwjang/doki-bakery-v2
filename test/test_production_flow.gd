@@ -7,11 +7,11 @@ extends GutTest
 const ProductionPanelScene = preload("res://scenes/ui/production_panel.tscn")
 const BreadMenuScene = preload("res://scenes/ui/bread_menu.tscn")
 const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
-const MockTimeProviderClass = preload("res://scripts/utils/mock_time_provider.gd")
-const MockRecipeProviderClass = preload("res://scripts/utils/mock_recipe_provider.gd")
+const MockTimeProviderClass = preload("res://scripts/providers/mock_time_provider.gd")
+const MockRecipeProviderClass = preload("res://scripts/providers/mock_recipe_provider.gd")
 
-var panel: Control
-var bread_menu: Control
+var panel: ProductionPanel
+var bread_menu: BreadMenu
 
 
 func before_each() -> void:

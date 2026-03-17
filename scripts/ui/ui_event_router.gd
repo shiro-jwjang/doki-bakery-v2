@@ -177,11 +177,11 @@ func _on_bread_sold(recipe_id: String, price: int) -> void:
 
 ## Handle production cleared signal -> Reset Slot UI to Empty
 func _on_production_cleared(slot_index: int) -> void:
-	var panel = get_production_panel()
-	if panel:
-		var slot_ui = panel.get_slot_ui(slot_index)
-		if slot_ui and slot_ui.has_method("setup"):
-			slot_ui.setup(slot_index)
+    var panel = get_production_panel()
+    if panel and panel.has_method("get_slot_ui"):
+        var slot_ui = panel.get_slot_ui(slot_index)
+        if slot_ui and slot_ui.has_method("setup"):
+            slot_ui.setup(slot_index)
 
 
 # ==================== Backward Compatibility Setters/Getters ====================

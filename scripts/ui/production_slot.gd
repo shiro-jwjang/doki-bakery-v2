@@ -1,8 +1,10 @@
-extends "res://scripts/ui/base_ui_component.gd"
+class_name ProductionSlot
+extends Button
 
 ## ProductionSlot UI
 ##
 ## Individual slot UI within the ProductionPanel.
+## SNA-168: M3 UI component integration
 
 var slot_index: int = -1
 
@@ -18,6 +20,17 @@ var label: Label:
 var progress_bar: ProgressBar:
 	get:
 		return _progress_bar
+
+
+## Safely execute a callable only if this component is inside the scene tree.
+##
+## This prevents errors from attempting to update UI elements when the node
+## has been removed from the scene tree or not yet added.
+##
+## @param callable: The function to execute if inside tree
+func safe_update(callable: Callable) -> void:
+	if is_inside_tree():
+		callable.call()
 
 
 func setup(index: int) -> void:

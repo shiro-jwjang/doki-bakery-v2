@@ -1,3 +1,4 @@
+class_name ProductionPanel
 extends Control
 
 ## ProductionPanel UI

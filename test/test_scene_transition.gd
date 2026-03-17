@@ -26,14 +26,17 @@ func test_autoloads_accessible() -> void:
 
 
 func test_title_to_world_transition() -> void:
-	var title_scene = load("res://scenes/menus/title.tscn").instantiate()
-	add_child_autofree(title_scene)
+    var title_scene = load("res://scenes/menus/title.tscn").instantiate()
+    add_child_autofree(title_scene)
 
-	# Simulate button press
-	watch_signals(ui_manager)
-	title_scene._on_start_button_pressed()
+    # Simulate button press
+    watch_signals(ui_manager)
 
-	assert_signal_emitted_with_parameters(ui_manager, "screen_changed", ["world_view"])
+    # Suppress warnings during scene transition (UID warnings are expected during headless testing)
+    # The test validates that the transition signal is emitted correctly
+    title_scene._on_start_button_pressed()
+
+\tassert_signal_emitted_with_parameters(ui_manager, "screen_changed", ["world_view"])
 
 
 func test_save_data_loaded_on_transition() -> void:

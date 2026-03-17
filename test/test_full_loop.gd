@@ -5,8 +5,8 @@ extends GutTest
 ## SNA-79: 풀 루프 통합 테스트 (생산→판매→골드/경험치→레벨업)
 
 const RecipeDataClass = preload("res://resources/data/recipe_data.gd")
-const MockTimeProviderClass = preload("res://scripts/utils/mock_time_provider.gd")
-const MockRecipeProviderClass = preload("res://scripts/utils/mock_recipe_provider.gd")
+const MockTimeProviderClass = preload("res://scripts/providers/mock_time_provider.gd")
+const MockRecipeProviderClass = preload("res://scripts/providers/mock_recipe_provider.gd")
 
 var _test_recipe: Resource
 var _initial_gold: int

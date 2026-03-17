@@ -1,3 +1,4 @@
+class_name WorldController
 extends Node
 
 ## WorldController
