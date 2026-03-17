@@ -16,7 +16,7 @@ func sell_bread(recipe: RecipeData) -> void:
 		return
 
 	GameManager.add_gold(recipe.base_price)
-	GameManager.add_xp(recipe.xp_reward)
+	GameManager.add_experience(recipe.xp_reward)
 
 
 ## Award XP for production completion
@@ -26,4 +26,4 @@ func award_production_xp(recipe: RecipeData) -> void:
 	if recipe == null:
 		return
 
-	GameManager.add_xp(recipe.xp_reward)
+	GameManager.add_experience(recipe.xp_reward)

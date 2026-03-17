@@ -86,9 +86,23 @@ func set_state(data: Dictionary) -> void:
 		avatar_data_id = data.avatar_data_id
 
 
+## Helper method to modify gold balance
+## Returns: true if successful, false if insufficient funds (for spending)
+func _modify_gold(amount: int, allow_negative: bool = false) -> bool:
+	if amount >= 0:
+		gold += amount
+		print("Added %d gold, new total: %d" % [amount, gold])
+		return true
+	else:
+		var cost: int = -amount
+		if gold >= cost:
+			gold -= cost
+			return true
+		return false
+
+
 func add_gold(amount: int) -> void:
-	gold += amount
-	print("Added %d gold, new total: %d" % [amount, gold])
+	_modify_gold(amount)
 
 
 func get_gold() -> int:
@@ -96,10 +110,21 @@ func get_gold() -> int:
 
 
 func spend_gold(amount: int) -> bool:
-	if gold >= amount:
-		gold -= amount
+	return _modify_gold(-amount)
+
+
+## Helper method to modify premium (legendary bread) balance
+## Returns: true if successful, false if insufficient funds (for spending)
+func _modify_premium(amount: int, allow_negative: bool = false) -> bool:
+	if amount >= 0:
+		legendary_bread += amount
 		return true
-	return false
+	else:
+		var cost: int = -amount
+		if legendary_bread >= cost:
+			legendary_bread -= cost
+			return true
+		return false
 
 
 func add_experience(amount: int) -> void:
@@ -112,10 +137,6 @@ func add_experience(amount: int) -> void:
 
 	# Check for level ups
 	_check_level_up()
-
-
-func add_xp(amount: int) -> void:
-	add_experience(amount)
 
 
 func get_xp() -> int:
@@ -131,12 +152,12 @@ func _check_level_up() -> void:
 	while level < GameConstants.MAX_LEVEL:
 		var required_xp := _get_xp_required_for_level(level + 1)
 		if experience >= required_xp:
-			_level_up()
+			_perform_level_up()
 		else:
 			break
 
 
-func _level_up() -> void:
+func _perform_level_up() -> void:
 	level += 1
 	var required_xp := _get_xp_required_for_level(level)
 	experience = max(0, experience - required_xp)
@@ -146,17 +167,13 @@ func _level_up() -> void:
 	EventBusAutoload.level_up.emit(level)
 
 
-func level_up() -> void:
-	_level_up()
-
-
 func _get_xp_required_for_level(lvl: int) -> int:
 	# SNA-166: Delegate to DataManager for level data lookup
 	return DataManager.get_xp_required_for_level(lvl)
 
 
 func add_premium(amount: int) -> void:
-	legendary_bread += amount
+	_modify_premium(amount)
 
 
 func get_premium() -> int:
@@ -164,10 +181,7 @@ func get_premium() -> int:
 
 
 func spend_premium(amount: int) -> bool:
-	if legendary_bread >= amount:
-		legendary_bread -= amount
-		return true
-	return false
+	return _modify_premium(-amount)
 
 
 func set_game_state(state: String) -> void:
