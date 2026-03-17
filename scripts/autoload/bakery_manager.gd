@@ -7,6 +7,7 @@ extends Node
 ## SNA-74: BakeryManager 슬롯 관리
 ## SNA-174: Dictionary 기반 슬롯 관리
 ## SNA-177: DI 패턴 도입 (TimeProvider, RecipeProvider)
+## SNA-200: ProductionSlot 타입 안전성 (Typed slot management)
 
 ## Signal emitted when production starts
 signal production_started(slot_index: int, recipe_id: String)
@@ -89,16 +90,15 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 		push_error("BakeryManager: Recipe not found - %s" % recipe_id)
 		return false
 
-	# Create new production slot as Dictionary
-	var slot: Dictionary = {
-		"slot_index": slot_index,
-		"recipe": recipe,
-		"start_time": _get_current_time(),
-		"progress": 0.0,
-		"is_active": true,
-		"is_completed": false,
-		"remaining_time": recipe.production_time
-	}
+	# Create new production slot as typed ProductionSlot (SNA-200)
+	var slot = ProductionSlot.new()
+	slot.slot_index = slot_index
+	slot.recipe = recipe
+	slot.start_time = _get_current_time()
+	slot.progress = 0.0
+	slot.is_active = true
+	slot.is_completed = false
+	slot.remaining_time = recipe.production_time
 
 	_slots[slot_index] = slot
 	_active_slots[slot_index] = slot
@@ -122,20 +122,21 @@ func _is_slot_active(slot_index: int) -> bool:
 
 ## Complete production in the specified slot (O(1) lookup)
 ## SNA-187: Optimized from O(n) to O(1) using dictionary
+## SNA-200: Updated to use ProductionSlot typed properties
 func complete_production(slot_index: int) -> void:
 	if not _slots.has(slot_index):
 		return
 
-	var slot: Dictionary = _slots[slot_index]
-	slot["is_active"] = false
-	slot["is_completed"] = true
-	slot["progress"] = 1.0
+	var slot = _slots[slot_index]
+	slot.is_active = false
+	slot.is_completed = true
+	slot.progress = 1.0
 	_active_count -= 1
 
 	# Remove from active slots dictionary (O(1) removal)
 	_active_slots.erase(slot_index)
 
-	var recipe: Resource = slot.get("recipe")
+	var recipe = slot.recipe
 	if recipe:
 		var recipe_id: String = recipe.id
 		production_completed.emit(slot_index, recipe_id)
@@ -148,12 +149,13 @@ func complete_production(slot_index: int) -> void:
 ## Collect finished production from a slot, clearing it for reuse (O(1) lookup).
 ## Returns recipe_id if successful, empty string otherwise.
 ## SNA-187: Optimized from O(n) to O(1) using dictionary
+## SNA-200: Updated to use ProductionSlot typed properties
 func collect_production(slot_index: int) -> String:
 	if not _slots.has(slot_index):
 		return ""
 
-	var slot: Dictionary = _slots[slot_index]
-	var recipe: Resource = slot.get("recipe")
+	var slot = _slots[slot_index]
+	var recipe = slot.recipe
 	var recipe_id: String = recipe.id if recipe else ""
 
 	# Remove from both dictionaries (O(1) deletion)
@@ -164,6 +166,7 @@ func collect_production(slot_index: int) -> String:
 
 
 ## Process function to handle production timers (wall clock based)
+## SNA-200: Updated to use ProductionSlot typed properties
 func _process(delta: float) -> void:
 	# Advance mock time if using MockTimeProvider
 	if _time_provider is MockTimeProvider:
@@ -173,38 +176,39 @@ func _process(delta: float) -> void:
 
 	# Process each active slot (iterate over active_slots dictionary)
 	for slot_index in _active_slots.keys():
-		var slot: Dictionary = _active_slots[slot_index]
-		if slot is Dictionary and slot.get("is_active", false) and slot.get("recipe"):
+		var slot = _active_slots[slot_index]
+		if slot and slot.is_active and slot.recipe:
 			# Calculate elapsed time using wall clock
-			var start_time: float = slot.get("start_time", 0.0)
+			var start_time: float = slot.start_time
 			var elapsed_time: float = current_time - start_time
 
 			# Calculate remaining time based on wall clock
-			var recipe: Resource = slot.get("recipe")
+			var recipe = slot.recipe
 			var p_time: float = recipe.production_time
-			slot["remaining_time"] = maxf(0.0, p_time - elapsed_time)
+			slot.remaining_time = maxf(0.0, p_time - elapsed_time)
 
 			# Update progress based on wall clock elapsed time
 			if p_time > 0:
-				slot["progress"] = minf(1.0, elapsed_time / p_time)
+				slot.progress = minf(1.0, elapsed_time / p_time)
 				# Emit progress signal for UI updates
-				EventBusAutoload.production_progressed.emit(slot_index, slot["progress"])
+				EventBusAutoload.production_progressed.emit(slot_index, slot.progress)
 
 			# Check if production is complete
-			if slot["remaining_time"] <= 0:
-				slot["remaining_time"] = 0
-				slot["progress"] = 1.0
+			if slot.remaining_time <= 0:
+				slot.remaining_time = 0
+				slot.progress = 1.0
 				complete_production(slot_index)
 
 
 ## Get remaining time for a slot (O(1) lookup)
 ## SNA-187: Optimized from O(n) to O(1) using dictionary
+## SNA-200: Updated to use ProductionSlot typed properties
 func get_remaining_time(slot_index: int) -> float:
 	if not _active_slots.has(slot_index):
 		return 0.0
 
-	var slot: Dictionary = _active_slots[slot_index]
-	return slot.get("remaining_time", 0.0)
+	var slot = _active_slots[slot_index]
+	return slot.remaining_time
 
 
 ## Set time provider (for testing)
@@ -228,6 +232,7 @@ func reset_to_default_providers() -> void:
 
 ## Restore production slots from save data
 ## Called by GameManager.load_game() to restore saved production state
+## SNA-200: Updated to use ProductionSlot typed properties
 func restore_slots(slots_data: Array) -> void:
 	# Clear existing slots
 	_slots.clear()
@@ -243,30 +248,31 @@ func restore_slots(slots_data: Array) -> void:
 		if recipe_id.is_empty():
 			continue
 
-		var recipe: Resource = _recipe_provider.get_recipe(recipe_id)
+		var recipe = _recipe_provider.get_recipe(recipe_id)
 		if not recipe:
 			continue
 
 		var slot_index: int = slot_data.get("slot_index", 0)
-		var slot: Dictionary = {
-			"slot_index": slot_index,
-			"recipe": recipe,
-			"start_time": slot_data.get("start_time", 0.0),
-			"progress": slot_data.get("progress", 0.0),
-			"is_active": slot_data.get("is_active", false),
-			"is_completed": slot_data.get("is_completed", false),
-			"remaining_time": 0.0
-		}
+
+		# Create typed ProductionSlot (SNA-200)
+		var slot = ProductionSlot.new()
+		slot.slot_index = slot_index
+		slot.recipe = recipe
+		slot.start_time = slot_data.get("start_time", 0.0)
+		slot.progress = slot_data.get("progress", 0.0)
+		slot.is_active = slot_data.get("is_active", false)
+		slot.is_completed = slot_data.get("is_completed", false)
+		slot.remaining_time = 0.0
 
 		# Recalculate remaining time based on current time
 		var current_time: float = _time_provider.get_current_time()
-		var elapsed: float = current_time - slot["start_time"]
-		slot["remaining_time"] = maxf(0.0, recipe.production_time - elapsed)
+		var elapsed: float = current_time - slot.start_time
+		slot.remaining_time = maxf(0.0, recipe.production_time - elapsed)
 		if recipe.production_time > 0:
-			slot["progress"] = minf(1.0, elapsed / recipe.production_time)
+			slot.progress = minf(1.0, elapsed / recipe.production_time)
 
 		# Add to dictionaries (O(1) insertion)
 		_slots[slot_index] = slot
-		if slot["is_active"]:
+		if slot.is_active:
 			_active_slots[slot_index] = slot
 			_active_count += 1
