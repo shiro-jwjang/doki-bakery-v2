@@ -194,4 +194,77 @@ func test_sync_frame_updates_all_layers() -> void:
 			var sprite: AnimatedSprite2D = child as AnimatedSprite2D
 			assert_eq(sprite.frame, 2, "%s frame should be 2" % child.name)
 
+
+## SNA-205: Eye blink timing - frame 0 should hold for 500ms
+func test_eye_blink_frame_0_duration() -> void:
+	# REQ: 눈 깜박임 타이밍 - 기본 프레임(0)은 500ms 유지
+	var layers: Node = compositor.get_node_or_null("Layers")
+	var eye: AnimatedSprite2D = layers.get_node("Eye")
+
+	assert_not_null(eye.sprite_frames, "Eye should have SpriteFrames")
+	assert_true(eye.sprite_frames.has_animation("idle"), "Eye should have idle animation")
+
+	# Get frame 0 duration
+	var frames: SpriteFrames = eye.sprite_frames
+	var frame_0_duration: float = frames.get_frame_duration("idle", 0)
+
+	# Speed 5.0 FPS means each duration unit is 1/5 = 200ms
+	# For 500ms hold, we need duration = 500ms / 200ms = 2.5
+	var expected_duration: float = 2.5
+	assert_eq(
+		frame_0_duration,
+		expected_duration,
+		"Frame 0 duration should be %.1f for 500ms hold (speed 5.0)" % expected_duration
+	)
+
+
+## SNA-205: Eye blink animation - frames 1-4 should be quick
+func test_eye_blink_frames_are_quick() -> void:
+	# REQ: 눈 깜박임 프레임(1-4)은 빠르게 재생
+	var layers: Node = compositor.get_node_or_null("Layers")
+	var eye: AnimatedSprite2D = layers.get_node("Eye")
+
+	assert_not_null(eye.sprite_frames, "Eye should have SpriteFrames")
+	assert_true(eye.sprite_frames.has_animation("idle"), "Eye should have idle animation")
+
+	# Get blink frame durations (frames 1-4)
+	var frames: SpriteFrames = eye.sprite_frames
+	var quick_duration: float = 0.5  # Quick blink: 0.5 * 200ms = 100ms per frame
+
+	for i: int in range(1, 5):
+		var frame_duration: float = frames.get_frame_duration("idle", i)
+		assert_eq(
+			frame_duration,
+			quick_duration,
+			"Blink frame %d duration should be %.1f for quick animation" % [i, quick_duration]
+		)
+
+
+## SNA-205: Eye animation should have proper timing configuration
+func test_eye_animation_timing_config() -> void:
+	# REQ: 눈 애니메이션 전체 타이밍 설정 검증
+	var layers: Node = compositor.get_node_or_null("Layers")
+	var eye: AnimatedSprite2D = layers.get_node("Eye")
+
+	assert_not_null(eye.sprite_frames, "Eye should have SpriteFrames")
+	assert_true(eye.sprite_frames.has_animation("idle"), "Eye should have idle animation")
+
+	var frames: SpriteFrames = eye.sprite_frames
+
+	# Verify total cycle: 500ms (frame 0) + 4*100ms (blink) = 900ms
+	var frame_0_duration: float = frames.get_frame_duration("idle", 0)
+	var total_blink_duration: float = 0.0
+
+	for i: int in range(1, 5):
+		total_blink_duration += frames.get_frame_duration("idle", i)
+
+	# At speed 5.0 (1 unit = 200ms), expected values:
+	# Frame 0: 2.5 units = 500ms
+	# Blink frames: 4 * 0.5 units = 2.0 units = 400ms
+	# Total: 4.5 units = 900ms
+	assert_eq(frame_0_duration, 2.5, "Frame 0 should be 2.5 duration units (500ms)")
+	assert_almost_eq(
+		total_blink_duration, 2.0, 0.01, "Blink frames should total 2.0 duration units (400ms)"
+	)
+
 #endregion

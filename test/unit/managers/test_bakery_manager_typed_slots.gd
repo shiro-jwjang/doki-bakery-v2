@@ -34,7 +34,9 @@ func test_get_slots_returns_production_slot_instances() -> void:
 	var slot = slots[0]
 
 	# This should fail initially - slot is Dictionary, not ProductionSlot
-	assert_true(slot is ProductionSlotData, "Slot should be ProductionSlot instance, not Dictionary")
+	assert_true(
+		slot is ProductionSlotData, "Slot should be ProductionSlot instance, not Dictionary"
+	)
 
 
 ## Test slot from get_slots has typed properties

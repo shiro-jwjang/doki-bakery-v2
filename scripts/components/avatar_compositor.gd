@@ -33,6 +33,9 @@ func _ready() -> void:
 	# 레이어 목록 초기화
 	_layer_list = [hairdn, body, eye, hairup, hat]
 
+	# SNA-205: 눈 레이어 타이밍 설정 (기존 SpriteFrames가 있을 경우)
+	_configure_eye_layer_timing()
+
 	# 기본 idle 애니메이션 재생 (씬에 베이크된 SpriteFrames 사용)
 	play_animation("idle")
 
@@ -92,16 +95,80 @@ func _set_layer_texture(layer: AnimatedSprite2D, texture: Texture2D) -> void:
 	frames.set_animation_loop("idle", true)
 	frames.set_animation_speed("idle", 5.0)
 
+	# SNA-205: 눈 깜박임 타이밍 설정
+	var is_eye_layer: bool = layer.name == "Eye"
+
 	if texture:
 		# 스프라이트 시트를 AtlasTexture로 프레임 분할
 		for i in range(FRAME_COUNT):
 			var atlas := AtlasTexture.new()
 			atlas.atlas = texture
 			atlas.region = Rect2(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT)
-			frames.add_frame("idle", atlas)
+
+			# SNA-205: 눈 레이어인 경우 프레임별 지속 시간 설정
+			var duration: float
+			if is_eye_layer:
+				duration = 2.5 if i == 0 else 0.5
+			else:
+				duration = 1.0
+
+			frames.add_frame("idle", atlas, duration)
+	else:
+		# SNA-205: 텍스처가 없어도 눈 레이어는 프레임 생성 및 타이밍 설정
+		for i in range(FRAME_COUNT):
+			var duration: float
+			if is_eye_layer:
+				duration = 2.5 if i == 0 else 0.5
+			else:
+				duration = 1.0
+
+			frames.add_frame("idle", null, duration)
 
 	# 자동 생성된 "default" 애니메이션 제거
 	if frames.has_animation("default"):
 		frames.remove_animation("default")
 
 	layer.sprite_frames = frames
+
+
+## SNA-205: 기존 눈 레이어의 타이밍 설정 (테스트 및 씬 베이크된 애니메이션용)
+func _configure_eye_layer_timing() -> void:
+	# eye @onready var이 설정되지 않은 경우 동적으로 가져오기 (테스트용)
+	var eye_layer: AnimatedSprite2D = eye
+	if not eye_layer:
+		# layers @onready var도 null일 수 있으므로 동적으로 가져오기
+		var layers_node: Node2D = layers
+		if not layers_node:
+			layers_node = get_node_or_null("Layers") as Node2D
+
+		if layers_node:
+			eye_layer = layers_node.get_node_or_null("Eye") as AnimatedSprite2D
+
+	if not eye_layer or not eye_layer.sprite_frames:
+		return
+
+	var frames: SpriteFrames = eye_layer.sprite_frames
+	if not frames.has_animation("idle"):
+		return
+
+	# Godot 4.x: set_frame_duration()이 없으므로 프레임을 다시 생성하여 duration 설정
+	var frame_count: int = frames.get_frame_count("idle")
+	var new_frames := SpriteFrames.new()
+	new_frames.add_animation("idle")
+	new_frames.set_animation_loop("idle", frames.get_animation_loop("idle"))
+	new_frames.set_animation_speed("idle", frames.get_animation_speed("idle"))
+
+	# 각 프레임을 새로운 duration으로 복사
+	for i: int in range(frame_count):
+		var texture: Texture2D = frames.get_frame_texture("idle", i)
+		var duration: float
+
+		# SNA-205: 눈 깜박임 타이밍 설정
+		if i == 0:
+			duration = 2.5  # 500ms
+		else:
+			duration = 0.5  # 100ms
+
+		new_frames.add_frame("idle", texture, duration)
+
+	eye_layer.sprite_frames = new_frames
