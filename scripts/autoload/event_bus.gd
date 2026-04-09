@@ -27,9 +27,6 @@ signal premium_changed(old: int, new: int)
 ## Emitted when the player's experience points change
 signal experience_changed(old: int, new: int)
 
-## DEPRECATED: Use experience_changed instead
-signal experience_gained(amount: int)
-
 ## Emitted when the player levels up
 signal level_up(new_level: int)
 
@@ -47,6 +44,9 @@ signal production_progressed(slot_index: int, progress: float)
 
 ## Emitted when production completes in a slot
 signal production_completed(slot_index: int, recipe_id: String)
+
+## Emitted when auto-repeat production starts in a slot
+signal auto_repeat_started(slot_index: int, recipe_id: String)
 
 ## Emitted when a production slot is cleared and ready for reuse
 signal production_cleared(slot_index: int)
@@ -130,10 +130,10 @@ func _route_baking_requested(slot_index: int, recipe_id: String) -> void:
 
 
 func _route_sell_requested(_customer_id: String, _recipe_id: String) -> void:
-	# Route to appropriate sales handler when CustomerSpawner is integrated
+	# TODO: Implement when CustomerSpawner/upgrade system is integrated
 	pass
 
 
 func _route_upgrade_requested(_upgrade_type: String) -> void:
-	# Route to appropriate upgrade handler when shop upgrade system is added
+	# TODO: Implement when CustomerSpawner/upgrade system is integrated
 	pass

@@ -137,7 +137,7 @@ func add_experience(amount: int) -> void:
 
 	var old_xp := experience
 	experience += amount
-	EventBusAutoload.experience_gained.emit(amount)
+	_emit_property_changed(old_xp, experience, EventBusAutoload.experience_changed)
 
 	# Check for level ups
 	_check_level_up()

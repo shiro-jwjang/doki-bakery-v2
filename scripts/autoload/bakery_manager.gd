@@ -16,18 +16,6 @@ const TimeProvider = preload("res://scripts/providers/time_provider.gd")
 const SystemTimeProvider = preload("res://scripts/providers/system_time_provider.gd")
 const ProductionSlotData = preload("res://resources/data/production_slot_data.gd")
 
-## Signal emitted when production starts
-signal production_started(slot_index: int, recipe_id: String)
-
-## Signal emitted when production completes
-signal production_completed(slot_index: int, recipe_id: String)
-
-## Signal emitted when production fails
-signal production_failed(slot_index: int, reason: String)
-
-## Signal emitted when auto-repeat production starts
-signal auto_repeat_started(slot_index: int, recipe_id: String)
-
 ## Time provider for wall clock abstraction (DI)
 var _time_provider: TimeProvider = null
 
@@ -118,7 +106,6 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 	_active_slots[slot_index] = slot
 	_active_count += 1
 
-	production_started.emit(slot_index, recipe_id)
 	EventBusAutoload.production_started.emit(slot_index, recipe_id)
 	return true
 
@@ -153,7 +140,6 @@ func complete_production(slot_index: int) -> void:
 
 	if recipe:
 		var recipe_id: String = recipe.id
-		production_completed.emit(slot_index, recipe_id)
 		EventBusAutoload.production_completed.emit(slot_index, recipe_id)
 
 		# AUTO-REPEAT: Check if auto-repeat is set for this slot
