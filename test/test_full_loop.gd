@@ -159,9 +159,9 @@ func test_level_up_on_xp_threshold() -> void:
 	# Connect to level_up signal via EventBusAutoload
 	EventBusAutoload.level_up.connect(_on_level_up)
 
-	# Add XP to trigger level up
-	# Level 2 requires 100 XP
-	GameManager.add_experience(100)
+	# Add exactly enough XP to trigger the next level.
+	var next_level_required := DataManager.get_xp_required_for_level(current_level + 1)
+	GameManager.add_experience(next_level_required)
 
 	# Verify level up
 	assert_true(_level_up_received, "level_up signal should be emitted")

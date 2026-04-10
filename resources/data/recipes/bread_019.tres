@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/data/recipe_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/bread_croissant.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "bread_019"
+display_name = "소라빵"
+production_time = 20.0
+base_price = 27
+unlock_level = 19
+xp_reward = 33
+icon = ExtResource("2")

@@ -13,7 +13,7 @@ func change_screen(scene_name: String) -> void:
 	# SNA-189: Load game using SaveManager.load_from_disk() and GameManager.set_state()
 	var save_data := SaveManager.load_from_disk()
 	if not save_data.is_empty():
-		GameManager.set_state(save_data.get("game", {}))
+		GameManager.set_state(save_data.get("game", {}), int(save_data.get("version", 1)))
 
 	var path: String = scenes[scene_name]
 	var err: int = get_tree().change_scene_to_file(path)

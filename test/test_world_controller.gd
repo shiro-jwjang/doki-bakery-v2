@@ -58,6 +58,7 @@ func test_event_bus_gold_changed_connected() -> void:
 		EventBusAutoload.gold_changed.is_connected(world_controller._on_gold_changed),
 		"WorldController should be connected to gold_changed"
 	)
+	pass_test("gold_changed connection validated")
 
 
 func test_event_bus_experience_changed_connected() -> void:
@@ -65,6 +66,7 @@ func test_event_bus_experience_changed_connected() -> void:
 		EventBusAutoload.experience_changed.is_connected(world_controller._on_experience_changed),
 		"WorldController should be connected to experience_changed"
 	)
+	pass_test("experience_changed connection validated")
 
 
 func test_event_bus_production_signals_connected() -> void:
@@ -84,6 +86,7 @@ func test_event_bus_production_signals_connected() -> void:
 		),
 		"WorldController should be connected to production_completed"
 	)
+	pass_test("production signal connections validated")
 
 
 func test_event_bus_baking_finished_connected() -> void:
@@ -91,6 +94,7 @@ func test_event_bus_baking_finished_connected() -> void:
 		EventBusAutoload.baking_finished.is_connected(world_controller._on_baking_finished),
 		"WorldController should be connected to baking_finished"
 	)
+	pass_test("baking_finished connection validated")
 
 
 func test_event_bus_bread_sold_connected() -> void:
@@ -98,6 +102,7 @@ func test_event_bus_bread_sold_connected() -> void:
 		EventBusAutoload.bread_sold.is_connected(world_controller._on_bread_sold),
 		"WorldController should be connected to bread_sold"
 	)
+	pass_test("bread_sold connection validated")
 
 
 # ==================== Validation Tests ====================
@@ -143,7 +148,7 @@ func test_gold_change_signal_propagates() -> void:
 	EventBusAutoload.gold_changed.emit(0, 100)
 
 	# If we get here without crash/hang, signal propagation works
-	assert_true(true, "gold_changed signal propagated without error")
+	pass_test("gold_changed signal propagated without error")
 
 
 func test_production_started_signal_propagates() -> void:
@@ -152,6 +157,7 @@ func test_production_started_signal_propagates() -> void:
 		EventBusAutoload.production_started.is_connected(world_controller._on_production_started),
 		"production_started should propagate through WorldController"
 	)
+	pass_test("production_started signal connection validated")
 
 
 # ==================== SNA-193: Display Slot Initialization Tests ====================
@@ -160,10 +166,10 @@ func test_production_started_signal_propagates() -> void:
 ## Test that WorldController initializes display slots from SalesManager inventory
 func test_world_controller_initializes_display_slots_from_inventory() -> void:
 	# Arrange - Add items to SalesManager inventory
-	var recipe_id = "croissant"
+	var recipe_id = "bread_001"
 	var recipe = DataManager.get_recipe(recipe_id)
 	if recipe == null:
-		skip_test("Recipe %s not found in DataManager" % recipe_id)
+		pending("Recipe %s not found in DataManager" % recipe_id)
 		return
 
 	# Add items to inventory

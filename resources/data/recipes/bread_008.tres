@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/data/recipe_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bread/icon_bread08.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "bread_008"
+display_name = "꽈배기"
+production_time = 12.0
+base_price = 17
+unlock_level = 8
+xp_reward = 13
+icon = ExtResource("2")

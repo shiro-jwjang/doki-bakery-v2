@@ -1,0 +1,250 @@
+{
+  "atlas": "assets/ui/atlas/ui_controls_atlas.png",
+  "size": [
+    1024,
+    512
+  ],
+  "padding": 2,
+  "slots": {
+    "button_normal": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/button_rectangle_flat.png",
+      "rect": [
+        0,
+        0,
+        192,
+        64
+      ],
+      "slice": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "button_hover": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/button_rectangle_border.png",
+      "rect": [
+        194,
+        0,
+        192,
+        64
+      ],
+      "slice": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "button_pressed": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/button_rectangle_depth_line.png",
+      "rect": [
+        388,
+        0,
+        192,
+        64
+      ],
+      "slice": [
+        12,
+        12,
+        12,
+        16
+      ]
+    },
+    "button_disabled": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/button_rectangle_border.png",
+      "rect": [
+        582,
+        0,
+        192,
+        64
+      ],
+      "slice": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "panel_card": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/button_rectangle_border.png",
+      "rect": [
+        0,
+        66,
+        192,
+        64
+      ],
+      "slice": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "panel_line": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/button_rectangle_line.png",
+      "rect": [
+        194,
+        66,
+        192,
+        64
+      ],
+      "slice": [
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    "input_fill": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Extra/Default/input_rectangle.png",
+      "rect": [
+        388,
+        66,
+        192,
+        64
+      ],
+      "slice": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "input_outline": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Extra/Default/input_outline_rectangle.png",
+      "rect": [
+        582,
+        66,
+        192,
+        64
+      ],
+      "slice": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    "progress_bg": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/slide_horizontal_grey.png",
+      "rect": [
+        0,
+        136,
+        96,
+        16
+      ],
+      "slice": [
+        8,
+        4,
+        8,
+        4
+      ]
+    },
+    "progress_fill": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/slide_horizontal_color.png",
+      "rect": [
+        98,
+        136,
+        96,
+        16
+      ],
+      "slice": [
+        8,
+        4,
+        8,
+        4
+      ]
+    },
+    "progress_bg_segment": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/slide_horizontal_grey_section.png",
+      "rect": [
+        196,
+        136,
+        16,
+        16
+      ]
+    },
+    "progress_fill_segment": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/slide_horizontal_color_section.png",
+      "rect": [
+        214,
+        136,
+        16,
+        16
+      ]
+    },
+    "progress_bg_segment_wide": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/slide_horizontal_grey_section_wide.png",
+      "rect": [
+        232,
+        136,
+        32,
+        16
+      ]
+    },
+    "progress_fill_segment_wide": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/slide_horizontal_color_section_wide.png",
+      "rect": [
+        266,
+        136,
+        32,
+        16
+      ]
+    },
+    "checkbox_unchecked": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/check_square_grey.png",
+      "rect": [
+        0,
+        160,
+        32,
+        32
+      ]
+    },
+    "checkbox_checked": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/check_square_grey_checkmark.png",
+      "rect": [
+        34,
+        160,
+        32,
+        32
+      ]
+    },
+    "checkbox_blocked": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/check_square_grey_cross.png",
+      "rect": [
+        68,
+        160,
+        32,
+        32
+      ]
+    },
+    "slider_handle": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/slide_hangle.png",
+      "rect": [
+        102,
+        160,
+        24,
+        32
+      ]
+    },
+    "divider": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Extra/Default/divider.png",
+      "rect": [
+        0,
+        198,
+        64,
+        4
+      ]
+    },
+    "divider_edges": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Extra/Default/divider_edges.png",
+      "rect": [
+        66,
+        198,
+        64,
+        4
+      ]
+    }
+  }
+}

@@ -52,6 +52,7 @@ var _is_loaded: bool = false
 
 func _ready() -> void:
 	randomize()
+	experience_to_next_level = _get_xp_span_for_level(level)
 
 
 ## SNA-161: Get current game state as a dictionary (State management only)
@@ -73,21 +74,27 @@ func get_state() -> Dictionary:
 ## This method does NOT perform file I/O.
 ## Parameters:
 ##   data: Dictionary - The state data to apply
-func set_state(data: Dictionary) -> void:
+func set_state(data: Dictionary, save_version: int = GameConstants.SAVE_VERSION) -> void:
+	var normalized_level: int = clampi(int(data.get("level", level)), 1, GameConstants.MAX_LEVEL)
+	var normalized_experience: int = _normalize_loaded_experience(
+		int(data.get("experience", experience)), normalized_level, save_version
+	)
+
 	if data.has("gold"):
 		gold = data.gold
 	if data.has("legendary_bread"):
 		legendary_bread = data.legendary_bread
 	if data.has("level"):
-		level = clamp(data.level, 1, GameConstants.MAX_LEVEL)
+		level = normalized_level
 	if data.has("experience"):
-		experience = data.experience
+		experience = normalized_experience
 	if data.has("play_time"):
 		play_time = data.play_time
 	if data.has("game_state"):
 		game_state = data.game_state
 	if data.has("avatar_data_id"):
 		avatar_data_id = data.avatar_data_id
+	experience_to_next_level = _get_xp_span_for_level(level)
 
 
 ## Helper method to modify gold balance
@@ -163,17 +170,42 @@ func _check_level_up() -> void:
 
 func _perform_level_up() -> void:
 	level += 1
-	var required_xp := _get_xp_required_for_level(level)
-	experience = max(0, experience - required_xp)
-	experience_to_next_level = (
-		_get_xp_required_for_level(level + 1) - _get_xp_required_for_level(level)
-	)
+	experience_to_next_level = _get_xp_span_for_level(level)
 	EventBusAutoload.level_up.emit(level)
 
 
 func _get_xp_required_for_level(lvl: int) -> int:
 	# SNA-166: Delegate to DataManager for level data lookup
 	return DataManager.get_xp_required_for_level(lvl)
+
+
+func _get_xp_span_for_level(lvl: int) -> int:
+	if lvl >= GameConstants.MAX_LEVEL:
+		return 0
+
+	var current_required := _get_xp_required_for_level(lvl)
+	var next_required := _get_xp_required_for_level(lvl + 1)
+	return max(0, next_required - current_required)
+
+
+func _normalize_loaded_experience(
+	saved_experience: int, saved_level: int, save_version: int
+) -> int:
+	var safe_experience: int = maxi(0, saved_experience)
+
+	if save_version >= GameConstants.SAVE_VERSION:
+		return safe_experience
+
+	var current_required := _get_xp_required_for_level(saved_level)
+	if saved_level >= GameConstants.MAX_LEVEL:
+		return max(current_required, safe_experience)
+
+	var next_required := _get_xp_required_for_level(saved_level + 1)
+	if safe_experience < current_required:
+		# Legacy saves stored XP as "current level progress". Convert to cumulative XP.
+		safe_experience += current_required
+
+	return clampi(safe_experience, current_required, max(current_required, next_required - 1))
 
 
 func add_premium(amount: int) -> void:

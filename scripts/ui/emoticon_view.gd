@@ -17,13 +17,15 @@ signal emoticon_hidden
 
 # Emoticon type to texture path mapping
 const EMOTICON_PATHS := {
-	"heart": "res://assets/placeholders/emoticon_heart.png",
-	"star": "res://assets/placeholders/emoticon_star.png",
-	"idea": "res://assets/placeholders/emoticon_idea.png",
+	"heart": "res://assets/sprites/ui/emoticons/하트.png",
+	"star": "res://assets/sprites/ui/emoticons/따봉.png",
+	"idea": "res://assets/sprites/ui/emoticons/느낌표.png",
 	"yummy": "res://assets/sprites/ui/emoticons/yummy.png",
-	"thinking": "res://assets/sprites/ui/emoticons/thinking.png",
+	"thinking": "res://assets/sprites/ui/emoticons/말풍선.png",
 	"question": "res://assets/sprites/ui/emoticons/question.png",
 }
+
+const FALLBACK_EMOTICON_PATH := "res://assets/sprites/ui/emoticons/question.png"
 
 # Placeholder textures for testing (colored squares)
 const PLACEHOLDER_COLORS := {
@@ -125,11 +127,11 @@ func is_showing() -> bool:
 func _get_emoticon_texture(emoticon_type: String) -> Texture2D:
 	var path: String = EMOTICON_PATHS.get(emoticon_type, "")
 
-	if path.is_empty():
-		return null
-
-	if ResourceLoader.exists(path):
+	if not path.is_empty() and ResourceLoader.exists(path):
 		return load(path)
+
+	if ResourceLoader.exists(FALLBACK_EMOTICON_PATH):
+		return load(FALLBACK_EMOTICON_PATH)
 
 	# Create placeholder texture for missing assets
 	return _create_placeholder_texture(emoticon_type)

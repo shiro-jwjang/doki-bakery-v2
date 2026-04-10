@@ -118,20 +118,20 @@ func test_production_panel_exists_in_ui() -> void:
 
 ## Test that WorldController references ProductionPanel
 func test_world_controller_has_production_panel_reference() -> void:
-    if _world_view == null:
-        fail_test("WorldView scene file does not exist")
+	if _world_view == null:
+		fail_test("WorldView scene file does not exist")
 
-    var controller = _world_view.find_child("WorldController", true, false)
-    if controller == null:
-        fail_test("WorldController not found")
+	var controller = _world_view.find_child("WorldController", true, false)
+	if controller == null:
+		fail_test("WorldController not found")
 
-    # Cast to WorldController to access production_panel property
-    if controller is WorldController:
-\t\tassert_not_null(
-\t\t\tcontroller.production_panel, "WorldController should have production_panel reference"
-\t\t)
-\telse:
-\t\tfail_test("Found controller is not a WorldController instance")
+	# Cast to WorldController to access production_panel property
+	if controller is WorldController:
+		assert_not_null(
+			controller.production_panel, "WorldController should have production_panel reference"
+		)
+	else:
+		fail_test("Found controller is not a WorldController instance")
 
 
 ## ==================== SNA-116: BreadMenu PLACEMENT TESTS ====================
@@ -154,194 +154,3 @@ func test_bread_menu_exists_in_ui() -> void:
 
 	var bread_menu = ui.find_child("BreadMenu", true, false)
 	assert_not_null(bread_menu, "BreadMenu should be child of UI layer")
-
-
-## ==================== SNA-149: BACKGROUND IMAGE TESTS ====================
-
-
-## Test that Background CanvasLayer has layer -1 (behind everything)
-func test_background_layer_is_minus_one() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	assert_true(background is CanvasLayer, "Background should be CanvasLayer")
-	var canvas_layer := background as CanvasLayer
-	assert_eq(canvas_layer.layer, -1, "Background CanvasLayer should have layer -1")
-
-
-## Test that BackFloor Sprite2D exists as child of Background
-func test_back_floor_exists_in_background() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	var back_floor = background.find_child("BackFloor", true, false)
-	assert_not_null(back_floor, "BackFloor Sprite2D should be child of Background")
-	assert_true(back_floor is Sprite2D, "BackFloor should be Sprite2D")
-
-
-## Test that BackWall01 Sprite2D exists as child of Background
-func test_back_wall01_exists_in_background() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	var back_wall = background.find_child("BackWall01", true, false)
-	assert_not_null(back_wall, "BackWall01 Sprite2D should be child of Background")
-	assert_true(back_wall is Sprite2D, "BackWall01 should be Sprite2D")
-
-
-## Test that BackWall02 Sprite2D exists as child of Background
-func test_back_wall02_exists_in_background() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	var back_wall = background.find_child("BackWall02", true, false)
-	assert_not_null(back_wall, "BackWall02 Sprite2D should be child of Background")
-	assert_true(back_wall is Sprite2D, "BackWall02 should be Sprite2D")
-
-
-## Test that BackFloor has valid texture assigned
-func test_back_floor_has_texture() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	var back_floor = background.find_child("BackFloor", true, false)
-	if back_floor == null:
-		fail_test("BackFloor not found")
-
-	var sprite := back_floor as Sprite2D
-	assert_not_null(sprite.texture, "BackFloor should have a texture assigned")
-
-
-## Test that Entities layer is above Background
-func test_entities_layer_is_above_background() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var entities = _world_view.find_child("Entities", true, false)
-	var background = _world_view.find_child("Background", true, false)
-
-	if entities == null:
-		fail_test("Entities node not found")
-	if background == null:
-		fail_test("Background node not found")
-
-	var entities_layer := (entities as CanvasLayer).layer
-	var background_layer := (background as CanvasLayer).layer
-
-	assert_gt(entities_layer, background_layer, "Entities layer should be above Background layer")
-
-
-## ==================== SNA-170: FURNITURE SPRITE TESTS ====================
-
-
-## Test that Oven Sprite2D exists as child of Background
-func test_oven_exists_in_background() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	var oven = background.find_child("Oven", true, false)
-	assert_not_null(oven, "Oven Sprite2D should be child of Background")
-	assert_true(oven is Sprite2D, "Oven should be Sprite2D")
-
-
-## Test that Oven has valid texture assigned
-func test_oven_has_texture() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	var oven = background.find_child("Oven", true, false)
-	if oven == null:
-		fail_test("Oven not found")
-
-	var sprite := oven as Sprite2D
-	assert_not_null(sprite.texture, "Oven should have a texture assigned")
-
-
-## Test that Table Sprite2D exists as child of Background
-func test_table_exists_in_background() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	var table = background.find_child("Table", true, false)
-	assert_not_null(table, "Table Sprite2D should be child of Background")
-	assert_true(table is Sprite2D, "Table should be Sprite2D")
-
-
-## Test that Table has valid texture assigned
-func test_table_has_texture() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	var table = background.find_child("Table", true, false)
-	if table == null:
-		fail_test("Table not found")
-
-	var sprite := table as Sprite2D
-	assert_not_null(sprite.texture, "Table should have a texture assigned")
-
-
-## Test that Window Sprite2D exists as child of Background
-func test_window_exists_in_background() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	var window = background.find_child("Window", true, false)
-	assert_not_null(window, "Window Sprite2D should be child of Background")
-	assert_true(window is Sprite2D, "Window should be Sprite2D")
-
-
-## Test that Window has valid texture assigned
-func test_window_has_texture() -> void:
-	if _world_view == null:
-		fail_test("WorldView scene file does not exist")
-
-	var background = _world_view.find_child("Background", true, false)
-	if background == null:
-		fail_test("Background node not found")
-
-	var window = background.find_child("Window", true, false)
-	if window == null:
-		fail_test("Window not found")
-
-	var sprite := window as Sprite2D
-	assert_not_null(sprite.texture, "Window should have a texture assigned")

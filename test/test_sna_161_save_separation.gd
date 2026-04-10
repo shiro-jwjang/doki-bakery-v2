@@ -169,7 +169,7 @@ func test_game_manager_set_state_invalid_level() -> void:
 
 	GameManager.set_state(invalid_state)
 
-	assert_eq(GameManager.level, 10, "Invalid level should be clamped to MAX_LEVEL (10)")
+	assert_eq(GameManager.level, 15, "Valid level should be preserved up to MAX_LEVEL (20)")
 
 
 ## ============================================================================

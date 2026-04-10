@@ -1,14 +1,14 @@
 [gd_resource type="Resource" script_class="RecipeData" load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://resources/data/recipe_data.gd" id="1_abc12"]
-[ext_resource type="Texture2D"  path="res://assets/sprites/bread/icon_bread02.png" id="2_def35"]
+[ext_resource type="Script" path="res://resources/data/recipe_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bread/icon_bread03.png" id="2"]
 
 [resource]
-script = ExtResource("1_abc12")
+script = ExtResource("1")
 id = "bread_003"
-display_name = "바게트"
-production_time = 4.0
-base_price = 80
-unlock_level = 1
-xp_reward = 8
-icon = ExtResource("2_def35")
+display_name = "스콘"
+production_time = 12.0
+base_price = 15
+unlock_level = 3
+xp_reward = 12
+icon = ExtResource("2")

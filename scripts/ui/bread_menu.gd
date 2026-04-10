@@ -24,7 +24,7 @@ var _button_container: VBoxContainer = null
 
 func _ready() -> void:
 	# Safely find VBoxContainer (may not exist when instantiated without scene)
-	_button_container = get_node_or_null("VBoxContainer")
+	_button_container = get_node_or_null("ScrollContainer/MarginContainer/VBoxContainer")
 
 	# Start hidden
 	visible = false
@@ -50,6 +50,8 @@ func show_for_slot(slot_index: int, force: bool = false) -> void:
 	if not force and _is_slot_busy(slot_index):
 		return
 
+	_load_recipes()
+	_build_buttons()
 	_target_slot = slot_index
 	visible = true
 
@@ -95,7 +97,18 @@ func _on_baking_requested(slot_index: int, recipe_id: String) -> void:
 func _load_recipes() -> void:
 	var all_recipes = DataManager.get_all_recipes()
 	if all_recipes != null:
-		_recipes = all_recipes
+		_recipes = all_recipes.filter(
+			func(recipe: Resource) -> bool:
+				return recipe != null and int(recipe.get("unlock_level")) <= GameManager.level
+		)
+		_recipes.sort_custom(
+			func(a: Resource, b: Resource) -> bool:
+				var a_level := int(a.get("unlock_level"))
+				var b_level := int(b.get("unlock_level"))
+				if a_level == b_level:
+					return str(a.get("id")) < str(b.get("id"))
+				return a_level < b_level
+		)
 	else:
 		_recipes = []
 		push_warning("BreadMenu: Failed to load recipes from DataManager")
@@ -105,8 +118,22 @@ func _load_recipes() -> void:
 func _build_buttons() -> void:
 	# Create container if not exists
 	if _button_container == null:
+		var scroll := ScrollContainer.new()
+		scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+		add_child(scroll)
+
+		var margin := MarginContainer.new()
+		margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		margin.add_theme_constant_override("margin_left", 4)
+		margin.add_theme_constant_override("margin_top", 4)
+		margin.add_theme_constant_override("margin_right", 4)
+		margin.add_theme_constant_override("margin_bottom", 4)
+		scroll.add_child(margin)
+
 		_button_container = VBoxContainer.new()
-		add_child(_button_container)
+		_button_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		margin.add_child(_button_container)
 
 	# Clear existing buttons
 	for child in _button_container.get_children():

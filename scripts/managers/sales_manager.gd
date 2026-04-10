@@ -109,7 +109,7 @@ func get_available_inventory() -> Array[RecipeData]:
 	var available: Array[RecipeData] = []
 	for recipe_id in _inventory.keys():
 		var inventory_item = _inventory[recipe_id]
-		if inventory_item.has_stock():
+		if inventory_item is InventoryItem and inventory_item.has_stock():
 			var recipe = DataManager.get_recipe(recipe_id)
 			if recipe:
 				available.append(recipe)
@@ -127,6 +127,12 @@ func initialize_display_slots(display_slots: Node) -> void:
 	# Get all slots
 	var slots = display_slots.get_slots()
 	var filled_count := 0
+	var remaining_stock: Dictionary = {}
+
+	for recipe_id in _inventory.keys():
+		var inventory_item = _inventory[recipe_id]
+		if inventory_item is InventoryItem and inventory_item.has_stock():
+			remaining_stock[recipe_id] = inventory_item.count
 
 	# Fill empty slots from inventory
 	for slot in slots:
@@ -139,12 +145,13 @@ func initialize_display_slots(display_slots: Node) -> void:
 			continue
 
 		# Find an available item from inventory
-		for recipe_id in _inventory.keys():
-			var inventory_item = _inventory[recipe_id]
-			if inventory_item.has_stock():
+		for recipe_id in remaining_stock.keys():
+			var stock_count: int = int(remaining_stock[recipe_id])
+			if stock_count > 0:
 				var recipe = DataManager.get_recipe(recipe_id)
 				if recipe != null:
 					# Place item in slot
 					slot.setup(recipe_id, recipe.base_price)
+					remaining_stock[recipe_id] = stock_count - 1
 					filled_count += 1
 					break

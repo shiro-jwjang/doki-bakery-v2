@@ -27,6 +27,8 @@ func _ready() -> void:
 	# Apply default texture (skip in headless mode where rendering is limited)
 	if _sprite != null and DisplayServer.get_name() != "headless":
 		_sprite.texture = DEFAULT_TEXTURE
+	if _emoticon_view != null and not customer_id.is_empty():
+		_emoticon_view.character_id = customer_id
 
 
 ## Setup the customer view with a customer ID
@@ -35,8 +37,9 @@ func setup(id: String) -> void:
 	customer_id = id
 	name = "Customer_%s" % id
 
-	if _emoticon_view:
-		_emoticon_view.character_id = id
+	var emoticon_view := get_node_or_null("EmoticonView") as EmoticonView
+	if emoticon_view != null:
+		emoticon_view.character_id = id
 
 
 ## Get the customer ID

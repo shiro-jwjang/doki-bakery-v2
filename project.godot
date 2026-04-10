@@ -38,12 +38,12 @@ UIManager="*res://scenes/autoload/ui_manager.tscn"
 
 window/size/viewport_width=1200
 window/size/viewport_height=1000
-window/size/resizable=false
 window/size/borderless=true
-window/size/always_on_top=true
-window/size/window_width_override=1200
-window/size/window_height_override=1000
+window/size/always_on_top=false
+window/size/window_width_override=2400
+window/size/window_height_override=2000
 window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [editor_plugins]
 
@@ -56,3 +56,5 @@ theme/custom="res://themes/default_theme.tres"
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true

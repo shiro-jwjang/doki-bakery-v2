@@ -5,6 +5,8 @@ extends GutTest
 ## and querying available inventory.
 ## SNA-173: SalesManager Inventory Query Extension
 
+const DISPLAY_SLOTS_SCENE = preload("res://scenes/ui/display_slots.tscn")
+
 
 func before_each() -> void:
 	# Clear inventory before each test
@@ -122,7 +124,9 @@ func test_get_available_inventory_mixed_valid_and_null() -> void:
 	SalesManager.add_to_inventory("bread_001", 100)
 
 	# Add invalid recipe manually
-	SalesManager._inventory["nonexistent_recipe"] = 5
+	var invalid_item := InventoryItem.new("nonexistent_recipe")
+	invalid_item.add(100)
+	SalesManager._inventory["nonexistent_recipe"] = invalid_item
 
 	var available = SalesManager.get_available_inventory()
 
@@ -201,10 +205,10 @@ func test_initialize_display_slots_fills_empty_slots() -> void:
 		return
 
 	# Arrange - Add items to inventory using known recipe
-	var recipe_id = "croissant"
+	var recipe_id = "bread_001"
 	var recipe = DataManager.get_recipe(recipe_id)
 	if recipe == null:
-		skip_test("Recipe %s not found in DataManager" % recipe_id)
+		pending("Recipe %s not found in DataManager" % recipe_id)
 		return
 
 	SalesManager.add_to_inventory(recipe_id, recipe.base_price)
@@ -212,7 +216,7 @@ func test_initialize_display_slots_fills_empty_slots() -> void:
 	SalesManager.add_to_inventory(recipe_id, recipe.base_price)
 
 	# Create DisplaySlots container
-	var display_slots_scene = load("res://scenes/ui/display_slots.tscn")
+	var display_slots_scene = DISPLAY_SLOTS_SCENE
 	if display_slots_scene == null:
 		fail_test("DisplaySlots scene not found")
 		return
@@ -233,7 +237,7 @@ func test_initialize_display_slots_fills_empty_slots() -> void:
 			filled_count += 1
 
 	# Should fill up to SLOT_COUNT or inventory size, whichever is smaller
-	var expected_fills = min(3, SalesManager.get_inventory_count(recipe_id))
+	var expected_fills = min(GameConstants.SLOT_COUNT, SalesManager.get_inventory_count(recipe_id))
 	assert_eq(filled_count, expected_fills, "Should fill %d slots from inventory" % expected_fills)
 
 
@@ -244,10 +248,10 @@ func test_initialize_display_slots_respects_slot_limit() -> void:
 		return
 
 	# Arrange - Add more items than slots
-	var recipe_id = "croissant"
+	var recipe_id = "bread_001"
 	var recipe = DataManager.get_recipe(recipe_id)
 	if recipe == null:
-		skip_test("Recipe %s not found in DataManager" % recipe_id)
+		pending("Recipe %s not found in DataManager" % recipe_id)
 		return
 
 	# Add 5 items (more than SLOT_COUNT=3)
@@ -255,7 +259,7 @@ func test_initialize_display_slots_respects_slot_limit() -> void:
 		SalesManager.add_to_inventory(recipe_id, recipe.base_price)
 
 	# Create DisplaySlots container
-	var display_slots_scene = load("res://scenes/ui/display_slots.tscn")
+	var display_slots_scene = DISPLAY_SLOTS_SCENE
 	if display_slots_scene == null:
 		fail_test("DisplaySlots scene not found")
 		return

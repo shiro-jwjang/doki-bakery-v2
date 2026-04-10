@@ -1,0 +1,82 @@
+{
+  "atlas": "assets/ui/atlas/ui_icons_atlas.png",
+  "size": [
+    256,
+    256
+  ],
+  "padding": 2,
+  "slots": {
+    "arrow_right": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/arrow_basic_e.png",
+      "rect": [
+        0,
+        0,
+        32,
+        32
+      ]
+    },
+    "arrow_left": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/arrow_basic_w.png",
+      "rect": [
+        34,
+        0,
+        32,
+        32
+      ]
+    },
+    "arrow_up": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/arrow_basic_n.png",
+      "rect": [
+        68,
+        0,
+        32,
+        32
+      ]
+    },
+    "arrow_down": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/arrow_basic_s.png",
+      "rect": [
+        102,
+        0,
+        32,
+        32
+      ]
+    },
+    "checkmark": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/icon_checkmark.png",
+      "rect": [
+        0,
+        40,
+        20,
+        18
+      ]
+    },
+    "cross": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Grey/Default/icon_cross.png",
+      "rect": [
+        34,
+        40,
+        18,
+        18
+      ]
+    },
+    "repeat_dark": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Extra/Default/icon_repeat_dark.png",
+      "rect": [
+        0,
+        104,
+        41,
+        36
+      ]
+    },
+    "repeat_light": {
+      "source": "assets/Inbox/kenney_ui-pack/PNG/Extra/Default/icon_repeat_light.png",
+      "rect": [
+        48,
+        104,
+        41,
+        36
+      ]
+    }
+  }
+}

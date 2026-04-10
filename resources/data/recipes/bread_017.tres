@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/data/recipe_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/bread_baguette.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "bread_017"
+display_name = "컵케이크"
+production_time = 10.0
+base_price = 13
+unlock_level = 17
+xp_reward = 13
+icon = ExtResource("2")
