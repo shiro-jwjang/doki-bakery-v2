@@ -67,8 +67,8 @@ func test_get_level() -> void:
 func test_level_up_threshold() -> void:
 	EventBusAutoload.level_up.connect(_on_level_up)
 
-	# Level 2 requires 100 XP (from LevelData)
-	GameManager.add_experience(100)
+	# Level 2 requires 12 cumulative XP (from LevelData)
+	GameManager.add_experience(12)
 
 	assert_eq(GameManager.get_level(), 2, "Should level up to 2")
 	assert_true(_level_up_received, "level_up signal should be emitted")
@@ -77,46 +77,43 @@ func test_level_up_threshold() -> void:
 
 ## Test add_experience with excess XP carries over
 func test_level_up_with_excess_xp() -> void:
-	# Add 150 XP: should reach level 2 with 50 XP remaining
-	# Level 2 requires 100 XP from level 1
-	GameManager.add_experience(150)
+	# Add 20 XP: should reach level 2 with cumulative XP preserved
+	GameManager.add_experience(20)
 
 	assert_eq(GameManager.get_level(), 2, "Should be level 2")
-	assert_eq(GameManager.get_xp(), 50, "Should have 50 XP remaining")
+	assert_eq(GameManager.get_xp(), 20, "Should preserve cumulative XP")
 
 
 ## Test multiple level ups with sufficient XP
 func test_multiple_level_ups() -> void:
 	EventBusAutoload.level_up.connect(_on_level_up)
 
-	# Level 1 -> 2 requires 100 XP
-	# Level 2 -> 3 requires 250 XP (total 350 XP from level 1)
-	GameManager.add_experience(350)
+	# Level 3 requires 24 cumulative XP
+	GameManager.add_experience(24)
 
 	assert_eq(GameManager.get_level(), 3, "Should level up to 3")
-	assert_eq(GameManager.get_xp(), 0, "Should have 0 XP remaining")
+	assert_eq(GameManager.get_xp(), 24, "Should preserve cumulative XP")
 
 
 ## Test max level cap prevents further leveling
 func test_max_level_cap() -> void:
 	EventBusAutoload.level_up.connect(_on_level_up)
 
-	# Add massive XP to cap at level 10
-	# Total XP needed for level 10: 100 + 250 + 500 + 1000 + 2000 + 4000 + 8000 + 16000 + 32000 = 63850
+	# Add massive XP to cap at level 20
 	GameManager.add_experience(70000)
 
-	assert_eq(GameManager.get_level(), 10, "Should cap at level 10")
+	assert_eq(GameManager.get_level(), 20, "Should cap at level 20")
 
 
 ## Test cannot level up beyond MAX_LEVEL
 func test_cannot_level_up_beyond_max() -> void:
-	GameManager.level = 10
+	GameManager.level = 20
 	GameManager.experience = 0
 	EventBusAutoload.level_up.connect(_on_level_up)
 
 	GameManager.add_experience(1000)
 
-	assert_eq(GameManager.get_level(), 10, "Should remain at level 10")
+	assert_eq(GameManager.get_level(), 20, "Should remain at level 20")
 	assert_false(_level_up_received, "level_up signal should not be emitted")
 
 
@@ -136,18 +133,18 @@ func test_level_up_signal_multiple_times() -> void:
 	EventBusAutoload.level_up.connect(_on_level_up)
 
 	# Level 1 -> 2 -> 3
-	GameManager.add_experience(350)
+	GameManager.add_experience(24)
 
 	assert_eq(_level_up_value, 3, "Final signal should carry level 3")
 
 
 ## Test experience is consumed when leveling up
 func test_experience_consumed_on_level_up() -> void:
-	# Add exactly enough for level 2 (100 XP)
-	GameManager.add_experience(100)
+	# Add exactly enough for level 2 (12 XP)
+	GameManager.add_experience(12)
 
 	assert_eq(GameManager.get_level(), 2, "Should be level 2")
-	assert_eq(GameManager.get_xp(), 0, "XP should be consumed")
+	assert_eq(GameManager.get_xp(), 12, "XP should remain cumulative")
 
 
 ## Test add_experience with zero amount

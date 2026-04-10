@@ -15,8 +15,6 @@ extends Node
 ## - Handle UI-specific initialization (level up notification)
 
 const LEVEL_UP_NOTIFICATION_SCENE = preload("res://scenes/ui/level_up_notification.tscn")
-const UIComponentRegistry = preload("res://scripts/ui/ui_component_registry.gd")
-const UIEventRouter = preload("res://scripts/ui/ui_event_router.gd")
 
 ## Reference to UI container (CanvasLayer)
 @onready var ui_layer: CanvasLayer = get_node_or_null("../UI")
@@ -238,8 +236,6 @@ func get_event_router() -> Node:
 
 
 # ==================== Customer Events ====================
-
-const CustomerFlow = preload("res://scripts/customer/customer_flow.gd")
 
 
 func _on_customer_arrived(p_customer_id: String) -> void:

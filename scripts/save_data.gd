@@ -2,7 +2,7 @@
 extends RefCounted
 
 ## Save data format version for compatibility
-const VERSION: String = "1.1"
+const VERSION: String = "2.0"
 
 ## Player's gold (standard currency)
 var gold: int = 0
@@ -10,7 +10,7 @@ var gold: int = 0
 ## Premium currency (legendary golden bread)
 var legendary_bread: int = 0
 
-## Current player level (1-10)
+## Current player level (1-20)
 var level: int = 1
 
 ## Current experience points

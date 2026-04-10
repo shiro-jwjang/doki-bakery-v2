@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://ddl1doxl03y1g"]
+[gd_scene load_steps=7 format=3 uid="uid://ddl1doxl03y1g"]
 
 [ext_resource type="Script" path="res://scenes/menus/title.gd" id="1_n4qxb"]
+[ext_resource type="StyleBox" path="res://themes/generated/styleboxes/button_normal.tres" id="2_button_normal"]
+[ext_resource type="StyleBox" path="res://themes/generated/styleboxes/button_hover.tres" id="3_button_hover"]
+[ext_resource type="StyleBox" path="res://themes/generated/styleboxes/button_pressed.tres" id="4_button_pressed"]
+[ext_resource type="StyleBox" path="res://themes/generated/styleboxes/button_disabled.tres" id="5_button_disabled"]
+[ext_resource type="StyleBox" path="res://themes/generated/styleboxes/panel_card.tres" id="6_panel_card"]
 
 [node name="Title" type="Control"]
 layout_mode = 3
@@ -11,13 +16,37 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_n4qxb")
 
-[node name="TitleLabel" type="Label" parent="."]
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.2, 0.168627, 0.145098, 1)
+
+[node name="CenterPanel" type="Panel" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
-anchor_top = 0.4
+anchor_top = 0.5
 anchor_right = 0.5
-anchor_bottom = 0.4
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -180.0
+offset_right = 260.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("6_panel_card")
+
+[node name="TitleLabel" type="Label" parent="CenterPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.32
+anchor_right = 0.5
+anchor_bottom = 0.32
 offset_left = -200.0
 offset_top = -50.0
 offset_right = 200.0
@@ -25,23 +54,53 @@ offset_bottom = 50.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"HeaderLarge"
+theme_override_colors/font_color = Color(1, 0.968627, 0.901961, 1)
+theme_override_colors/font_outline_color = Color(0.341176, 0.262745, 0.2, 1)
+theme_override_constants/outline_size = 8
 text = "두근두근 베이커리"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StartButton" type="Button" parent="."]
+[node name="SubtitleLabel" type="Label" parent="CenterPanel"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
-anchor_top = 0.5
+anchor_top = 0.48
 anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -25.0
-offset_right = 100.0
-offset_bottom = 25.0
+anchor_bottom = 0.48
+offset_left = -180.0
+offset_top = -20.0
+offset_right = 180.0
+offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_colors/font_color = Color(0.231373, 0.196078, 0.172549, 1)
+text = "빵집을 열고, 굽고, 진열해보세요"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StartButton" type="Button" parent="CenterPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.72
+anchor_right = 0.5
+anchor_bottom = 0.72
+offset_left = -140.0
+offset_top = -32.0
+offset_right = 140.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.184314, 0.164706, 0.145098, 1)
+theme_override_colors/font_hover_color = Color(0.184314, 0.164706, 0.145098, 1)
+theme_override_colors/font_pressed_color = Color(0.0980392, 0.0784314, 0.0666667, 1)
+theme_override_colors/font_disabled_color = Color(0.45, 0.43, 0.4, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = ExtResource("2_button_normal")
+theme_override_styles/hover = ExtResource("3_button_hover")
+theme_override_styles/pressed = ExtResource("4_button_pressed")
+theme_override_styles/disabled = ExtResource("5_button_disabled")
 text = "Game Start"
 
-[connection signal="pressed" from="StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="CenterPanel/StartButton" to="." method="_on_start_button_pressed"]

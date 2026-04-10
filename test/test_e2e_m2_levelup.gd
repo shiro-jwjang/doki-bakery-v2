@@ -8,7 +8,7 @@ extends GutTest
 
 const WORLD_VIEW_SCENE := "res://scenes/world/world_view.tscn"
 const TEST_RECIPE_ID := "bread_001"
-const LEVEL_2_XP := 100  # Level 2 requires 100 XP
+const LEVEL_2_XP := 12  # Level 2 requires 12 XP
 
 var _world_view: Node = null
 var _level_up_count: int = 0
@@ -284,12 +284,18 @@ func test_e2e_level_up_with_excess_xp() -> void:
 	# Wait for level up
 	await wait_for_signal(EventBusAutoload.level_up, 2.0)
 
-	# Verify level
-	assert_eq(GameManager.level, 2, "Should be level 2")
+	# Verify level based on the current cumulative XP table
+	var total_earned_xp := sales_needed * xp_reward
+	var expected_level := 1
+	while expected_level < GameConstants.MAX_LEVEL:
+		var next_required := DataManager.get_xp_required_for_level(expected_level + 1)
+		if total_earned_xp >= next_required:
+			expected_level += 1
+		else:
+			break
 
-	# Verify excess XP carried over (with some tolerance for rounding)
-	var expected_xp := (sales_needed * xp_reward) - LEVEL_2_XP
-	assert_almost_eq(GameManager.experience, expected_xp, xp_reward, "Excess XP should carry over")
+	assert_eq(GameManager.level, expected_level, "Should match the cumulative XP table")
+	assert_eq(GameManager.experience, total_earned_xp, "Experience should remain cumulative")
 
 
 ## ==================== HELPER: Find node by class name ====================

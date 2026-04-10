@@ -1,3 +1,5 @@
+# gdlint: disable = max-public-methods
+
 extends GutTest
 
 
@@ -46,23 +48,23 @@ func test_get_xp_required_for_level_returns_0_for_level_1() -> void:
 
 
 ## SNA-166: Test get_xp_required_for_level returns correct XP for level 2
-func test_get_xp_required_for_level_returns_100_for_level_2() -> void:
+func test_get_xp_required_for_level_returns_12_for_level_2() -> void:
 	var xp: int = DataManager.get_xp_required_for_level(2)
-	assert_eq(xp, 100, "Level 2 should require 100 XP")
+	assert_eq(xp, 12, "Level 2 should require 12 XP")
 
 
 ## SNA-166: Test get_xp_required_for_level returns correct XP for level 3
-func test_get_xp_required_for_level_returns_250_for_level_3() -> void:
+func test_get_xp_required_for_level_returns_24_for_level_3() -> void:
 	var xp: int = DataManager.get_xp_required_for_level(3)
-	assert_eq(xp, 250, "Level 3 should require 250 XP")
+	assert_eq(xp, 24, "Level 3 should require 24 XP")
 
 
 ## SNA-166: Test get_xp_required_for_level returns correct XP for higher levels
 func test_get_xp_required_for_level_returns_correct_xp_for_higher_levels() -> void:
 	var xp_4: int = DataManager.get_xp_required_for_level(4)
 	var xp_5: int = DataManager.get_xp_required_for_level(5)
-	assert_eq(xp_4, 500, "Level 4 should require 500 XP")
-	assert_eq(xp_5, 1000, "Level 5 should require 1000 XP")
+	assert_eq(xp_4, 36, "Level 4 should require 36 XP")
+	assert_eq(xp_5, 48, "Level 5 should require 48 XP")
 
 
 ## SNA-166: Test get_xp_required_for_level returns 0 for invalid level
@@ -76,7 +78,7 @@ func test_get_xp_required_for_level_uses_cached_data() -> void:
 	var xp1: int = DataManager.get_xp_required_for_level(2)
 	var xp2: int = DataManager.get_xp_required_for_level(2)
 	assert_eq(xp1, xp2, "Multiple calls should return same value")
-	assert_eq(xp1, 100, "Should return correct XP value")
+	assert_eq(xp1, 12, "Should return correct XP value")
 
 
 ## SNA-178: Test lazy loading for recipes - first call loads data

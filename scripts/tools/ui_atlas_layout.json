@@ -1,0 +1,148 @@
+{
+  "meta": {
+    "skin": "Grey",
+    "variant": "Default",
+    "source_roots": [
+      "assets/Inbox/kenney_ui-pack/PNG/Grey/Default",
+      "assets/Inbox/kenney_ui-pack/PNG/Extra/Default"
+    ]
+  },
+  "atlases": {
+    "controls": {
+      "size": [1024, 512],
+      "background": [0, 0, 0, 0],
+      "padding": 2,
+      "slots": {
+        "button_normal": {
+          "source": "button_rectangle_flat.png",
+          "position": [0, 0],
+          "slice": [12, 12, 12, 12]
+        },
+        "button_hover": {
+          "source": "button_rectangle_border.png",
+          "position": [194, 0],
+          "slice": [12, 12, 12, 12]
+        },
+        "button_pressed": {
+          "source": "button_rectangle_depth_line.png",
+          "position": [388, 0],
+          "slice": [12, 12, 12, 16]
+        },
+        "button_disabled": {
+          "source": "button_rectangle_border.png",
+          "position": [582, 0],
+          "slice": [12, 12, 12, 12]
+        },
+        "panel_card": {
+          "source": "button_rectangle_border.png",
+          "position": [0, 66],
+          "slice": [12, 12, 12, 12]
+        },
+        "panel_line": {
+          "source": "button_rectangle_line.png",
+          "position": [194, 66],
+          "slice": [8, 8, 8, 8]
+        },
+        "input_fill": {
+          "source": "input_rectangle.png",
+          "position": [388, 66],
+          "slice": [12, 12, 12, 12]
+        },
+        "input_outline": {
+          "source": "input_outline_rectangle.png",
+          "position": [582, 66],
+          "slice": [10, 10, 10, 10]
+        },
+        "progress_bg": {
+          "source": "slide_horizontal_grey.png",
+          "position": [0, 136],
+          "slice": [8, 4, 8, 4]
+        },
+        "progress_fill": {
+          "source": "slide_horizontal_color.png",
+          "position": [98, 136],
+          "slice": [8, 4, 8, 4]
+        },
+        "progress_bg_segment": {
+          "source": "slide_horizontal_grey_section.png",
+          "position": [196, 136]
+        },
+        "progress_fill_segment": {
+          "source": "slide_horizontal_color_section.png",
+          "position": [214, 136]
+        },
+        "progress_bg_segment_wide": {
+          "source": "slide_horizontal_grey_section_wide.png",
+          "position": [232, 136]
+        },
+        "progress_fill_segment_wide": {
+          "source": "slide_horizontal_color_section_wide.png",
+          "position": [266, 136]
+        },
+        "checkbox_unchecked": {
+          "source": "check_square_grey.png",
+          "position": [0, 160]
+        },
+        "checkbox_checked": {
+          "source": "check_square_grey_checkmark.png",
+          "position": [34, 160]
+        },
+        "checkbox_blocked": {
+          "source": "check_square_grey_cross.png",
+          "position": [68, 160]
+        },
+        "slider_handle": {
+          "source": "slide_hangle.png",
+          "position": [102, 160]
+        },
+        "divider": {
+          "source": "divider.png",
+          "position": [0, 198]
+        },
+        "divider_edges": {
+          "source": "divider_edges.png",
+          "position": [66, 198]
+        }
+      }
+    },
+    "icons": {
+      "size": [256, 256],
+      "background": [0, 0, 0, 0],
+      "padding": 2,
+      "slots": {
+        "arrow_right": {
+          "source": "arrow_basic_e.png",
+          "position": [0, 0]
+        },
+        "arrow_left": {
+          "source": "arrow_basic_w.png",
+          "position": [34, 0]
+        },
+        "arrow_up": {
+          "source": "arrow_basic_n.png",
+          "position": [68, 0]
+        },
+        "arrow_down": {
+          "source": "arrow_basic_s.png",
+          "position": [102, 0]
+        },
+        "checkmark": {
+          "source": "icon_checkmark.png",
+          "position": [0, 40]
+        },
+        "cross": {
+          "source": "icon_cross.png",
+          "position": [34, 40]
+        },
+        "repeat_dark": {
+          "source": "icon_repeat_dark.png",
+          "position": [0, 104]
+        },
+        "repeat_light": {
+          "source": "icon_repeat_light.png",
+          "position": [48, 104]
+        }
+      }
+    }
+  }
+}

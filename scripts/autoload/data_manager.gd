@@ -4,11 +4,6 @@ extends Node
 ## 정적 데이터(.tres) 로딩/캐싱/조회
 ## SNA-178: Lazy loading 도입 - 필요 시점에 on-demand 로딩
 
-# 리소스 타입 preload
-const RecipeData = preload("res://resources/data/recipe_data.gd")
-const LevelData = preload("res://resources/config/level_data.gd")
-const ShopData = preload("res://resources/config/shop_data.gd")
-
 # 리소스 경로
 const RECIPES_PATH := "res://resources/data/recipes/"
 const LEVELS_PATH := "res://resources/config/levels/"
@@ -17,12 +12,26 @@ const SHOPS_PATH := "res://resources/config/shops/"
 # SNA-194: 웹 빌드 호환성을 위해 리소스 파일들을 명시적으로 나열
 # 웹 빌드에서 DirAccess.list_dir_begin()이 제대로 작동하지 않는 문제 해결
 const RECIPE_FILES := [
+	"bread_001.tres",
 	"bread_002.tres",
 	"bread_003.tres",
 	"bread_004.tres",
 	"bread_005.tres",
 	"bread_006.tres",
-	"bread_croissant.tres"
+	"bread_007.tres",
+	"bread_008.tres",
+	"bread_009.tres",
+	"bread_010.tres",
+	"bread_011.tres",
+	"bread_012.tres",
+	"bread_013.tres",
+	"bread_014.tres",
+	"bread_015.tres",
+	"bread_016.tres",
+	"bread_017.tres",
+	"bread_018.tres",
+	"bread_019.tres",
+	"bread_020.tres"
 ]
 
 const LEVEL_FILES := [
@@ -35,7 +44,17 @@ const LEVEL_FILES := [
 	"level_07.tres",
 	"level_08.tres",
 	"level_09.tres",
-	"level_10.tres"
+	"level_10.tres",
+	"level_11.tres",
+	"level_12.tres",
+	"level_13.tres",
+	"level_14.tres",
+	"level_15.tres",
+	"level_16.tres",
+	"level_17.tres",
+	"level_18.tres",
+	"level_19.tres",
+	"level_20.tres"
 ]
 
 const SHOP_FILES := [

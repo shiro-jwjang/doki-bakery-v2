@@ -7,7 +7,7 @@ extends Node
 ## ==================== GAME PLAY CONSTANTS ====================
 
 ## Maximum level a player can achieve
-const MAX_LEVEL: int = 10
+const MAX_LEVEL: int = 20
 
 ## Number of display slots available
 const SLOT_COUNT: int = 4
@@ -16,7 +16,7 @@ const SLOT_COUNT: int = 4
 
 ## Current save data format version
 ## Increment this when save format changes to prevent loading incompatible data
-const SAVE_VERSION: int = 1
+const SAVE_VERSION: int = 2
 
 ## ==================== UI CONSTANTS ====================
 

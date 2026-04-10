@@ -1,7 +1,9 @@
-[gd_scene format=3 uid="uid://xnneh1arecod"]
+[gd_scene load_steps=4 format=3 uid="uid://xnneh1arecod"]
 
 [ext_resource type="Script" uid="uid://d10pfu48h5jch" path="res://scripts/ui/display_slot.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cluivme1hvpab" path="res://assets/placeholders/bread_scone.png" id="2_7mrix"]
+[ext_resource type="StyleBox" path="res://themes/generated/styleboxes/progress_bg.tres" id="3_progress_bg"]
+[ext_resource type="StyleBox" path="res://themes/generated/styleboxes/progress_fill.tres" id="4_progress_fill"]
 
 [node name="DisplaySlot" type="Control" unique_id=1351827986]
 custom_minimum_size = Vector2(80, 120)
@@ -40,6 +42,8 @@ layout_mode = 2
 max_value = 1.0
 value = 0.5
 show_percentage = false
+theme_override_styles/background = ExtResource("3_progress_bg")
+theme_override_styles/fill = ExtResource("4_progress_fill")
 
 [node name="SellTimer" type="Timer" parent="." unique_id=621137710]
 unique_name_in_owner = true

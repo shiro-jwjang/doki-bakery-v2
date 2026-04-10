@@ -4,8 +4,6 @@ extends RefCounted
 ## Abstract base class for providing recipe data
 ## Allows mocking in tests without DataManager dependency
 
-const RecipeData = preload("res://resources/data/recipe_data.gd")
-
 
 ## Get recipe by ID
 ## Returns RecipeData or null if not found

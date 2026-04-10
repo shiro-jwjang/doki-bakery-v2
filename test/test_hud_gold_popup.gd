@@ -4,6 +4,8 @@ extends GutTest
 ## Tests that gold popups appear when gold changes
 ## SNA-94: HUD 골드 변동 팝업 애니메이션
 
+const HUD_SCENE = preload("res://scenes/ui/hud.tscn")
+
 var hud: Node
 
 
@@ -29,8 +31,7 @@ func test_gold_popup_spawns_on_gold_change() -> void:
 	#	pending("HUD tests require GUI mode")
 	#	return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 
@@ -49,8 +50,7 @@ func test_gold_popup_shows_positive_amount() -> void:
 	#	pending("HUD tests require GUI mode")
 	#	return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 
@@ -64,8 +64,12 @@ func test_gold_popup_shows_positive_amount() -> void:
 
 	var label = popup.get_node_or_null("Label")
 	assert_not_null(label, "Popup must have a Label")
-	assert_eq(label.text, "+30G ↑", "Should show positive amount with arrow")
-	assert_eq(label.modulate, Color.GREEN, "Positive amount should be green")
+	assert_eq(label.text, "+30 G", "Should show positive amount with current spacing")
+	assert_eq(
+		label.label_settings.font_color,
+		Color(1.0, 0.88, 0.29, 1.0),
+		"Positive amount should use gold color"
+	)
 
 
 ## Test that popup shows correct text for negative change
@@ -74,8 +78,7 @@ func test_gold_popup_shows_negative_amount() -> void:
 	#	pending("HUD tests require GUI mode")
 	#	return
 
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 
@@ -88,14 +91,17 @@ func test_gold_popup_shows_negative_amount() -> void:
 		return
 
 	var label = popup.get_node_or_null("Label")
-	assert_eq(label.text, "-10G ↓", "Should show negative amount with arrow")
-	assert_eq(label.modulate, Color.RED, "Negative amount should be red")
+	assert_eq(label.text, "-10 G", "Should show negative amount with current spacing")
+	assert_eq(
+		label.label_settings.font_color,
+		Color(1.0, 0.42, 0.42, 1.0),
+		"Negative amount should use warning color"
+	)
 
 
 ## Test that popup disappears after a delay
 func test_gold_popup_auto_disappears() -> void:
-	var hud_scene = preload("res://scenes/ui/hud.tscn")
-	hud = hud_scene.instantiate()
+	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	await wait_physics_frames(2)
 

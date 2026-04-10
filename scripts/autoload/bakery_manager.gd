@@ -9,13 +9,6 @@ extends Node
 ## SNA-177: DI 패턴 도입 (TimeProvider, RecipeProvider)
 ## SNA-200: ProductionSlot 타입 안전성 (Typed slot management)
 
-## Preload dependencies
-const RecipeProvider = preload("res://scripts/providers/recipe_provider.gd")
-const DataManagerRecipeProvider = preload("res://scripts/providers/data_manager_recipe_provider.gd")
-const TimeProvider = preload("res://scripts/providers/time_provider.gd")
-const SystemTimeProvider = preload("res://scripts/providers/system_time_provider.gd")
-const ProductionSlotData = preload("res://resources/data/production_slot_data.gd")
-
 ## Signal emitted when production starts
 signal production_started(slot_index: int, recipe_id: String)
 

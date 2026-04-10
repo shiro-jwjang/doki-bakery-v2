@@ -56,16 +56,22 @@ func _update_exp_bar() -> void:
 	if exp_bar == null:
 		return
 
-	# Set max value to next level requirement FIRST to prevent clamping
-	var next_level_data = DataManager.get_level(GameManager.level + 1)
-	if next_level_data != null:
-		exp_bar.max_value = float(next_level_data.required_xp)
-	else:
-		# Fallback if at max level or level data not found
-		exp_bar.max_value = 100.0
+	if GameManager.level >= GameConstants.MAX_LEVEL:
+		exp_bar.max_value = 1.0
+		exp_bar.value = 1.0
+		return
 
-	# Set current XP value AFTER setting max_value
-	exp_bar.value = float(GameManager.experience)
+	var current_level_data = DataManager.get_level(GameManager.level)
+	var next_level_data = DataManager.get_level(GameManager.level + 1)
+	if current_level_data == null or next_level_data == null:
+		exp_bar.max_value = 100.0
+		exp_bar.value = 0.0
+		return
+
+	var current_required := float(current_level_data.required_xp)
+	var next_required := float(next_level_data.required_xp)
+	exp_bar.max_value = maxf(1.0, next_required - current_required)
+	exp_bar.value = clampf(float(GameManager.experience) - current_required, 0.0, exp_bar.max_value)
 
 
 ## Update premium currency display

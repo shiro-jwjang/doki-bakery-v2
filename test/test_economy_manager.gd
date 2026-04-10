@@ -104,10 +104,9 @@ func test_sell_bread_triggers_level_up() -> void:
 	recipe.id = "valuable_bread"
 	recipe.display_name = "Valuable Bread"
 	recipe.base_price = 100
-	recipe.xp_reward = 50
+	recipe.xp_reward = DataManager.get_xp_required_for_level(2)
 
-	# Sell 2 breads: 50 * 2 = 100 XP, which should trigger level up from 1 to 2
-	EconomyManager.sell_bread(recipe)
+	# Sell exactly enough to cross the first level-up threshold.
 	EconomyManager.sell_bread(recipe)
 
 	assert_eq(GameManager.level, 2, "Should level up to 2")
@@ -139,9 +138,7 @@ func test_sell_bread_multiple_level_ups() -> void:
 	recipe.base_price = 500
 	recipe.xp_reward = 300
 
-	# Sell enough for multiple level ups: 300 * 5 = 1500 XP
-	# Level 1->2: 100 XP, Level 2->3: 250 XP (total 350)
-	# So 5 sales = 1500 XP should reach multiple levels
+	# Sell enough for multiple level ups under the cumulative XP table.
 	for i in range(5):
 		EconomyManager.sell_bread(recipe)
 

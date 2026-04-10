@@ -15,7 +15,6 @@ func before_each() -> void:
 	BakeryManager._active_count = 0
 	BakeryManager.set_process(false)
 
-	var ProductionPanelScene = preload("res://scenes/ui/production_panel.tscn")
 	panel = ProductionPanelScene.instantiate()
 	add_child(panel)
 
@@ -40,29 +39,29 @@ func after_each() -> void:
 
 ## Test that panel updates on production_started signal
 func test_panel_updates_on_baking_started() -> void:
-	EventBusAutoload.production_started.emit(0, "bread_croissant")
+	EventBusAutoload.production_started.emit(0, "bread_001")
 
 	# Assert immediately (UI updates are synchronous)
 	var slot_ui = panel.get_slot_ui(0)
 	assert_not_null(slot_ui, "Slot UI should exist")
 	var label: Label = slot_ui._status_label
-	assert_true(label.text.contains("베이킹 중"), "Label should show baking status")
+	assert_true(label.text.contains("굽는 중"), "Label should show baking status")
 
 
 ## Test that panel updates on production_completed signal
 func test_panel_updates_on_baking_finished() -> void:
-	EventBusAutoload.production_completed.emit(1, "bread_croissant")
+	EventBusAutoload.production_completed.emit(1, "bread_001")
 
 	var slot_ui = panel.get_slot_ui(1)
 	assert_not_null(slot_ui, "Slot UI should exist")
 	var label: Label = slot_ui._status_label
-	assert_true(label.text.contains("완료!"), "Label should show completion status")
+	assert_true(label.text.contains("완성"), "Label should show completion status")
 	assert_eq(slot_ui._progress_bar.value, 1.0, "Progress bar should be full")
 
 
 ## Test that panel updates progress bar on production_progressed signal
 func test_panel_updates_on_baking_progressed() -> void:
-	EventBusAutoload.production_started.emit(0, "bread_croissant")
+	EventBusAutoload.production_started.emit(0, "bread_001")
 
 	# 50%
 	EventBusAutoload.production_progressed.emit(0, 0.5)
@@ -76,10 +75,10 @@ func test_panel_updates_on_baking_progressed() -> void:
 
 ## Test that ProductionPanel does not poll BakeryManager in _process
 func test_panel_no_process_polling() -> void:
-	EventBusAutoload.production_started.emit(0, "bread_croissant")
-	EventBusAutoload.production_completed.emit(0, "bread_croissant")
+	EventBusAutoload.production_started.emit(0, "bread_001")
+	EventBusAutoload.production_completed.emit(0, "bread_001")
 
 	var slot_ui = panel.get_slot_ui(0)
 	assert_true(
-		slot_ui._status_label.text.contains("완료"), "Slot should show completion without polling"
+		slot_ui._status_label.text.contains("완성"), "Slot should show completion without polling"
 	)

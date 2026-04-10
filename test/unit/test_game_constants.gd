@@ -5,9 +5,9 @@ extends GutTest
 ## SNA-180: Magic Numbers 중앙화
 
 ## Expected constant values
-const EXPECTED_MAX_LEVEL := 10
+const EXPECTED_MAX_LEVEL := 20
 const EXPECTED_SLOT_COUNT := 4
-const EXPECTED_SAVE_VERSION := 1
+const EXPECTED_SAVE_VERSION := 2
 const EXPECTED_VIEWPORT_WIDTH := 1200
 const EXPECTED_VIEWPORT_HEIGHT := 1000
 const EXPECTED_MAX_NOTIFICATIONS := 3

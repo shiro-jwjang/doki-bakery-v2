@@ -91,7 +91,7 @@ func test_production_slot_ide_autocomplete_support() -> void:
 	# If a property doesn't exist, it would be a compile error
 	# slot.nonexistent_property = "value"  # This would fail to compile
 
-	assert_true(true, "ProductionSlot supports typed property access")
+	pass_test("ProductionSlot supports typed property access")
 
 
 ## Test ProductionSlot serialization compatibility
