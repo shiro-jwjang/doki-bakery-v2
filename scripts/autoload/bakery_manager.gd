@@ -97,6 +97,14 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 		push_error("BakeryManager: Recipe not found - %s" % recipe_id)
 		return false
 
+	# Respect inventory cap to avoid producing hidden overflow.
+	if (
+		SalesManager.has_method("has_inventory_capacity")
+		and not SalesManager.has_inventory_capacity(recipe_id)
+	):
+		production_failed.emit(slot_index, "inventory_full")
+		return false
+
 	# Create new production slot as typed ProductionSlotData (SNA-200)
 	var slot = ProductionSlotData.new()
 	slot.slot_index = slot_index
@@ -113,6 +121,8 @@ func start_production(slot_index: int, recipe_id: String) -> bool:
 
 	production_started.emit(slot_index, recipe_id)
 	EventBusAutoload.production_started.emit(slot_index, recipe_id)
+	# Default behavior: newly started production repeats automatically.
+	set_auto_repeat(slot_index, recipe_id)
 	return true
 
 
@@ -125,6 +135,11 @@ func _get_current_time() -> float:
 ## SNA-187: Optimized from O(n) to O(1) using _active_slots dictionary
 func _is_slot_active(slot_index: int) -> bool:
 	return _active_slots.has(slot_index)
+
+
+## Public slot-active query for controllers/UI.
+func is_slot_active(slot_index: int) -> bool:
+	return _is_slot_active(slot_index)
 
 
 ## Complete production in the specified slot (O(1) lookup)
@@ -155,8 +170,12 @@ func complete_production(slot_index: int) -> void:
 			# Remove old slot from _slots to avoid duplicates
 			_slots.erase(slot_index)
 			# Start new production with the same recipe immediately
-			start_production(slot_index, repeat_recipe_id)
-			auto_repeat_started.emit(slot_index, repeat_recipe_id)
+			var restarted := start_production(slot_index, repeat_recipe_id)
+			if restarted:
+				auto_repeat_started.emit(slot_index, repeat_recipe_id)
+			else:
+				clear_auto_repeat(slot_index)
+				EventBusAutoload.production_cleared.emit(slot_index)
 		else:
 			# NO AUTO-REPEAT: Clear the slot for manual reuse
 			_slots.erase(slot_index)
@@ -293,6 +312,37 @@ func restore_slots(slots_data: Array) -> void:
 		if slot.is_active:
 			_active_slots[slot_index] = slot
 			_active_count += 1
+
+
+## Serialize production state for save files.
+func get_save_state() -> Dictionary:
+	var slots_data: Array = []
+	for slot in get_slots():
+		if slot == null or slot.recipe == null:
+			continue
+
+		slots_data.append(
+			{
+				"slot_index": int(slot.slot_index),
+				"recipe_id": str(slot.recipe.id),
+				"start_time": float(slot.start_time),
+				"progress": float(slot.progress),
+				"is_active": bool(slot.is_active),
+				"is_completed": bool(slot.is_completed)
+			}
+		)
+
+	return {"slots": slots_data, "auto_repeat": _auto_repeat.duplicate(true)}
+
+
+## Restore production/auto-repeat state from save files.
+func load_save_state(state: Dictionary) -> void:
+	restore_slots(state.get("slots", []))
+
+	_auto_repeat.clear()
+	var auto_repeat_state: Dictionary = state.get("auto_repeat", {})
+	for key in auto_repeat_state.keys():
+		_auto_repeat[int(key)] = str(auto_repeat_state[key])
 
 
 ## ==================== AUTO-REPEAT METHODS ====================

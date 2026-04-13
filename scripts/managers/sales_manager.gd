@@ -35,7 +35,10 @@ func _on_production_completed(_slot_index: int, recipe_id: String) -> void:
 ## Add bread to inventory after baking finishes
 ## @param recipe_id: The ID of the recipe (e.g., "croissant", "baguette")
 ## @param price: The selling price of this bread
-func add_to_inventory(recipe_id: String, price: int) -> void:
+func add_to_inventory(recipe_id: String, price: int) -> bool:
+	if not has_inventory_capacity(recipe_id):
+		return false
+
 	if not _inventory.has(recipe_id):
 		_inventory[recipe_id] = InventoryItem.new(recipe_id)
 
@@ -46,6 +49,7 @@ func add_to_inventory(recipe_id: String, price: int) -> void:
 
 	# Notify display system via EventBus (direct autoload reference)
 	EventBusAutoload.baking_finished.emit(recipe_id)
+	return true
 
 
 ## Get the count of a specific bread in inventory
@@ -102,6 +106,11 @@ func clear_inventory() -> void:
 	_inventory.clear()
 
 
+## Check whether the specified recipe can accept one more stock item.
+func has_inventory_capacity(recipe_id: String) -> bool:
+	return get_inventory_count(recipe_id) < GameConstants.MAX_RECIPE_STOCK
+
+
 ## Get all recipes with available inventory (stock > 0)
 ## Returns: Array[RecipeData] of recipes with positive stock
 ## SNA-173: SalesManager Inventory Query Extension
@@ -155,3 +164,42 @@ func initialize_display_slots(display_slots: Node) -> void:
 					remaining_stock[recipe_id] = stock_count - 1
 					filled_count += 1
 					break
+
+
+## Serialize inventory state for save files.
+func get_save_state() -> Dictionary:
+	var inventory_state: Dictionary = {}
+	for recipe_id in _inventory.keys():
+		var item: InventoryItem = _inventory[recipe_id]
+		if not (item is InventoryItem):
+			continue
+
+		var prices: Array = []
+		for entry in item.get_items():
+			if entry is Dictionary:
+				prices.append(int(entry.get("price", 0)))
+
+		inventory_state[recipe_id] = {"prices": prices}
+
+	return {"inventory": inventory_state}
+
+
+## Restore inventory state from save files.
+func load_save_state(state: Dictionary) -> void:
+	clear_inventory()
+	if state.is_empty():
+		return
+
+	var inventory_state: Dictionary = state.get("inventory", {})
+	for recipe_id in inventory_state.keys():
+		var recipe_entry: Variant = inventory_state[recipe_id]
+		if not (recipe_entry is Dictionary):
+			continue
+
+		var prices: Array = recipe_entry.get("prices", [])
+		var item := InventoryItem.new(str(recipe_id))
+		for raw_price in prices:
+			item.add(int(raw_price))
+
+		if item.has_stock():
+			_inventory[str(recipe_id)] = item

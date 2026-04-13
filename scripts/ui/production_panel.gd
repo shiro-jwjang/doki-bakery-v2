@@ -119,3 +119,10 @@ func _get_or_create_slot(slot_index: int) -> Node:
 ## Handle slot button press
 func _on_slot_button_pressed(slot_index: int) -> void:
 	slot_clicked.emit(slot_index)
+
+
+## Refresh one slot's auto-repeat UI state (if available).
+func refresh_slot_auto_repeat(slot_index: int) -> void:
+	var slot_ui: Node = get_slot_ui(slot_index)
+	if slot_ui != null and slot_ui.has_method("refresh_auto_repeat_button"):
+		slot_ui.refresh_auto_repeat_button()

@@ -105,6 +105,7 @@ func test_internal_active_slots_has_typed_slots() -> void:
 ## This should FAIL initially if complete_production expects Dictionary
 func test_complete_production_with_typed_slot() -> void:
 	_manager.start_production(0, "bread_001")
+	_manager.clear_auto_repeat(0)
 
 	# Complete should work with ProductionSlot
 	_manager.complete_production(0)

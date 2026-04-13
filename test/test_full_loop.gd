@@ -50,6 +50,8 @@ func before_each() -> void:
 	CustomerSpawner.stop_spawning()
 	CustomerSpawner.set_displayed_breads([])
 	CustomerSpawner.set_purchase_probability(1.0)  # 100% purchase rate
+	if SalesManager.has_method("load_save_state"):
+		SalesManager.load_save_state({})
 
 	# Create mock providers
 	_mock_time_provider = MockTimeProviderClass.new()
@@ -87,6 +89,7 @@ func test_production_completion_flow() -> void:
 	# Start production with recipe_id string
 	var success = BakeryManager.start_production(0, "test_bread")
 	assert_true(success, "Production should start successfully")
+	BakeryManager.clear_auto_repeat(0)
 
 	# Check active count
 	assert_eq(BakeryManager.get_active_count(), 1, "Should have 1 active production")

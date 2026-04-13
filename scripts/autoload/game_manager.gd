@@ -142,12 +142,19 @@ func add_experience(amount: int) -> void:
 	if amount <= 0:
 		return
 
-	var old_xp := experience
-	experience += amount
+	var target_experience := experience + amount
+	if level >= GameConstants.MAX_LEVEL:
+		target_experience = mini(target_experience, _get_max_level_experience_cap())
+
+	experience = target_experience
 	EventBusAutoload.experience_gained.emit(amount)
 
 	# Check for level ups
 	_check_level_up()
+
+	# If we reached max level during this gain, clamp to cap as well.
+	if level >= GameConstants.MAX_LEVEL:
+		experience = mini(experience, _get_max_level_experience_cap())
 
 
 func get_xp() -> int:
@@ -186,6 +193,16 @@ func _get_xp_span_for_level(lvl: int) -> int:
 	var current_required := _get_xp_required_for_level(lvl)
 	var next_required := _get_xp_required_for_level(lvl + 1)
 	return max(0, next_required - current_required)
+
+
+func _get_max_level_experience_cap() -> int:
+	var current_required := _get_xp_required_for_level(GameConstants.MAX_LEVEL)
+	var next_required := _get_xp_required_for_level(GameConstants.MAX_LEVEL + 1)
+	if next_required <= current_required:
+		var prev_required := _get_xp_required_for_level(maxi(1, GameConstants.MAX_LEVEL - 1))
+		var virtual_span := maxi(1, current_required - prev_required)
+		next_required = current_required + virtual_span
+	return maxi(current_required, next_required - 1)
 
 
 func _normalize_loaded_experience(
