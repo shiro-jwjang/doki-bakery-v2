@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 extends Node
 
 ## CustomerSpawner - Manages automatic customer spawning and purchase decisions

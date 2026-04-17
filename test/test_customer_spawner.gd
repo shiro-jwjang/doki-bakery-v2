@@ -1,8 +1,11 @@
+# gdlint: disable=max-public-methods, duplicated-load
 extends GutTest
 
 ## Test Suite for CustomerSpawner
 ## Tests automatic customer spawning with timing logic
 ## SNA-77: CustomerSpawner 스폰 주기/타이밍 로직
+
+const CustomerSpawnerClass = preload("res://scripts/autoload/customer_spawner.gd")
 
 var _signal_received := false
 var _signal_data := {}
@@ -138,7 +141,6 @@ func test_customer_arrived_unique_customer_id() -> void:
 
 
 func test_timer_driven_spawn_respects_max_simultaneous_customers() -> void:
-	const CustomerSpawnerClass = preload("res://scripts/autoload/customer_spawner.gd")
 	var spawner = CustomerSpawnerClass.new()
 	add_child_autofree(spawner)
 
@@ -158,7 +160,6 @@ func test_timer_driven_spawn_respects_max_simultaneous_customers() -> void:
 
 
 func test_customer_left_decrements_active_customer_count() -> void:
-	const CustomerSpawnerClass = preload("res://scripts/autoload/customer_spawner.gd")
 	var spawner = CustomerSpawnerClass.new()
 	add_child_autofree(spawner)
 
@@ -298,7 +299,6 @@ func test_displayed_breads_getter_setter() -> void:
 
 
 func test_heart_emotion_probability_and_singleton_constraint() -> void:
-	const CustomerSpawnerClass = preload("res://scripts/autoload/customer_spawner.gd")
 	var spawner = CustomerSpawnerClass.new()
 	add_child_autofree(spawner)
 
