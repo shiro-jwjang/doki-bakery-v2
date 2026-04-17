@@ -2,8 +2,12 @@
 
 [ext_resource type="Script" uid="uid://h3f3vjgx1jfj" path="res://scripts/world/player_view.gd" id="1_0abcd"]
 [ext_resource type="PackedScene" uid="uid://3o47foejhbko" path="res://scenes/components/avatar_compositor.tscn" id="2_compositor"]
+[ext_resource type="PackedScene" uid="uid://emoticon_001" path="res://scenes/ui/emoticon_view.tscn" id="3_emoticon"]
 
 [node name="PlayerView" type="Node2D" unique_id=2013184927]
 script = ExtResource("1_0abcd")
 
 [node name="AvatarCompositor" parent="." unique_id=575441826 instance=ExtResource("2_compositor")]
+
+[node name="EmoticonView" parent="." instance=ExtResource("3_emoticon")]
+character_id = "protagonist"
