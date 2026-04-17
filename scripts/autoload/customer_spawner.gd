@@ -11,8 +11,12 @@ const ShopDataClass = preload("res://resources/config/shop_data.gd")
 
 var _spawn_interval: float = 10.0
 var _timer: Timer
+var _idea_timer: Timer
+var _shop_data: Resource = ShopDataClass.new()
 var _customer_counter: int = 0
 var _is_spawning: bool = false
+var _active_customer_count: int = 0
+var _active_emotions: Dictionary = {}
 
 ## Purchase decision variables (SNA-78)
 var _displayed_breads: Array = []
@@ -21,9 +25,20 @@ var _purchase_probability: float = 0.8
 
 func _ready() -> void:
 	_timer = Timer.new()
-	_timer.one_shot = false
+	_timer.one_shot = true
 	_timer.timeout.connect(_on_timer_timeout)
 	add_child(_timer)
+
+	_idea_timer = Timer.new()
+	_idea_timer.one_shot = false
+	_idea_timer.timeout.connect(_on_idea_timer_timeout)
+	add_child(_idea_timer)
+
+	if EventBusAutoload and not EventBusAutoload.customer_left.is_connected(_on_customer_left):
+		EventBusAutoload.customer_left.connect(_on_customer_left)
+
+	var level_1_shop: Resource = DataManager.get_shop_stage(1) if DataManager else null
+	_configure_from_shop_data(level_1_shop if level_1_shop else ShopDataClass.new())
 
 
 ## ==================== PUBLIC API ====================
@@ -31,13 +46,15 @@ func _ready() -> void:
 
 func start_spawning() -> void:
 	_is_spawning = true
-	_timer.wait_time = _spawn_interval
-	_timer.start()
+	_schedule_next_spawn()
+	_start_idea_checks()
 
 
 func stop_spawning() -> void:
 	_is_spawning = false
 	_timer.stop()
+	if _idea_timer:
+		_idea_timer.stop()
 
 
 func is_spawning_active() -> bool:
@@ -49,9 +66,76 @@ func get_spawn_interval() -> float:
 
 
 func set_spawn_interval(interval: float) -> void:
-	_spawn_interval = interval
-	if _timer:
-		_timer.wait_time = interval
+	_shop_data.spawn_interval_min = interval
+	_shop_data.spawn_interval_max = interval
+	_set_spawn_interval(interval)
+
+
+func get_active_customer_count() -> int:
+	return _active_customer_count
+
+
+func get_max_simultaneous_customers() -> int:
+	return _shop_data.max_simultaneous_customers
+
+
+func set_shop_data(shop_data: Resource) -> void:
+	_configure_from_shop_data(shop_data)
+
+
+func get_heart_probability() -> float:
+	return _shop_data.heart_probability
+
+
+func set_heart_probability(probability: float) -> void:
+	_shop_data.heart_probability = clampf(probability, 0.0, 1.0)
+
+
+func get_idea_probability() -> float:
+	return _shop_data.idea_probability
+
+
+func set_idea_probability(probability: float) -> void:
+	_shop_data.idea_probability = clampf(probability, 0.0, 1.0)
+
+
+func try_emit_customer_heart(customer_id: String) -> bool:
+	if customer_id.is_empty():
+		return false
+	if not _should_trigger_emotion("heart", _shop_data.heart_probability):
+		return false
+
+	_mark_emotion_active("heart")
+	EventBusAutoload.emotion_triggered.emit(customer_id, "heart")
+	return true
+
+
+func try_emit_protagonist_idea(character_id: String = "protagonist") -> bool:
+	if not _can_trigger_idea():
+		return false
+	if not _should_trigger_emotion("idea", _shop_data.idea_probability):
+		return false
+
+	_mark_emotion_active("idea")
+	EventBusAutoload.emotion_triggered.emit(character_id, "idea")
+	return true
+
+
+func has_active_emotion(emotion_type: String) -> bool:
+	return _active_emotions.has(emotion_type)
+
+
+func clear_active_emotion(emotion_type: String) -> void:
+	_active_emotions.erase(emotion_type)
+
+
+func set_purchase_probability(probability: float) -> void:
+	_purchase_probability = clampf(probability, 0.0, 1.0)
+	_shop_data.purchase_probability = _purchase_probability
+
+
+func get_purchase_probability() -> float:
+	return _purchase_probability
 
 
 func get_timer() -> Timer:
@@ -67,14 +151,6 @@ func set_displayed_breads(breads: Array) -> void:
 
 func get_displayed_breads() -> Array:
 	return _displayed_breads
-
-
-func set_purchase_probability(probability: float) -> void:
-	_purchase_probability = probability
-
-
-func get_purchase_probability() -> float:
-	return _purchase_probability
 
 
 ## Decide purchase for a customer
@@ -98,6 +174,7 @@ func decide_purchase(customer_id: String) -> bool:
 	customer_purchased.emit(customer_id, selected_bread.id, selected_bread.base_price)
 
 	_displayed_breads.remove_at(selected_index)
+	try_emit_customer_heart(customer_id)
 
 	return true
 
@@ -105,15 +182,103 @@ func decide_purchase(customer_id: String) -> bool:
 ## ==================== INTERNAL METHODS ====================
 
 
+func _set_spawn_interval(interval: float) -> void:
+	_spawn_interval = interval
+	if _timer:
+		_timer.wait_time = interval
+
+
+func _schedule_next_spawn() -> void:
+	if not _timer:
+		return
+
+	var min_interval: float = _shop_data.spawn_interval_min
+	var max_interval: float = _shop_data.spawn_interval_max
+	if max_interval < min_interval:
+		max_interval = min_interval
+
+	_set_spawn_interval(randf_range(min_interval, max_interval))
+	if _is_spawning:
+		_timer.start()
+
+
 func _on_timer_timeout() -> void:
+	var is_timer_driven := _timer != null and _timer.time_left <= 0.0
+	if (
+		_is_spawning
+		and is_timer_driven
+		and _active_customer_count >= _shop_data.max_simultaneous_customers
+	):
+		_schedule_next_spawn()
+		return
+
 	_customer_counter += 1
 	var customer_id := "customer_%d" % _customer_counter
+	_active_customer_count += 1
 
 	EventBusAutoload.customer_arrived.emit(customer_id)
 
 	customer_spawned.emit(customer_id)
+	if _is_spawning:
+		_schedule_next_spawn()
 
 
 func _configure_from_shop_data(shop_data: Resource) -> void:
-	if shop_data and "spawn_interval" in shop_data:
-		set_spawn_interval(shop_data.spawn_interval)
+	if not shop_data:
+		return
+
+	_shop_data = shop_data
+	_purchase_probability = _shop_data.purchase_probability
+
+	var min_interval: float = _shop_data.spawn_interval_min
+	var max_interval: float = _shop_data.spawn_interval_max
+	if max_interval < min_interval:
+		max_interval = min_interval
+		_shop_data.spawn_interval_max = max_interval
+
+	_set_spawn_interval(randf_range(min_interval, max_interval))
+
+	if _idea_timer:
+		_idea_timer.wait_time = _shop_data.idea_check_interval
+		if _is_spawning:
+			_start_idea_checks()
+
+
+func _on_customer_left(_customer_id: String) -> void:
+	_active_customer_count = maxi(0, _active_customer_count - 1)
+
+
+func _start_idea_checks() -> void:
+	if not _idea_timer:
+		return
+	_idea_timer.wait_time = _shop_data.idea_check_interval
+	_idea_timer.start()
+
+
+func _on_idea_timer_timeout() -> void:
+	try_emit_protagonist_idea()
+
+
+func _can_trigger_idea() -> bool:
+	if GameManager.game_state != "playing":
+		return false
+	if _active_emotions.has("idea"):
+		return false
+	if not BakeryManager.has_method("get_active_count"):
+		return false
+	return BakeryManager.get_active_count() > 0
+
+
+func _should_trigger_emotion(emotion_type: String, probability: float) -> bool:
+	if _active_emotions.has(emotion_type):
+		return false
+	return randf() <= clampf(probability, 0.0, 1.0)
+
+
+func _mark_emotion_active(emotion_type: String) -> void:
+	_active_emotions[emotion_type] = true
+	var tree := get_tree()
+	if tree == null:
+		return
+	var clear_timer := tree.create_timer(8.0)
+	clear_timer.timeout.connect(clear_active_emotion.bind(emotion_type))

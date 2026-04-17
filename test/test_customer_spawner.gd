@@ -6,12 +6,14 @@ extends GutTest
 
 var _signal_received := false
 var _signal_data := {}
+var _spawned_ids: Array[String] = []
 var _test_shop: Resource
 
 
 func before_each() -> void:
 	_signal_received = false
 	_signal_data = {}
+	_spawned_ids.clear()
 	const ShopDataClass = preload("res://resources/config/shop_data.gd")
 	_test_shop = ShopDataClass.new()
 	if _test_shop.has_method("set_spawn_interval"):
@@ -48,6 +50,19 @@ func test_customer_spawner_set_spawn_interval() -> void:
 			assert_eq(CustomerSpawner.get_spawn_interval(), 10.0, "Spawn interval should be 10.0")
 	else:
 		pending("Need to implement set_spawn_interval method")
+
+
+func test_customer_spawner_configures_interval_range_from_shop_data() -> void:
+	if CustomerSpawner.has_method("set_shop_data"):
+		_test_shop.spawn_interval_min = 7.0
+		_test_shop.spawn_interval_max = 9.0
+		CustomerSpawner.set_shop_data(_test_shop)
+
+		var interval = CustomerSpawner.get_spawn_interval()
+		assert_true(interval >= 7.0, "Spawn interval should be at least configured min")
+		assert_true(interval <= 9.0, "Spawn interval should be at most configured max")
+	else:
+		pending("Need to implement set_shop_data method")
 
 
 ## ==================== TIMER FUNCTIONALITY ====================
@@ -120,6 +135,38 @@ func test_customer_arrived_unique_customer_id() -> void:
 		assert_ne(customer_ids[0], customer_ids[2], "Customer IDs should be unique")
 	else:
 		pending("Need to implement _on_timer_timeout method")
+
+
+func test_timer_driven_spawn_respects_max_simultaneous_customers() -> void:
+	const CustomerSpawnerClass = preload("res://scripts/autoload/customer_spawner.gd")
+	var spawner = CustomerSpawnerClass.new()
+	add_child_autofree(spawner)
+
+	_test_shop.max_simultaneous_customers = 1
+	_test_shop.spawn_interval_min = 1.0
+	_test_shop.spawn_interval_max = 1.0
+	spawner.set_shop_data(_test_shop)
+	spawner.customer_spawned.connect(_on_customer_spawned)
+
+	spawner.start_spawning()
+	spawner.get_timer().stop()
+	spawner._on_timer_timeout()
+	spawner.get_timer().stop()
+	spawner._on_timer_timeout()
+
+	assert_eq(_spawned_ids.size(), 1, "Spawner should not exceed max simultaneous customers")
+
+
+func test_customer_left_decrements_active_customer_count() -> void:
+	const CustomerSpawnerClass = preload("res://scripts/autoload/customer_spawner.gd")
+	var spawner = CustomerSpawnerClass.new()
+	add_child_autofree(spawner)
+
+	spawner._on_timer_timeout()
+	assert_eq(spawner.get_active_customer_count(), 1, "Active customer count should increment")
+
+	spawner._on_customer_left("customer_1")
+	assert_eq(spawner.get_active_customer_count(), 0, "Active customer count should decrement")
 
 
 ## ==================== INTEGRATION TESTS ====================
@@ -250,6 +297,24 @@ func test_displayed_breads_getter_setter() -> void:
 		pending("Need to implement displayed breads methods")
 
 
+func test_heart_emotion_probability_and_singleton_constraint() -> void:
+	const CustomerSpawnerClass = preload("res://scripts/autoload/customer_spawner.gd")
+	var spawner = CustomerSpawnerClass.new()
+	add_child_autofree(spawner)
+
+	spawner.set_heart_probability(1.0)
+	assert_true(spawner.try_emit_customer_heart("customer_heart"), "Heart should emit at 100%")
+	assert_true(spawner.has_active_emotion("heart"), "Heart should be active after emission")
+	assert_false(
+		spawner.try_emit_customer_heart("customer_heart_2"),
+		"Same emotion type should not emit while active"
+	)
+
+	spawner.clear_active_emotion("heart")
+	spawner.set_heart_probability(0.0)
+	assert_false(spawner.try_emit_customer_heart("customer_heart_3"), "Heart should not emit at 0%")
+
+
 ## ==================== HELPER METHODS ====================
 
 
@@ -261,6 +326,10 @@ func _on_customer_arrived(customer_id: String) -> void:
 func _on_customer_purchased(customer_id: String, recipe_id: String, price: int) -> void:
 	_signal_received = true
 	_signal_data = {"customer_id": customer_id, "recipe_id": recipe_id, "price": price}
+
+
+func _on_customer_spawned(customer_id: String) -> void:
+	_spawned_ids.append(customer_id)
 
 
 func _create_mock_bread() -> Resource:

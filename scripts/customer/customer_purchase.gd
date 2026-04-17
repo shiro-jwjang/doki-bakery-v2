@@ -119,7 +119,8 @@ func process_purchase(customer_id: String, bread: Resource) -> bool:
 	purchase_completed.emit(customer_id, recipe_id, price)
 
 	# Emit emotion: customer is happy with purchase
-	EventBusAutoload.emotion_triggered.emit(customer_id, "heart")
+	if CustomerSpawner and CustomerSpawner.has_method("try_emit_customer_heart"):
+		CustomerSpawner.try_emit_customer_heart(customer_id)
 
 	# Emit purchase signal to EventBus
 	EventBusAutoload.customer_purchased.emit(customer_id, recipe_id, price)

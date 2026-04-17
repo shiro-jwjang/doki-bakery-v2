@@ -5,6 +5,19 @@
 [resource]
 script = ExtResource("1_shop")
 shop_level = 2
-max_production_slots = 2
-upgrade_cost = 500
-unlock_condition = {"required_level": 2}
+display_slots = 4
+max_production_slots = 4
+spawn_interval_min = 7.0
+spawn_interval_max = 9.0
+max_simultaneous_customers = 4
+purchase_probability = 0.9
+heart_probability = 0.18
+idea_check_interval = 90.0
+idea_probability = 0.35
+upgrade_cost = 1200
+counter_points = 1
+queue_points = 2
+browse_points = 4
+staff_anchors = 2
+bg_resource = "bg_store_expanded_v01"
+unlock_condition = {"required_level": 10, "required_gold": 1200, "required_legendary_bread": 0}
