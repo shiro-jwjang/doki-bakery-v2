@@ -15,6 +15,10 @@ func change_screen(scene_name: String) -> void:
 	if not save_data.is_empty():
 		GameManager.set_state(save_data.get("game", {}), int(save_data.get("version", 1)))
 
+	# Set game state to playing when entering world_view
+	if scene_name == "world_view":
+		GameManager.set_game_state("playing")
+
 	var path: String = scenes[scene_name]
 	var err: int = get_tree().change_scene_to_file(path)
 	if err != OK:

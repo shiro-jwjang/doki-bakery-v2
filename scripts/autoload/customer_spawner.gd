@@ -262,6 +262,8 @@ func _on_idea_timer_timeout() -> void:
 
 
 func _can_trigger_idea() -> bool:
+	if GameManager.game_state != "playing":
+		return false
 	if _active_emotions.has("idea"):
 		return false
 	if not BakeryManager.has_method("get_active_count"):
