@@ -220,6 +220,9 @@ func _connect_event_bus() -> void:
 	if event_bus and event_bus.has_signal("emotion_triggered"):
 		if not event_bus.emotion_triggered.is_connected(_on_emotion_triggered):
 			event_bus.emotion_triggered.connect(_on_emotion_triggered)
+		print("[DEBUG] EmoticonView connected, my_id='%s'" % character_id)
+	else:
+		print("[DEBUG] EmoticonView FAIL connect bus=%s id='%s'" % [event_bus != null, character_id])
 
 
 func _disconnect_event_bus() -> void:
