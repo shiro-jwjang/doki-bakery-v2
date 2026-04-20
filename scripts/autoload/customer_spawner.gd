@@ -260,18 +260,25 @@ func _start_idea_checks() -> void:
 	print("[DEBUG] _start_idea_checks: timer started, interval=%.1f" % _shop_data.idea_check_interval)
 
 func _on_idea_timer_timeout() -> void:
-	print("[DEBUG] _on_idea_timer_timeout fired!")
 	try_emit_protagonist_idea()
 
 
 func _can_trigger_idea() -> bool:
 	if GameManager.game_state != "playing":
+		print("[DEBUG] _can_trigger_idea: FAIL game_state=%s" % GameManager.game_state)
 		return false
 	if _active_emotions.has("idea"):
+		print("[DEBUG] _can_trigger_idea: FAIL idea already active")
 		return false
 	if not BakeryManager.has_method("get_active_count"):
+		print("[DEBUG] _can_trigger_idea: FAIL no get_active_count")
 		return false
-	return BakeryManager.get_active_count() > 0
+	var count = BakeryManager.get_active_count()
+	if count <= 0:
+		print("[DEBUG] _can_trigger_idea: FAIL active_count=%d" % count)
+		return false
+	print("[DEBUG] _can_trigger_idea: PASS")
+	return true
 
 
 func _should_trigger_emotion(emotion_type: String, probability: float) -> bool:
