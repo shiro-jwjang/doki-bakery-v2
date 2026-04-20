@@ -41,6 +41,9 @@ func test_shop_default_values() -> void:
 	assert_eq(default_shop.max_production_slots, 1, "Default max slots should be 1")
 	assert_eq(default_shop.upgrade_cost, 100, "Default upgrade cost should be 100")
 	assert_eq(default_shop.display_slots, 2, "Default display slots should be 2")
+	assert_eq(default_shop.heart_probability, 1.0, "Default heart probability should be 1.0")
+	assert_eq(default_shop.idea_check_interval, 15.0, "Default idea interval should be 15.0")
+	assert_eq(default_shop.idea_probability, 1.0, "Default idea probability should be 1.0")
 	assert_eq(default_shop.unlock_condition.size(), 0, "Default unlock condition should be empty")
 
 
@@ -65,14 +68,14 @@ func test_shop_default_spawn_interval_range() -> void:
 func test_shop_has_customer_and_emotion_probabilities() -> void:
 	shop.max_simultaneous_customers = 4
 	shop.purchase_probability = 0.9
-	shop.heart_probability = 0.18
-	shop.idea_check_interval = 90.0
-	shop.idea_probability = 0.35
+	shop.heart_probability = 1.0
+	shop.idea_check_interval = 15.0
+	shop.idea_probability = 1.0
 	assert_eq(shop.max_simultaneous_customers, 4)
 	assert_eq(shop.purchase_probability, 0.9)
-	assert_eq(shop.heart_probability, 0.18)
-	assert_eq(shop.idea_check_interval, 90.0)
-	assert_eq(shop.idea_probability, 0.35)
+	assert_eq(shop.heart_probability, 1.0)
+	assert_eq(shop.idea_check_interval, 15.0)
+	assert_eq(shop.idea_probability, 1.0)
 
 
 func test_shop_has_layout_fields() -> void:
