@@ -1,8 +1,10 @@
 ## Test suite for CustomerFlow emoticon integration
-## SNA-198: 이모티콘 시스템 UI 미표시
+## SNA-198: 이모티콘 시스템 — 기획서 기준 하트(♥)만 검증
 ##
-## This test verifies that CustomerFlow emits emotion_triggered signals
-## at appropriate points in the customer lifecycle
+## 기획서(GDD) 정의:
+## - 손님 하트(♥): 구매 후 퇴장 시 확률 발생
+## - 주인공 깨달음(!): 별도 타이머 기반 (customer_spawner)
+## - thinking 이모티콘은 기획서에 없음 → 제거됨
 extends GutTest
 
 ## CustomerFlow is a script component that gets attached to nodes
@@ -44,8 +46,8 @@ func _on_emotion_triggered(character_id: String, emotion_type: String) -> void:
 	_emotion_signals_received.append({"character_id": character_id, "emotion_type": emotion_type})
 
 
-## REQ: CustomerFlow should emit emotion_triggered when customer arrives at display
-func test_emotion_triggered_on_arrival_at_display() -> void:
+## REQ: 진열대 도착 시에는 이모티콘이 emit되지 않아야 함 (thinking 제거)
+func test_no_emotion_on_arrival_at_display() -> void:
 	var customer_id := "test_customer_001"
 	customer_flow.start_customer_flow(customer_id)
 
@@ -53,18 +55,11 @@ func test_emotion_triggered_on_arrival_at_display() -> void:
 	await wait_for_signal(event_bus.customer_arrived_at_display, 5.0)
 	await wait_physics_frames(2)
 
-	# Verify emotion_triggered was emitted
-	assert_true(
-		_emotion_signals_received.size() > 0,
-		"emotion_triggered should be emitted when customer arrives at display"
-	)
-
-	# Verify it's the "thinking" emotion
-	var last_emotion = _emotion_signals_received[-1]
+	# No emotion should be emitted on arrival
 	assert_eq(
-		last_emotion.emotion_type,
-		"thinking",
-		"Should emit 'thinking' emotion when customer arrives at display"
+		_emotion_signals_received.size(),
+		0,
+		"No emotion_triggered should be emitted when customer arrives at display"
 	)
 
 
@@ -86,11 +81,11 @@ func test_emotion_triggered_params() -> void:
 	var customer_id := "test_customer_003"
 	customer_flow.start_customer_flow(customer_id)
 
-	# Wait for at least one emotion
+	# Wait for flow to process (no thinking emission expected)
 	await wait_for_signal(event_bus.customer_arrived_at_display, 5.0)
 	await wait_physics_frames(2)
 
-	# Verify all received emotions have the correct customer_id
+	# If any emotions were emitted, verify they have correct customer_id
 	for emotion_data in _emotion_signals_received:
 		assert_eq(
 			emotion_data.character_id,

@@ -6,7 +6,6 @@ extends Node2D
 
 ## References to M3 components
 @onready var customer_view: Node2D = $CustomerView
-@onready var emoticon_view: Node2D = $EmoticonView
 @onready var notification_area: Control = $UILayer/NotificationArea
 @onready var production_panel: Control = $UILayer/ProductionPanel
 @onready var bread_menu: Control = $UILayer/BreadMenu
@@ -22,13 +21,6 @@ func _setup_m3_components() -> void:
 	# Setup customer view with default ID
 	customer_view.setup("main_customer_001")
 
-	# Link emoticon view to customer
-	emoticon_view.character_id = "main_customer_001"
-
-	# Connect emoticon click to notification
-	if emoticon_view.has_signal("emoticon_shown"):
-		emoticon_view.emoticon_shown.connect(_on_emoticon_shown)
-
 	# Start customer spawning (SNA-196)
 	CustomerSpawner.start_spawning()
 
@@ -37,15 +29,6 @@ func _setup_m3_components() -> void:
 		production_panel.slot_clicked.connect(_on_production_slot_clicked)
 
 	print("✓ M3 components initialized and connected")
-
-
-## Handle emoticon shown event (for demo purposes)
-func _on_emoticon_shown(emoticon_type: String) -> void:
-	print("Emoticon shown: %s" % emoticon_type)
-	# Emit notification when emoticon is shown (demo flow)
-	EventBusAutoload.notification_requested.emit(
-		"Customer Emotion", "Customer is feeling: %s" % emoticon_type, null, 0
-	)
 
 
 ## Handle production slot clicked - show bread menu

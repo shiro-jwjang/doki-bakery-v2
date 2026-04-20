@@ -210,9 +210,6 @@ func _on_arrival_at_display() -> void:
 	# Emit arrival signal
 	EventBusAutoload.customer_arrived_at_display.emit(customer_id)
 
-	# Emit emotion: customer is thinking about what to buy
-	EventBusAutoload.emotion_triggered.emit(customer_id, "thinking")
-
 	# Start purchase timer
 	if _purchase != null:
 		_purchase.start_purchase_timer()
