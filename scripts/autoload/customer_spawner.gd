@@ -103,10 +103,11 @@ func set_idea_probability(probability: float) -> void:
 func try_emit_customer_heart(customer_id: String) -> bool:
 	if customer_id.is_empty():
 		return false
-	if not _should_trigger_emotion("heart", _shop_data.heart_probability):
+	var emotion_key := "heart:%s" % customer_id
+	if not _should_trigger_emotion(emotion_key, _shop_data.heart_probability):
 		return false
 
-	_mark_emotion_active("heart")
+	_mark_emotion_active(emotion_key)
 	EventBusAutoload.emotion_triggered.emit(customer_id, "heart")
 	return true
 

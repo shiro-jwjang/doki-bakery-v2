@@ -298,19 +298,29 @@ func test_displayed_breads_getter_setter() -> void:
 		pending("Need to implement displayed breads methods")
 
 
-func test_heart_emotion_probability_and_singleton_constraint() -> void:
+func test_heart_emotion_probability_and_cooldown() -> void:
 	var spawner = CustomerSpawnerClass.new()
 	add_child_autofree(spawner)
 
 	spawner.set_heart_probability(1.0)
 	assert_true(spawner.try_emit_customer_heart("customer_heart"), "Heart should emit at 100%")
-	assert_true(spawner.has_active_emotion("heart"), "Heart should be active after emission")
+	assert_true(
+		spawner.has_active_emotion("heart:customer_heart"),
+		"Heart should be active for specific customer"
+	)
+	# Same customer should not emit again while active
 	assert_false(
+		spawner.try_emit_customer_heart("customer_heart"),
+		"Same customer should not emit heart while active"
+	)
+	# Different customer should still be able to emit
+	assert_true(
 		spawner.try_emit_customer_heart("customer_heart_2"),
-		"Same emotion type should not emit while active"
+		"Different customer should emit heart independently"
 	)
 
-	spawner.clear_active_emotion("heart")
+	spawner.clear_active_emotion("heart:customer_heart")
+	spawner.clear_active_emotion("heart:customer_heart_2")
 	spawner.set_heart_probability(0.0)
 	assert_false(spawner.try_emit_customer_heart("customer_heart_3"), "Heart should not emit at 0%")
 
