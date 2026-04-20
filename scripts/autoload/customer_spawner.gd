@@ -116,10 +116,13 @@ func try_emit_customer_heart(customer_id: String) -> bool:
 func try_emit_protagonist_idea(character_id: String = "protagonist") -> bool:
 	if not _can_trigger_idea():
 		return false
-	if not _should_trigger_emotion("idea", _shop_data.idea_probability):
+	var prob = _shop_data.idea_probability
+	if not _should_trigger_emotion("idea", prob):
+		print("[DEBUG] try_emit_idea: FAIL _should_trigger_emotion prob=%.2f active=%s" % [prob, _active_emotions.has("idea")])
 		return false
 
 	_mark_emotion_active("idea")
+	print("[DEBUG] try_emit_idea: EMITTING idea for '%s'" % character_id)
 	EventBusAutoload.emotion_triggered.emit(character_id, "idea")
 	return true
 
