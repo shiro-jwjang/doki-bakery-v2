@@ -161,15 +161,6 @@ func test_player_sprite_not_null() -> void:
 	# MVP: Just verify SpriteFrames exists (actual frames added in SNA-150)
 	assert_not_null(body.sprite_frames, "Body layer should have SpriteFrames resource")
 
-	# If idle animation exists, verify structure
-	if body.sprite_frames.has_animation("idle"):
-		var frame_count = body.sprite_frames.get_frame_count("idle")
-		# MVP: Frame count may be 0 (no textures loaded yet)
-		if frame_count > 0:
-			var texture = body.sprite_frames.get_frame_texture("idle", 0)
-			# Texture may be null in MVP until actual assets are loaded
-			pass
-
 
 ## ==================== POSITION TESTS ====================
 
@@ -229,6 +220,44 @@ func test_player_view_complete_structure() -> void:
 		var layer = layers.find_child(layer_name, true, false)
 		assert_not_null(layer, "Missing %s layer" % layer_name)
 		assert_true(layer is AnimatedSprite2D, "%s should be AnimatedSprite2D" % layer_name)
+
+
+func test_player_view_emoticon_binds_to_protagonist() -> void:
+	if _player_view == null:
+		fail_test("PlayerView scene file does not exist")
+
+	var emoticon_view := _player_view.find_child("EmoticonView", true, false) as EmoticonView
+	assert_not_null(emoticon_view, "PlayerView should have an EmoticonView child")
+	if emoticon_view == null:
+		return
+
+	assert_eq(
+		emoticon_view.character_id,
+		"protagonist",
+		"PlayerView EmoticonView should bind to protagonist"
+	)
+	assert_true(
+		EventBusAutoload.emotion_triggered.is_connected(emoticon_view._on_emotion_triggered),
+		"PlayerView EmoticonView should listen to emotion_triggered"
+	)
+
+
+func test_player_view_emoticon_shows_protagonist_idea() -> void:
+	if _player_view == null:
+		fail_test("PlayerView scene file does not exist")
+
+	var emoticon_view := _player_view.find_child("EmoticonView", true, false) as EmoticonView
+	assert_not_null(emoticon_view, "PlayerView should have an EmoticonView child")
+	if emoticon_view == null:
+		return
+
+	EventBusAutoload.emotion_triggered.emit("protagonist", "idea")
+	await get_tree().process_frame
+
+	assert_true(
+		emoticon_view.is_showing(),
+		"PlayerView EmoticonView should show idea emotion for protagonist"
+	)
 
 
 ## Test scene can be added to tree without errors

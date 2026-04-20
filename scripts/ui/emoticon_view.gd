@@ -50,10 +50,10 @@ const PLACEHOLDER_COLORS := {
 ## Fade animation duration
 @export var fade_duration: float = 0.3
 
-## ==================== PUBLIC VARIABLES ====================
+## ==================== EXPORTS ====================
 
 ## Character ID this emoticon belongs to
-var character_id: String = ""
+@export var character_id: String = ""
 
 ## ==================== PRIVATE VARIABLES ====================
 
@@ -141,6 +141,13 @@ func is_showing() -> bool:
 	return _is_showing
 
 
+## Bind this view to a character and ensure it is listening for emotion events.
+func bind_character(id: String) -> void:
+	character_id = id
+	if is_inside_tree():
+		_connect_event_bus()
+
+
 ## Get texture for emoticon type (used by tests)
 func _get_emoticon_texture(emoticon_type: String) -> Texture2D:
 	var path: String = EMOTICON_PATHS.get(emoticon_type, "")
@@ -220,9 +227,6 @@ func _connect_event_bus() -> void:
 	if event_bus and event_bus.has_signal("emotion_triggered"):
 		if not event_bus.emotion_triggered.is_connected(_on_emotion_triggered):
 			event_bus.emotion_triggered.connect(_on_emotion_triggered)
-		print("[DEBUG] EmoticonView connected, my_id='%s'" % character_id)
-	else:
-		print("[DEBUG] EmoticonView FAIL connect bus=%s id='%s'" % [event_bus != null, character_id])
 
 
 func _disconnect_event_bus() -> void:
@@ -287,6 +291,5 @@ func _on_fade_out_complete() -> void:
 
 func _on_emotion_triggered(triggered_character_id: String, emotion_type: String) -> void:
 	# Only show if this emoticon belongs to the triggered character
-	print("[DEBUG] emoticon_view received: triggered_id='%s' my_id='%s' type='%s' match=%s" % [triggered_character_id, character_id, emotion_type, character_id == triggered_character_id])
 	if not character_id.is_empty() and character_id == triggered_character_id:
 		show_emoticon(emotion_type)

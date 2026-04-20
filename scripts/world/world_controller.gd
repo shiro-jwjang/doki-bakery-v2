@@ -65,7 +65,6 @@ func _ready() -> void:
 
 	# Start customer spawning (SNA-77)
 	if CustomerSpawner.has_method("start_spawning"):
-		print("[DEBUG] world_controller calling start_spawning()")
 		CustomerSpawner.set_spawn_interval(3.0)
 		CustomerSpawner.start_spawning()
 

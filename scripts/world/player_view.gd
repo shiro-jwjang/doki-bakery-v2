@@ -11,9 +11,13 @@ extends Node2D
 const DEFAULT_AVATAR_PATH = "res://resources/config/avatars/avatar_01.tres"
 
 @onready var avatar_compositor: AvatarCompositor = $AvatarCompositor
+@onready var _emoticon_view: EmoticonView = $EmoticonView
 
 
 func _ready() -> void:
+	if _emoticon_view != null:
+		_emoticon_view.bind_character("protagonist")
+
 	# Connect to avatar changed signal
 	if not EventBusAutoload.avatar_changed.is_connected(_on_avatar_changed):
 		EventBusAutoload.avatar_changed.connect(_on_avatar_changed)

@@ -48,7 +48,6 @@ func _ready() -> void:
 func start_spawning() -> void:
 	_is_spawning = true
 	_schedule_next_spawn()
-	print("[DEBUG] start_spawning() called, starting idea checks")
 	_start_idea_checks()
 
 
@@ -118,11 +117,9 @@ func try_emit_protagonist_idea(character_id: String = "protagonist") -> bool:
 		return false
 	var prob = _shop_data.idea_probability
 	if not _should_trigger_emotion("idea", prob):
-		print("[DEBUG] try_emit_idea: FAIL _should_trigger_emotion prob=%.2f active=%s" % [prob, _active_emotions.has("idea")])
 		return false
 
 	_mark_emotion_active("idea")
-	print("[DEBUG] try_emit_idea: EMITTING idea for '%s'" % character_id)
 	EventBusAutoload.emotion_triggered.emit(character_id, "idea")
 	return true
 
@@ -256,11 +253,10 @@ func _on_customer_left(_customer_id: String) -> void:
 
 func _start_idea_checks() -> void:
 	if not _idea_timer:
-		print("[DEBUG] _start_idea_checks: _idea_timer is NULL!")
 		return
 	_idea_timer.wait_time = _shop_data.idea_check_interval
 	_idea_timer.start()
-	print("[DEBUG] _start_idea_checks: timer started, interval=%.1f" % _shop_data.idea_check_interval)
+
 
 func _on_idea_timer_timeout() -> void:
 	try_emit_protagonist_idea()
@@ -268,19 +264,14 @@ func _on_idea_timer_timeout() -> void:
 
 func _can_trigger_idea() -> bool:
 	if GameManager.game_state != "playing":
-		print("[DEBUG] _can_trigger_idea: FAIL game_state=%s" % GameManager.game_state)
 		return false
 	if _active_emotions.has("idea"):
-		print("[DEBUG] _can_trigger_idea: FAIL idea already active")
 		return false
 	if not BakeryManager.has_method("get_active_count"):
-		print("[DEBUG] _can_trigger_idea: FAIL no get_active_count")
 		return false
 	var count = BakeryManager.get_active_count()
 	if count <= 0:
-		print("[DEBUG] _can_trigger_idea: FAIL active_count=%d" % count)
 		return false
-	print("[DEBUG] _can_trigger_idea: PASS")
 	return true
 
 
