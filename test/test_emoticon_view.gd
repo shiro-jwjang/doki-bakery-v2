@@ -167,6 +167,16 @@ func test_show_emoticon_with_character_context() -> void:
 	assert_eq(emoticon_view.character_id, "customer_001", "Character ID should be preserved")
 
 
+## REQ: 빈 캐릭터 ID는 emotion_triggered 이벤트를 무시
+func test_emotion_trigger_ignores_empty_character_id() -> void:
+	emoticon_view.character_id = ""
+	emoticon_view._on_emotion_triggered("customer_001", "heart")
+	await wait_physics_frames(2)
+	assert_false(
+		emoticon_view.is_showing(), "EmoticonView without character_id should ignore events"
+	)
+
+
 ## REQ: 이모티콘 위치는 캐릭터 머리 위
 func test_emoticon_position_offset() -> void:
 	# Default offset should be above the character

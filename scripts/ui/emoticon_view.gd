@@ -284,5 +284,5 @@ func _on_fade_out_complete() -> void:
 
 func _on_emotion_triggered(triggered_character_id: String, emotion_type: String) -> void:
 	# Only show if this emoticon belongs to the triggered character
-	if character_id.is_empty() or character_id == triggered_character_id:
+	if not character_id.is_empty() and character_id == triggered_character_id:
 		show_emoticon(emotion_type)

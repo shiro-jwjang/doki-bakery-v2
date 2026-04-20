@@ -37,3 +37,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Unused asset inbox
+assets/Inbox/
+.linear
