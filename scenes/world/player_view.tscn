@@ -10,4 +10,5 @@ script = ExtResource("1_0abcd")
 [node name="AvatarCompositor" parent="." unique_id=575441826 instance=ExtResource("2_compositor")]
 
 [node name="EmoticonView" parent="." instance=ExtResource("3_emoticon")]
+z_index = 100
 character_id = "protagonist"
