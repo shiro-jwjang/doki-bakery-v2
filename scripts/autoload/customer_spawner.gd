@@ -114,12 +114,15 @@ func try_emit_customer_heart(customer_id: String) -> bool:
 
 func try_emit_protagonist_idea(character_id: String = "protagonist") -> bool:
 	if not _can_trigger_idea():
+		print("[DEBUG-CS] idea BLOCKED by _can_trigger_idea")
 		return false
 	var prob = _shop_data.idea_probability
 	if not _should_trigger_emotion("idea", prob):
+		print("[DEBUG-CS] idea BLOCKED by probability prob=%f" % prob)
 		return false
 
 	_mark_emotion_active("idea")
+	print("[DEBUG-CS] EMITTING idea for '%s'" % character_id)
 	EventBusAutoload.emotion_triggered.emit(character_id, "idea")
 	return true
 

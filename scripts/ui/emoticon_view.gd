@@ -68,9 +68,11 @@ var _current_type: String = ""
 
 
 func _ready() -> void:
+	print("[DEBUG-EV] _ready START cid='%s'" % character_id)
 	_setup_nodes()
 	_connect_event_bus()
 	hide_emoticon()
+	print("[DEBUG-EV] _ready DONE cid='%s'" % character_id)
 
 
 func _exit_tree() -> void:
@@ -143,6 +145,7 @@ func is_showing() -> bool:
 
 ## Bind this view to a character and ensure it is listening for emotion events.
 func bind_character(id: String) -> void:
+	print("[DEBUG-EV] bind_character('%s') inside_tree=%s" % [id, is_inside_tree()])
 	character_id = id
 	if is_inside_tree():
 		_connect_event_bus()
@@ -224,9 +227,17 @@ func _on_emoticon_clicked() -> void:
 
 func _connect_event_bus() -> void:
 	var event_bus := get_node_or_null("/root/EventBusAutoload")
+	print("[DEBUG-EV] _connect_event_bus bus=%s cid='%s'" % [str(event_bus), character_id])
 	if event_bus and event_bus.has_signal("emotion_triggered"):
-		if not event_bus.emotion_triggered.is_connected(_on_emotion_triggered):
+		var already := event_bus.emotion_triggered.is_connected(_on_emotion_triggered)
+		print("[DEBUG-EV] signal found, already_connected=%s" % already)
+		if not already:
 			event_bus.emotion_triggered.connect(_on_emotion_triggered)
+			print("[DEBUG-EV] CONNECTED to emotion_triggered")
+		else:
+			print("[DEBUG-EV] was already connected, skip")
+	else:
+		print("[DEBUG-EV] FAIL: event_bus=%s has_signal=%s" % [str(event_bus), event_bus.has_signal("emotion_triggered") if event_bus else "N/A"])
 
 
 func _disconnect_event_bus() -> void:
@@ -290,6 +301,8 @@ func _on_fade_out_complete() -> void:
 
 
 func _on_emotion_triggered(triggered_character_id: String, emotion_type: String) -> void:
+	print("[DEBUG-EV] TRIGGERED trig_id='%s' my_id='%s' match=%s" % [triggered_character_id, character_id, triggered_character_id == character_id])
 	# Only show if this emoticon belongs to the triggered character
 	if not character_id.is_empty() and character_id == triggered_character_id:
+		print("[DEBUG-EV] SHOWING '%s'" % emotion_type)
 		show_emoticon(emotion_type)
