@@ -15,13 +15,8 @@ const DEFAULT_AVATAR_PATH = "res://resources/config/avatars/avatar_01.tres"
 
 
 func _ready() -> void:
-	print("[DEBUG-PV] _ready START emoticon_view=%s" % str(_emoticon_view))
 	if _emoticon_view != null:
-		print("[DEBUG-PV] calling bind_character('protagonist')")
 		_emoticon_view.bind_character("protagonist")
-		print("[DEBUG-PV] bind_character done, cid='%s'" % _emoticon_view.character_id)
-	else:
-		push_error("[DEBUG-PV] _emoticon_view is NULL!")
 
 	# Connect to avatar changed signal
 	if not EventBusAutoload.avatar_changed.is_connected(_on_avatar_changed):
