@@ -48,6 +48,7 @@ func _ready() -> void:
 func start_spawning() -> void:
 	_is_spawning = true
 	_schedule_next_spawn()
+	print("[DEBUG] start_spawning() called, starting idea checks")
 	_start_idea_checks()
 
 
@@ -252,12 +253,14 @@ func _on_customer_left(_customer_id: String) -> void:
 
 func _start_idea_checks() -> void:
 	if not _idea_timer:
+		print("[DEBUG] _start_idea_checks: _idea_timer is NULL!")
 		return
 	_idea_timer.wait_time = _shop_data.idea_check_interval
 	_idea_timer.start()
-
+	print("[DEBUG] _start_idea_checks: timer started, interval=%.1f" % _shop_data.idea_check_interval)
 
 func _on_idea_timer_timeout() -> void:
+	print("[DEBUG] _on_idea_timer_timeout fired!")
 	try_emit_protagonist_idea()
 
 
