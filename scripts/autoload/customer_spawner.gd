@@ -258,17 +258,10 @@ func _start_idea_checks() -> void:
 
 
 func _on_idea_timer_timeout() -> void:
-	var state = GameManager.game_state
-	var active = BakeryManager.get_active_count() if BakeryManager.has_method("get_active_count") else -1
-	var has_idea = _active_emotions.has("idea")
-	var prob = _shop_data.idea_probability
-	print("[DEBUG idea_timer] state=%s active=%d has_idea=%s prob=%.2f" % [state, active, has_idea, prob])
 	try_emit_protagonist_idea()
 
 
 func _can_trigger_idea() -> bool:
-	if GameManager.game_state != "playing":
-		return false
 	if _active_emotions.has("idea"):
 		return false
 	if not BakeryManager.has_method("get_active_count"):
