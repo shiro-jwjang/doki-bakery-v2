@@ -25,7 +25,10 @@ const EMOTICON_PATHS := {
 	"question": "res://assets/sprites/ui/emoticons/question.png",
 }
 
+const BALLOON_TEXTURE_PATH := "res://assets/sprites/ui/emoticons/말풍선.png"
 const FALLBACK_EMOTICON_PATH := "res://assets/sprites/ui/emoticons/question.png"
+const SPRITE_SCALE := Vector2(2.0, 2.0)
+const ICON_OFFSET := Vector2(0, -4)
 
 # Placeholder textures for testing (colored squares)
 const PLACEHOLDER_COLORS := {
@@ -54,7 +57,8 @@ var character_id: String = ""
 
 ## ==================== PRIVATE VARIABLES ====================
 
-var _sprite: Sprite2D
+var _balloon_sprite: Sprite2D
+var _icon_sprite: Sprite2D
 var _area: Area2D
 var _tween: Tween
 var _is_showing: bool = false
@@ -85,23 +89,34 @@ func show_emoticon(emoticon_type: String, duration: float = -1.0) -> void:
 	# Cancel any existing animation
 	_cleanup_tween()
 
-	# Set texture
-	var texture := _get_emoticon_texture(emoticon_type)
-	if texture:
-		_sprite.texture = texture
+	# Set textures
+	_balloon_sprite.texture = _get_balloon_texture()
+	var icon_texture := _get_emoticon_texture(emoticon_type)
+	var has_icon := _has_icon_for_type(emoticon_type)
+	if icon_texture and has_icon:
+		_icon_sprite.texture = icon_texture
 	_current_type = emoticon_type
 
-	# Position sprite
-	_sprite.position = position_offset
+	# Position sprites
+	_balloon_sprite.position = position_offset
+	_icon_sprite.position = position_offset + ICON_OFFSET
 
 	# Start visible but transparent for fade in
-	_sprite.modulate.a = 0.0
-	_sprite.show()
+	_balloon_sprite.modulate.a = 0.0
+	_icon_sprite.modulate.a = 0.0
+	_balloon_sprite.show()
+	if has_icon:
+		_icon_sprite.show()
+	else:
+		_icon_sprite.hide()
 	_is_showing = true
 
 	# Fade in animation
 	_tween = create_tween()
-	_tween.tween_property(_sprite, "modulate:a", 1.0, fade_duration)
+	_tween.set_parallel(true)
+	_tween.tween_property(_balloon_sprite, "modulate:a", 1.0, fade_duration)
+	_tween.tween_property(_icon_sprite, "modulate:a", 1.0, fade_duration)
+	_tween.set_parallel(false)
 	_tween.tween_callback(_on_fade_in_complete.bind(duration, emoticon_type))
 
 
@@ -114,7 +129,10 @@ func hide_emoticon() -> void:
 
 	# Fade out animation
 	_tween = create_tween()
-	_tween.tween_property(_sprite, "modulate:a", 0.0, fade_duration)
+	_tween.set_parallel(true)
+	_tween.tween_property(_balloon_sprite, "modulate:a", 0.0, fade_duration)
+	_tween.tween_property(_icon_sprite, "modulate:a", 0.0, fade_duration)
+	_tween.set_parallel(false)
 	_tween.tween_callback(_on_fade_out_complete)
 
 
@@ -141,16 +159,31 @@ func _get_emoticon_texture(emoticon_type: String) -> Texture2D:
 
 
 func _setup_nodes() -> void:
-	# Setup Sprite2D
-	_sprite = get_node_or_null("Sprite2D")
-	if _sprite == null:
-		_sprite = Sprite2D.new()
-		_sprite.name = "Sprite2D"
-		add_child(_sprite)
+	# Setup background and foreground sprites
+	_balloon_sprite = get_node_or_null("BalloonSprite")
+	if _balloon_sprite == null:
+		_balloon_sprite = get_node_or_null("Sprite2D")
+		if _balloon_sprite:
+			_balloon_sprite.name = "BalloonSprite"
+		else:
+			_balloon_sprite = Sprite2D.new()
+			_balloon_sprite.name = "BalloonSprite"
+			add_child(_balloon_sprite)
 
-	_sprite.centered = true
-	_sprite.scale = Vector2(3.0, 3.0)  # 16x16 -> 48x48
-	_sprite.hide()
+	_icon_sprite = get_node_or_null("IconSprite")
+	if _icon_sprite == null:
+		_icon_sprite = Sprite2D.new()
+		_icon_sprite.name = "IconSprite"
+		add_child(_icon_sprite)
+
+	_balloon_sprite.centered = true
+	_balloon_sprite.scale = SPRITE_SCALE
+	_balloon_sprite.texture = _get_balloon_texture()
+	_balloon_sprite.hide()
+
+	_icon_sprite.centered = true
+	_icon_sprite.scale = SPRITE_SCALE
+	_icon_sprite.hide()
 
 	# Setup Area2D
 	_area = get_node_or_null("Area2D")
@@ -176,7 +209,7 @@ func _on_emoticon_clicked() -> void:
 	)
 
 	if EventBusAutoload.has_signal("notification_requested"):
-		EventBusAutoload.notification_requested.emit(title, desc, _sprite.texture, 0)
+		EventBusAutoload.notification_requested.emit(title, desc, _get_notification_texture(), 0)
 
 	# Optional: Hide after click or show feedback
 	hide_emoticon()
@@ -211,6 +244,24 @@ func _create_placeholder_texture(emoticon_type: String) -> ImageTexture:
 	return texture
 
 
+func _get_balloon_texture() -> Texture2D:
+	if ResourceLoader.exists(BALLOON_TEXTURE_PATH):
+		return load(BALLOON_TEXTURE_PATH)
+
+	return _create_placeholder_texture("thinking")
+
+
+func _has_icon_for_type(emoticon_type: String) -> bool:
+	return EMOTICON_PATHS.get(emoticon_type, FALLBACK_EMOTICON_PATH) != BALLOON_TEXTURE_PATH
+
+
+func _get_notification_texture() -> Texture2D:
+	if _icon_sprite.visible and _icon_sprite.texture:
+		return _icon_sprite.texture
+
+	return _balloon_sprite.texture
+
+
 ## ==================== CALLBACKS ====================
 
 
@@ -220,12 +271,13 @@ func _on_fade_in_complete(duration: float, emoticon_type: String) -> void:
 
 	# Wait for duration, then fade out
 	_tween = create_tween()
-	_tween.tween_interval(duration - fade_duration)  # Subtract fade time from total
+	_tween.tween_interval(maxf(duration - fade_duration, 0.0))  # Subtract fade time from total
 	_tween.tween_callback(hide_emoticon)
 
 
 func _on_fade_out_complete() -> void:
-	_sprite.hide()
+	_balloon_sprite.hide()
+	_icon_sprite.hide()
 	_is_showing = false
 	emoticon_hidden.emit()
 

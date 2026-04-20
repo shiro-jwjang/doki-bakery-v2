@@ -63,6 +63,35 @@ func test_hide_emoticon_hides_emoticon() -> void:
 	assert_false(emoticon_view.is_showing(), "Emoticon should be hidden")
 
 
+## REQ: 말풍선 배경 + 이모티콘 전경 2-sprite 구조
+func test_emoticon_view_has_balloon_and_icon_sprites() -> void:
+	var balloon_sprite: Sprite2D = emoticon_view.get_node_or_null("BalloonSprite")
+	var icon_sprite: Sprite2D = emoticon_view.get_node_or_null("IconSprite")
+
+	assert_not_null(balloon_sprite, "BalloonSprite should exist")
+	assert_not_null(icon_sprite, "IconSprite should exist")
+	assert_eq(balloon_sprite.scale, Vector2(2.0, 2.0), "BalloonSprite scale should be 2.0")
+	assert_eq(icon_sprite.scale, Vector2(2.0, 2.0), "IconSprite scale should be 2.0")
+
+
+## REQ: show/hide controls both sprite layers
+func test_show_and_hide_emoticon_controls_both_sprite_layers() -> void:
+	var balloon_sprite: Sprite2D = emoticon_view.get_node_or_null("BalloonSprite")
+	var icon_sprite: Sprite2D = emoticon_view.get_node_or_null("IconSprite")
+
+	emoticon_view.show_emoticon("heart", 2.0)
+	await wait_for_signal(emoticon_view.emoticon_shown, 1.0)
+
+	assert_true(balloon_sprite.visible, "BalloonSprite should be visible while showing")
+	assert_true(icon_sprite.visible, "IconSprite should be visible while showing")
+
+	emoticon_view.hide_emoticon()
+	await wait_seconds(0.4)
+
+	assert_false(balloon_sprite.visible, "BalloonSprite should be hidden after hide")
+	assert_false(icon_sprite.visible, "IconSprite should be hidden after hide")
+
+
 ## REQ: 지속 시간 후 자동 숨김 (1.5-2초)
 func test_emoticon_auto_hides_after_duration() -> void:
 	var test_duration := 0.5  # Short duration for testing
@@ -90,7 +119,6 @@ func test_fade_in_animation() -> void:
 	# In headless mode, sprite properties may not be fully set due to rendering limitations
 	# The key requirement is that the show_emoticon API works and emits the signal
 	# Fade animations are visual effects that don't work well in headless mode
-	pass  # Test passes if we get here without errors
 
 
 ## REQ: 페이드 아웃 애니메이션
@@ -102,9 +130,15 @@ func test_fade_out_animation() -> void:
 	# Wait for fade out to complete
 	await wait_for_signal(emoticon_view.emoticon_hidden, 2.0)
 
-	var sprite: Node = emoticon_view.get_node_or_null("Sprite2D")
-	if sprite:
-		assert_almost_eq(sprite.modulate.a, 0.0, 0.1, "Sprite should be invisible after fade out")
+	var balloon_sprite: Sprite2D = emoticon_view.get_node_or_null("BalloonSprite")
+	var icon_sprite: Sprite2D = emoticon_view.get_node_or_null("IconSprite")
+	if balloon_sprite and icon_sprite:
+		assert_almost_eq(
+			balloon_sprite.modulate.a, 0.0, 0.1, "BalloonSprite should be invisible after fade out"
+		)
+		assert_almost_eq(
+			icon_sprite.modulate.a, 0.0, 0.1, "IconSprite should be invisible after fade out"
+		)
 
 
 ## REQ: 잘못된 이모티콘 타입 처리
@@ -139,9 +173,15 @@ func test_emoticon_position_offset() -> void:
 	emoticon_view.show_emoticon("heart", 2.0)
 	await wait_for_signal(emoticon_view.emoticon_shown, 1.0)
 
-	var sprite: Node = emoticon_view.get_node_or_null("Sprite2D")
-	if sprite:
+	var balloon_sprite: Sprite2D = emoticon_view.get_node_or_null("BalloonSprite")
+	var icon_sprite: Sprite2D = emoticon_view.get_node_or_null("IconSprite")
+	if balloon_sprite and icon_sprite:
 		# Position should be negative Y (above character)
 		assert_true(
-			sprite.position.y <= 0, "Sprite should be positioned above character (negative Y)"
+			balloon_sprite.position.y <= 0,
+			"BalloonSprite should be positioned above character (negative Y)"
+		)
+		assert_true(
+			icon_sprite.position.y < balloon_sprite.position.y,
+			"IconSprite should be positioned above BalloonSprite"
 		)
