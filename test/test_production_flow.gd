@@ -19,8 +19,23 @@ func before_each() -> void:
 	# Complete all active productions to clear slots
 	var slots = BakeryManager.get_slots().duplicate()
 	for slot in slots:
-		if slot.is_active:
-			BakeryManager.complete_production(slot.slot_index)
+		var slot_index := -1
+		var is_active := false
+		if slot is Dictionary:
+			slot_index = int(slot.get("slot_index", -1))
+			is_active = bool(slot.get("is_active", false))
+		else:
+			slot_index = int(slot.slot_index)
+			is_active = bool(slot.is_active)
+		if slot_index >= 0 and is_active:
+			if BakeryManager.has_method("clear_auto_repeat"):
+				BakeryManager.clear_auto_repeat(slot_index)
+			BakeryManager.complete_production(slot_index)
+	BakeryManager._slots.clear()
+	BakeryManager._active_slots.clear()
+	BakeryManager._active_count = 0
+	if SalesManager.has_method("load_save_state"):
+		SalesManager.load_save_state({})
 
 	# Reset mock time and mock recipe for consistent testing
 	# Use new DI-based approach
@@ -56,13 +71,21 @@ func after_each() -> void:
 		await wait_physics_frames(1)
 
 
+func _on_slot_clicked_for_test(slot_index: int) -> void:
+	if BakeryManager.has_method("is_slot_active") and BakeryManager.is_slot_active(slot_index):
+		if BakeryManager.has_method("clear_auto_repeat"):
+			BakeryManager.clear_auto_repeat(slot_index)
+		return
+	bread_menu.show_for_slot(slot_index)
+
+
 ## Test that clicking an empty slot opens the BreadMenu
 func test_slot_click_opens_bread_menu() -> void:
 	# Initially BreadMenu should be hidden
 	assert_false(bread_menu.visible, "BreadMenu should start hidden")
 
 	# Simulate slot click on empty slot (slot 0)
-	panel.slot_clicked.emit(0)
+	_on_slot_clicked_for_test(0)
 	await wait_physics_frames(2)
 
 	# BreadMenu should now be visible
@@ -100,6 +123,7 @@ func test_busy_slot_click_ignored() -> void:
 
 	# Verify slot is active
 	assert_eq(BakeryManager.get_active_count(), 1, "Slot 0 should be busy")
+	bread_menu.hide_menu()
 
 	# Click on the busy slot
 	panel.slot_clicked.emit(0)

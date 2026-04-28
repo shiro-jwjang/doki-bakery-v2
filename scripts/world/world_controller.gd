@@ -136,6 +136,17 @@ func _connect_ui_signals() -> void:
 
 ## Handle production slot click -> Show BreadMenu
 func _on_production_slot_clicked(slot_index: int) -> void:
+	# While running, click cancels auto-repeat so users can swap recipe next cycle.
+	if BakeryManager.has_method("is_slot_active") and BakeryManager.is_slot_active(slot_index):
+		if (
+			BakeryManager.has_method("is_auto_repeat_set")
+			and BakeryManager.is_auto_repeat_set(slot_index)
+		):
+			BakeryManager.clear_auto_repeat(slot_index)
+			if production_panel and production_panel.has_method("refresh_slot_auto_repeat"):
+				production_panel.refresh_slot_auto_repeat(slot_index)
+		return
+
 	# Show bread menu to start baking (auto-collection is handled via signals)
 	if bread_menu and bread_menu.has_method("show_for_slot"):
 		bread_menu.show_for_slot(slot_index)

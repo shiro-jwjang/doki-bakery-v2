@@ -12,11 +12,20 @@ const MAX_LEVEL: int = 20
 ## Number of display slots available
 const SLOT_COUNT: int = 4
 
+## Max number of same recipe items kept in inventory/display pipeline.
+const MAX_RECIPE_STOCK: int = 99
+
 ## ==================== SYSTEM CONSTANTS ====================
 
 ## Current save data format version
 ## Increment this when save format changes to prevent loading incompatible data
-const SAVE_VERSION: int = 2
+const SAVE_VERSION: int = 3
+
+## Number of rotating save backups to keep.
+const SAVE_BACKUP_LIMIT: int = 5
+
+## Maximum offline progression window (24 hours).
+const OFFLINE_PROGRESS_CAP_SECONDS: int = 24 * 60 * 60
 
 ## ==================== UI CONSTANTS ====================
 
@@ -53,9 +62,24 @@ static func get_slot_count() -> int:
 	return SLOT_COUNT
 
 
+## Get per-recipe stock cap
+static func get_max_recipe_stock() -> int:
+	return MAX_RECIPE_STOCK
+
+
 ## Get the save version
 static func get_save_version() -> int:
 	return SAVE_VERSION
+
+
+## Get rotating backup count
+static func get_save_backup_limit() -> int:
+	return SAVE_BACKUP_LIMIT
+
+
+## Get offline progression cap in seconds
+static func get_offline_progress_cap_seconds() -> int:
+	return OFFLINE_PROGRESS_CAP_SECONDS
 
 
 ## Get the viewport width

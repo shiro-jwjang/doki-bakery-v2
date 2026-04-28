@@ -217,6 +217,7 @@ func test_multiple_production_cycles() -> void:
 		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
 
 		# Complete first production
+		_manager.clear_auto_repeat(0)
 		_manager.complete_production(0)
 		assert_eq(_manager.get_active_count(), 0, "Should have 0 active productions")
 
@@ -291,6 +292,7 @@ func test_slot_released_after_completion() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("_process"):
 		_helper.get_mock_recipe_provider().get_recipe("bread_001").production_time = 0.1
 		_manager.start_production(0, "bread_001")
+		_manager.clear_auto_repeat(0)
 
 		assert_eq(_manager.get_active_count(), 1, "Should have 1 active production")
 
@@ -679,14 +681,17 @@ func test_dictionary_complete_production() -> void:
 		assert_eq(_manager.get_active_count(), 3, "Should have 3 active slots")
 
 		# Complete middle slot
+		_manager.clear_auto_repeat(1)
 		_manager.complete_production(1)
 		assert_eq(_manager.get_active_count(), 2, "Should have 2 active slots")
 
 		# Complete first slot
+		_manager.clear_auto_repeat(0)
 		_manager.complete_production(0)
 		assert_eq(_manager.get_active_count(), 1, "Should have 1 active slot")
 
 		# Complete last slot
+		_manager.clear_auto_repeat(2)
 		_manager.complete_production(2)
 		assert_eq(_manager.get_active_count(), 0, "Should have 0 active slots")
 	else:
@@ -703,6 +708,7 @@ func test_dictionary_collect_production() -> void:
 		assert_eq(_manager.get_slots().size(), 3, "Should have 3 slots")
 
 		# Complete middle slot (auto-collects)
+		_manager.clear_auto_repeat(1)
 		_manager.complete_production(1)
 
 		# Slot should be removed after auto-collection
@@ -767,10 +773,12 @@ func test_rapid_slot_operations() -> void:
 	):
 		# Rapidly start and complete productions
 		_manager.start_production(0, "bread_001")
+		_manager.clear_auto_repeat(0)
 		_manager.complete_production(0)
 		_manager.collect_production(0)
 
 		_manager.start_production(0, "croissant")
+		_manager.clear_auto_repeat(0)
 		_manager.complete_production(0)
 		_manager.collect_production(0)
 
@@ -871,16 +879,14 @@ func test_production_completed_auto_repeats_when_set() -> void:
 		fail_test("Required methods not implemented yet")
 
 
-## Test that start_production does not automatically set auto-repeat
-func test_start_production_does_not_auto_set_repeat() -> void:
+## Test that start_production automatically sets auto-repeat by default
+func test_start_production_auto_sets_repeat_by_default() -> void:
 	if _manager.has_method("start_production") and _manager.has_method("is_auto_repeat_set"):
 		# Start production without explicitly setting auto-repeat
 		_manager.start_production(0, "bread_001")
 
-		# Auto-repeat should NOT be automatically set
-		assert_false(
-			_manager.is_auto_repeat_set(0), "Should not have auto-repeat set automatically"
-		)
+		# Auto-repeat should be automatically set
+		assert_true(_manager.is_auto_repeat_set(0), "Should have auto-repeat set automatically")
 	else:
 		fail_test("Required methods not implemented yet")
 

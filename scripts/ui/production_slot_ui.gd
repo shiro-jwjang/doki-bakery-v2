@@ -113,6 +113,11 @@ func _update_auto_repeat_button() -> void:
 		_auto_repeat_button.toggled.connect(_on_auto_repeat_toggled)
 
 
+## Public hook to refresh auto-repeat checkbox state from controllers.
+func refresh_auto_repeat_button() -> void:
+	_update_auto_repeat_button()
+
+
 ## Handle auto-repeat toggle button pressed
 func _on_auto_repeat_toggled(button_pressed: bool) -> void:
 	if slot_index < 0:

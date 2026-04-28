@@ -13,12 +13,14 @@ extends Node
 
 ## Path to the save file
 var save_path: String = "user://save.json"
+var backup_dir: String = "user://save_backups"
 
 ## Auto-save interval in seconds
 var auto_save_interval: float = 60.0
 
 ## Internal auto-save timer
 var _auto_save_timer: float = 0.0
+var _offline_progress_applied_this_session: bool = false
 
 
 ## SNA-161: Save dictionary data to disk (File I/O only)
@@ -38,6 +40,11 @@ func save_to_disk(data: Dictionary, path: String = "") -> bool:
 
 	file.store_string(json_string)
 	file.close()
+
+	# Keep rotating backups for the primary save file.
+	if save_path_to_use == save_path:
+		_write_backup(data)
+		_prune_backups()
 
 	EventBusAutoload.save_completed.emit()
 	return true
@@ -80,16 +87,110 @@ func calculate_offline_progress(time_elapsed: float, player_level: int = -1) -> 
 	if time_elapsed <= 0.0:
 		return {"gold_earned": 0, "time_elapsed": 0.0}
 
+	var capped_elapsed := minf(time_elapsed, float(GameConstants.OFFLINE_PROGRESS_CAP_SECONDS))
+
 	# Use provided level or fall back to GameManager
 	var level: int = player_level if player_level >= 0 else GameManager.level
 
 	# Offline earnings formula: level * 10 gold per hour
 	# time_elapsed is in seconds, convert to hours
-	var hours := time_elapsed / 3600.0
+	var hours := capped_elapsed / 3600.0
 	var gold_per_hour: int = level * 10
 	var gold_earned := int(hours * float(gold_per_hour))
 
-	return {"gold_earned": gold_earned, "time_elapsed": time_elapsed}
+	return {"gold_earned": gold_earned, "time_elapsed": capped_elapsed}
+
+
+## Build full save payload including manager states and timestamps.
+func build_full_save_data() -> Dictionary:
+	var save_data := {
+		"version": GameConstants.SAVE_VERSION,
+		"timestamp": Time.get_datetime_string_from_system(true, true),
+		"timestamp_unix": int(Time.get_unix_time_from_system()),
+		"game": GameManager.get_state()
+	}
+
+	if BakeryManager.has_method("get_save_state"):
+		save_data["bakery"] = BakeryManager.get_save_state()
+	if SalesManager.has_method("get_save_state"):
+		save_data["sales"] = SalesManager.get_save_state()
+
+	return save_data
+
+
+## Apply offline progression exactly once per app session after loading save data.
+func apply_offline_progress(save_data: Dictionary) -> Dictionary:
+	if _offline_progress_applied_this_session:
+		return {"gold_earned": 0, "time_elapsed": 0.0}
+
+	var saved_unix := _extract_saved_unix(save_data)
+	if saved_unix <= 0.0:
+		_offline_progress_applied_this_session = true
+		return {"gold_earned": 0, "time_elapsed": 0.0}
+
+	var now_unix := Time.get_unix_time_from_system()
+	var elapsed := maxf(0.0, now_unix - saved_unix)
+	var result := calculate_offline_progress(elapsed, GameManager.level)
+
+	var gold_earned: int = int(result.get("gold_earned", 0))
+	if gold_earned > 0:
+		GameManager.add_gold(gold_earned)
+
+	_offline_progress_applied_this_session = true
+	return result
+
+
+func _extract_saved_unix(save_data: Dictionary) -> float:
+	if save_data.has("timestamp_unix"):
+		return float(save_data.get("timestamp_unix", 0))
+
+	var timestamp_text := str(save_data.get("timestamp", ""))
+	if timestamp_text.is_empty():
+		return 0.0
+
+	return float(Time.get_unix_time_from_datetime_string(timestamp_text))
+
+
+func _write_backup(data: Dictionary) -> void:
+	_ensure_backup_dir()
+	var backup_path := (
+		"%s/save_backup_%d.json" % [backup_dir, int(Time.get_unix_time_from_system())]
+	)
+	var backup_file := FileAccess.open(backup_path, FileAccess.WRITE)
+	if backup_file == null:
+		return
+	backup_file.store_string(JSON.stringify(data))
+	backup_file.close()
+
+
+func _ensure_backup_dir() -> void:
+	var dir := DirAccess.open("user://")
+	if dir == null:
+		return
+
+	var backup_dir_name := backup_dir.trim_prefix("user://")
+	if not dir.dir_exists(backup_dir_name):
+		dir.make_dir_recursive(backup_dir_name)
+
+
+func _prune_backups() -> void:
+	var dir := DirAccess.open(backup_dir)
+	if dir == null:
+		return
+
+	var files: Array[String] = []
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".json"):
+			files.append(file_name)
+		file_name = dir.get_next()
+	dir.list_dir_end()
+
+	files.sort()
+	while files.size() > GameConstants.SAVE_BACKUP_LIMIT:
+		var oldest: String = files.pop_front()
+		dir.remove(oldest)
 
 
 ## Handle auto-save timer
@@ -97,11 +198,4 @@ func _process(delta: float) -> void:
 	_auto_save_timer += delta
 	if _auto_save_timer >= auto_save_interval:
 		_auto_save_timer = 0.0
-		# SNA-189: Auto-save using GameManager.get_state() and save_to_disk()
-		var game_state := GameManager.get_state()
-		var save_data := {
-			"version": GameConstants.SAVE_VERSION,
-			"timestamp": Time.get_datetime_string_from_system(true, true),
-			"game": game_state
-		}
-		save_to_disk(save_data)
+		save_to_disk(build_full_save_data())
